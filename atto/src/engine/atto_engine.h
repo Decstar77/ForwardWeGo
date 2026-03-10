@@ -68,6 +68,8 @@ namespace atto {
         Renderer & GetRenderer() { return renderer; }
         bool IsRunning() const { return running; }
 
+        GLFWwindow * GetWindowHandle() const { return window; }
+
     private:
         Engine() = default;
         ~Engine() = default;

@@ -34,6 +34,13 @@ project "atto"
         "atto/src/**.c",
         "atto/src/**.cpp",
         "vendor/stb/stb_vorbis/stb_vorbis.c",
+        "vendor/imgui/imgui.cpp",
+        "vendor/imgui/imgui_demo.cpp",
+        "vendor/imgui/imgui_draw.cpp",
+        "vendor/imgui/imgui_impl_glfw.cpp",
+        "vendor/imgui/imgui_impl_opengl3.cpp",
+        "vendor/imgui/imgui_tables.cpp",
+        "vendor/imgui/imgui_widgets.cpp",
     }
 
     includedirs {
@@ -41,6 +48,7 @@ project "atto"
         "vendor/glm",
         "vendor/json",
         "vendor/audio",
+        "vendor/imgui",
         "vendor/clipper2/CPP/Clipper2Lib/include",
         "vendor/fpm",
         "vendor/enet/include",
