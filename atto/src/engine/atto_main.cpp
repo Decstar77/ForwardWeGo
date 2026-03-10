@@ -7,7 +7,7 @@ int main() {
     Engine & engine = Engine::Get();
 
     EngineConfig config;
-    config.windowTitle = "Shapes At War";
+    config.windowTitle = "Foward We Go";
     config.windowWidth = 1280;
     config.windowHeight = 720;
     config.vsync = true;
@@ -17,8 +17,7 @@ int main() {
         return -1;
     }
 
-    // engine.Run( "ShapeRaptor" );
-    engine.Run( "MainMenu" );
+    engine.Run( "Editor" );
 
     engine.Shutdown();
 

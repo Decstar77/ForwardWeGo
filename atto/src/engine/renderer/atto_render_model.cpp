@@ -10,7 +10,39 @@
 #include <assimp/texture.h>
 #include <assimp/mesh.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image/std_image.h>
+
 namespace atto {
+
+    void Texture::LoadFromFile( const char * filePath ) {
+        int width, height, channels;
+        stbi_uc * data = stbi_load( filePath, &width, &height, &channels, STBI_rgb_alpha );
+        if ( !data ) {
+            LOG_ERROR( "Failed to load texture image '%s'", filePath );
+            width = height = 0;
+            texture = 0;
+            return;
+        }
+
+        this->width = width;
+        this->height = height;
+
+        glGenTextures( 1, &texture );
+        glBindTexture( GL_TEXTURE_2D, texture );
+
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+        glGenerateMipmap( GL_TEXTURE_2D );
+
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        stbi_image_free( data );
+    }
 
     void Mesh::Create( const std::vector<Vertex> & vertices, const std::vector<u32> & indices ) {
         indexCount = static_cast<i32>(indices.size());
@@ -93,6 +125,49 @@ namespace atto {
         return result;
     }
 
+    static void PrintMaterials( const aiScene * scene ) {
+        for ( u32 i = 0; i < scene->mNumMaterials; i++ ) {
+            const aiMaterial * material = scene->mMaterials[i];
+            aiString name;
+            material->Get( AI_MATKEY_NAME, name );
+            printf( "Material: %s\n", name.C_Str() );
+
+            // Print Diffuse texture(s)
+            u32 numDiffuse = material->GetTextureCount( aiTextureType_DIFFUSE );
+            for ( u32 t = 0; t < numDiffuse; ++t ) {
+                aiString texPath;
+                if ( material->GetTexture( aiTextureType_DIFFUSE, t, &texPath ) == AI_SUCCESS ) {
+                    printf( "  Diffuse Texture: %s\n", texPath.C_Str() );
+                }
+            }
+
+            // Print Specular texture(s)
+            u32 numSpecular = material->GetTextureCount( aiTextureType_SPECULAR );
+            for ( u32 t = 0; t < numSpecular; ++t ) {
+                aiString texPath;
+                if ( material->GetTexture( aiTextureType_SPECULAR, t, &texPath ) == AI_SUCCESS ) {
+                    printf( "  Specular Texture: %s\n", texPath.C_Str() );
+                }
+            }
+
+            // Print Normal/Bump texture(s)
+            u32 numNormals = material->GetTextureCount( aiTextureType_NORMALS );
+            for ( u32 t = 0; t < numNormals; ++t ) {
+                aiString texPath;
+                if ( material->GetTexture( aiTextureType_NORMALS, t, &texPath ) == AI_SUCCESS ) {
+                    printf( "  Normal Texture: %s\n", texPath.C_Str() );
+                }
+            }
+            u32 numBump = material->GetTextureCount( aiTextureType_HEIGHT );
+            for ( u32 t = 0; t < numBump; ++t ) {
+                aiString texPath;
+                if ( material->GetTexture( aiTextureType_HEIGHT, t, &texPath ) == AI_SUCCESS ) {
+                    printf( "  Bump Map: %s\n", texPath.C_Str() );
+                }
+            }
+        }
+    }
+
     static void ProcessNode( aiNode * node, const aiScene * scene, std::vector<Mesh> & meshes, f32 scale ) {
         for ( u32 i = 0; i < node->mNumMeshes; i++ ) {
             aiMesh * mesh = scene->mMeshes[node->mMeshes[i]];
@@ -119,6 +194,7 @@ namespace atto {
             return;
         }
 
+        PrintMaterials( scene );
         ProcessNode( scene->mRootNode, scene, meshes, scale );
 
         LOG_INFO( "Loaded model '%s' (%d meshes)", filePath, GetMeshCount() );

@@ -126,13 +126,6 @@ namespace atto {
         bool operator!=( const Handle & other ) const { return !(*this == other); }
     };
 
-    // Forward declarations for handle types
-    struct Texture;
-    struct Sprite;
-
-    using TextureHandle = Handle<Texture>;
-    using SpriteHandle = Handle<Sprite>;
-
     inline std::string StripFilePathAndExtension( const std::string & filePath ) {
         // Removes directory and extension, returns the base filename.
         // Example: "assets/images/picture.png" -> "picture"
