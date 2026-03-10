@@ -133,4 +133,54 @@ namespace atto {
         i32  viewportHeight = 720;
     };
 
+    class FPSCamera {
+    public:
+        FPSCamera();
+
+        void SetViewportSize( i32 width, i32 height );
+        void SetPosition( const Vec3 & pos );
+        void SetFOV( f32 fovDegrees );
+        void SetClipPlanes( f32 nearPlane, f32 farPlane );
+        void SetMoveSpeed( f32 speed );
+        void SetLookSensitivity( f32 sensitivity );
+
+        Vec3 GetPosition() const { return position; }
+        f32  GetYaw() const { return yaw; }
+        f32  GetPitch() const { return pitch; }
+        f32  GetFOV() const { return fovDeg; }
+        f32  GetMoveSpeed() const { return moveSpeed; }
+        f32  GetLookSensitivity() const { return lookSensitivity; }
+
+        Vec3 GetForward() const;
+        Vec3 GetRight() const;
+        Vec3 GetUp() const;
+
+        // Movement is projected onto the XZ (ground) plane
+        Vec3 GetHorizontalForward() const;
+        Vec3 GetHorizontalRight() const;
+
+        void Rotate( f32 yawDelta, f32 pitchDelta );
+        void MoveForward( f32 amount );
+        void MoveRight( f32 amount );
+        void MoveUp( f32 amount );
+
+        Mat4 GetViewMatrix() const;
+        Mat4 GetProjectionMatrix() const;
+        Mat4 GetViewProjectionMatrix() const;
+
+    private:
+        Vec3 position = Vec3( 0.0f, 0.0f, 3.0f );
+        f32  yaw = -HALF_PI;
+        f32  pitch = 0.0f;
+
+        f32  fovDeg = 60.0f;
+        f32  nearClip = 0.1f;
+        f32  farClip = 1000.0f;
+        f32  moveSpeed = 5.0f;
+        f32  lookSensitivity = 0.1f;
+
+        i32  viewportWidth = 1280;
+        i32  viewportHeight = 720;
+    };
+
 } // namespace atto

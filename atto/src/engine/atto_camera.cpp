@@ -295,4 +295,94 @@ namespace atto {
         return GetProjectionMatrix() * GetViewMatrix();
     }
 
+    // =============================================
+    // FPSCamera
+    // =============================================
+
+    FPSCamera::FPSCamera() {
+    }
+
+    void FPSCamera::SetViewportSize( i32 width, i32 height ) {
+        viewportWidth = width;
+        viewportHeight = height;
+    }
+
+    void FPSCamera::SetPosition( const Vec3 & pos ) {
+        position = pos;
+    }
+
+    void FPSCamera::SetFOV( f32 fovDegrees ) {
+        fovDeg = fovDegrees;
+    }
+
+    void FPSCamera::SetClipPlanes( f32 nearPlane, f32 farPlane ) {
+        nearClip = nearPlane;
+        farClip = farPlane;
+    }
+
+    void FPSCamera::SetMoveSpeed( f32 speed ) {
+        moveSpeed = speed;
+    }
+
+    void FPSCamera::SetLookSensitivity( f32 sensitivity ) {
+        lookSensitivity = sensitivity;
+    }
+
+    Vec3 FPSCamera::GetForward() const {
+        Vec3 fwd;
+        fwd.x = Cos( yaw ) * Cos( pitch );
+        fwd.y = Sin( pitch );
+        fwd.z = Sin( yaw ) * Cos( pitch );
+        return Normalize( fwd );
+    }
+
+    Vec3 FPSCamera::GetRight() const {
+        return Normalize( Cross( GetForward(), Vec3( 0.0f, 1.0f, 0.0f ) ) );
+    }
+
+    Vec3 FPSCamera::GetUp() const {
+        return Normalize( Cross( GetRight(), GetForward() ) );
+    }
+
+    Vec3 FPSCamera::GetHorizontalForward() const {
+        return Normalize( Vec3( Cos( yaw ), 0.0f, Sin( yaw ) ) );
+    }
+
+    Vec3 FPSCamera::GetHorizontalRight() const {
+        return Normalize( Cross( GetHorizontalForward(), Vec3( 0.0f, 1.0f, 0.0f ) ) );
+    }
+
+    void FPSCamera::Rotate( f32 yawDelta, f32 pitchDelta ) {
+        yaw += yawDelta;
+        pitch += pitchDelta;
+
+        constexpr f32 maxPitch = HALF_PI - 0.01f;
+        pitch = Clamp( pitch, -maxPitch, maxPitch );
+    }
+
+    void FPSCamera::MoveForward( f32 amount ) {
+        position += GetHorizontalForward() * amount;
+    }
+
+    void FPSCamera::MoveRight( f32 amount ) {
+        position += GetHorizontalRight() * amount;
+    }
+
+    void FPSCamera::MoveUp( f32 amount ) {
+        position.y += amount;
+    }
+
+    Mat4 FPSCamera::GetViewMatrix() const {
+        return glm::lookAt( position, position + GetForward(), Vec3( 0.0f, 1.0f, 0.0f ) );
+    }
+
+    Mat4 FPSCamera::GetProjectionMatrix() const {
+        f32 aspect = (viewportHeight > 0) ? static_cast<f32>(viewportWidth) / static_cast<f32>(viewportHeight) : 1.0f;
+        return glm::perspective( ToRadians( fovDeg ), aspect, nearClip, farClip );
+    }
+
+    Mat4 FPSCamera::GetViewProjectionMatrix() const {
+        return GetProjectionMatrix() * GetViewMatrix();
+    }
+
 } // namespace atto

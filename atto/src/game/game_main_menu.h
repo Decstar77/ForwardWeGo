@@ -15,7 +15,11 @@ namespace atto {
         void OnResize( i32 width, i32 height ) override;
 
     private:
-        FlyCamera camera;
+        enum class CameraMode { Fly, FPS };
+
+        CameraMode cameraMode = CameraMode::Fly;
+        FlyCamera  flyCamera;
+        FPSCamera  fpsCamera;
         StaticModel model;
     };
 
