@@ -9,6 +9,8 @@ namespace atto {
         camera.SetFOV( 60.0f );
         camera.SetMoveSpeed( 5.0f );
         camera.SetLookSensitivity( 0.1f );
+
+        model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
     }
 
     void MainMenuScene::OnUpdate( f32 deltaTime ) {
@@ -59,6 +61,7 @@ namespace atto {
     void MainMenuScene::OnRender( Renderer & renderer ) {
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
         renderer.RenderTestTriangle();
+        renderer.RenderStaticModel( model, Mat4( 1.0f ) );
     }
 
     void MainMenuScene::OnShutdown() {

@@ -28,7 +28,7 @@ namespace atto {
 
     class StaticModel {
     public:
-        void LoadFromFile( const char * filePath );
+        void LoadFromFile( const char * filePath, f32 scale = 1.0f );
         void Destroy();
         void Draw() const;
 
@@ -36,9 +36,6 @@ namespace atto {
         i32 GetMeshCount() const { return static_cast<i32>( meshes.size() ); }
 
     private:
-        void ProcessNode( struct aiNode * node, const struct aiScene * scene );
-        Mesh ProcessMesh( struct aiMesh * mesh, const struct aiScene * scene );
-
         std::vector<Mesh> meshes;
     };
 

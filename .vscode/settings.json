@@ -1,5 +1,5 @@
 {
-    "editor.fontSize": 17,
+    "editor.fontSize": 16,
     "editor.codeLens": false,
     "files.associations": {
         "filesystem": "cpp",

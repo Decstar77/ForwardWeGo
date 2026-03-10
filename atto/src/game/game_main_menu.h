@@ -1,4 +1,5 @@
 #include "engine/atto_engine.h"
+#include "engine/renderer/atto_render_model.h"
 
 namespace atto {
 
@@ -15,6 +16,7 @@ namespace atto {
 
     private:
         FlyCamera camera;
+        StaticModel model;
     };
 
 } // namespace atto

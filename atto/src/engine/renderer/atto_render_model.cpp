@@ -6,11 +6,14 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
+#include <assimp/texture.h>
+#include <assimp/mesh.h>
 
 namespace atto {
 
     void Mesh::Create( const std::vector<Vertex> & vertices, const std::vector<u32> & indices ) {
-        indexCount = static_cast<i32>( indices.size() );
+        indexCount = static_cast<i32>(indices.size());
 
         glGenVertexArrays( 1, &vao );
         glGenBuffers( 1, &vbo );
@@ -52,51 +55,7 @@ namespace atto {
         glBindVertexArray( 0 );
     }
 
-    void StaticModel::LoadFromFile( const char * filePath ) {
-        Assimp::Importer importer;
-
-        const aiScene * scene = importer.ReadFile( filePath,
-            aiProcess_Triangulate |
-            aiProcess_GenSmoothNormals |
-            aiProcess_FlipUVs |
-            aiProcess_CalcTangentSpace
-        );
-
-        if ( !scene || ( scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ) || !scene->mRootNode ) {
-            LOG_ERROR( "Assimp: %s", importer.GetErrorString() );
-            return;
-        }
-
-        ProcessNode( scene->mRootNode, scene );
-
-        LOG_INFO( "Loaded model '%s' (%d meshes)", filePath, GetMeshCount() );
-    }
-
-    void StaticModel::Destroy() {
-        for ( auto & mesh : meshes ) {
-            mesh.Destroy();
-        }
-        meshes.clear();
-    }
-
-    void StaticModel::Draw() const {
-        for ( const auto & mesh : meshes ) {
-            mesh.Draw();
-        }
-    }
-
-    void StaticModel::ProcessNode( aiNode * node, const aiScene * scene ) {
-        for ( u32 i = 0; i < node->mNumMeshes; i++ ) {
-            aiMesh * mesh = scene->mMeshes[node->mMeshes[i]];
-            meshes.push_back( ProcessMesh( mesh, scene ) );
-        }
-
-        for ( u32 i = 0; i < node->mNumChildren; i++ ) {
-            ProcessNode( node->mChildren[i], scene );
-        }
-    }
-
-    Mesh StaticModel::ProcessMesh( aiMesh * mesh, const aiScene * scene ) {
+    static Mesh ProcessMesh( aiMesh * mesh, const aiScene * scene, f32 scale ) {
         std::vector<Vertex> vertices;
         std::vector<u32> indices;
 
@@ -104,9 +63,9 @@ namespace atto {
         for ( u32 i = 0; i < mesh->mNumVertices; i++ ) {
             Vertex vertex = {};
 
-            vertex.position.x = mesh->mVertices[i].x;
-            vertex.position.y = mesh->mVertices[i].y;
-            vertex.position.z = mesh->mVertices[i].z;
+            vertex.position.x = mesh->mVertices[i].x * scale;
+            vertex.position.y = mesh->mVertices[i].y * scale;
+            vertex.position.z = mesh->mVertices[i].z * scale;
 
             if ( mesh->HasNormals() ) {
                 vertex.normal.x = mesh->mNormals[i].x;
@@ -132,6 +91,50 @@ namespace atto {
         Mesh result;
         result.Create( vertices, indices );
         return result;
+    }
+
+    static void ProcessNode( aiNode * node, const aiScene * scene, std::vector<Mesh> & meshes, f32 scale ) {
+        for ( u32 i = 0; i < node->mNumMeshes; i++ ) {
+            aiMesh * mesh = scene->mMeshes[node->mMeshes[i]];
+            meshes.push_back( ProcessMesh( mesh, scene, scale ) );
+        }
+
+        for ( u32 i = 0; i < node->mNumChildren; i++ ) {
+            ProcessNode( node->mChildren[i], scene, meshes, scale );
+        }
+    }
+
+    void StaticModel::LoadFromFile( const char * filePath, f32 scale ) {
+        Assimp::Importer importer;
+
+        const aiScene * scene = importer.ReadFile( filePath,
+            aiProcess_Triangulate |
+            aiProcess_GenSmoothNormals |
+            aiProcess_FlipUVs |
+            aiProcess_CalcTangentSpace
+        );
+
+        if ( !scene || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode ) {
+            LOG_ERROR( "Assimp: %s", importer.GetErrorString() );
+            return;
+        }
+
+        ProcessNode( scene->mRootNode, scene, meshes, scale );
+
+        LOG_INFO( "Loaded model '%s' (%d meshes)", filePath, GetMeshCount() );
+    }
+
+    void StaticModel::Destroy() {
+        for ( auto & mesh : meshes ) {
+            mesh.Destroy();
+        }
+        meshes.clear();
+    }
+
+    void StaticModel::Draw() const {
+        for ( const auto & mesh : meshes ) {
+            mesh.Draw();
+        }
     }
 
 } // namespace atto
