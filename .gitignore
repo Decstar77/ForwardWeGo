@@ -1,0 +1,21 @@
+.vs
+tmp
+x86_64
+# Assets are now tracked via Git LFS (see .gitattributes)
+# *.png, *.jpg, *.gif, *.psd, *.wav, *.mp3, *.ogg, *.ttf, *.otf, *.pyxel, *.aseprite
+
+# Exclude vendor library assets (third-party, not our project assets)
+vendor/**/*.png
+vendor/**/*.jpg
+vendor/**/*.gif
+vendor/**/*.ttf
+vendor/**/*.otf
+
+logs
+res
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.csproj
+build
