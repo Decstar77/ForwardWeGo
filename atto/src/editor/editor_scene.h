@@ -2,6 +2,20 @@
 #include "engine/renderer/atto_render_model.h"
 
 namespace atto {
+
+    enum class EditorViewMode {
+        XY,     // Front  - orthographic (Alt-1)
+        ZY,     // Side   - orthographic (Alt-2)
+        XZ,     // Top    - orthographic (Alt-3)
+        Cam3D   // Free 3D perspective   (Alt-4)
+    };
+
+    enum class EditorRenderMode {
+        Lit,
+        Unlit,
+        Wireframe
+    };
+
     class EditorScene : public Scene<EditorScene> {
     public:
         static const char * GetSceneNameStatic() { return "Editor"; }
@@ -15,8 +29,16 @@ namespace atto {
 
     private:
         void StartImgui();
+        Mat4 GetOrthoViewProjectionMatrix() const;
+
+        EditorViewMode   viewMode   = EditorViewMode::Cam3D;
+        EditorRenderMode renderMode = EditorRenderMode::Lit;
 
         FlyCamera  flyCamera;
+
+        Vec3 orthoTarget = Vec3( 0.0f );
+        f32  orthoSize   = 10.0f;
+
         StaticModel model;
         Texture texture;
     };
