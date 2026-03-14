@@ -9,7 +9,7 @@
 
 namespace atto {
 
-    static const char * TEST_TRIANGLE_VERT = R"(
+    static const char * FLAT_COLOR_VERT = R"(
         #version 330 core
         layout (location = 0) in vec3 aPos;
         layout (location = 1) in vec3 aColor;
@@ -24,7 +24,7 @@ namespace atto {
         }
     )";
 
-    static const char * TEST_TRIANGLE_FRAG = R"(
+    static const char * FLAT_COLOR_FRAG = R"(
         #version 330 core
         in vec3 vColor;
 
@@ -35,7 +35,7 @@ namespace atto {
         }
     )";
 
-    static const char * MODEL_VERT = R"(
+    static const char * MODEL_LIT_VERT = R"(
         #version 330 core
         layout (location = 0) in vec3 aPos;
         layout (location = 1) in vec3 aNormal;
@@ -55,7 +55,7 @@ namespace atto {
         }
     )";
 
-    static const char * MODEL_FRAG = R"(
+    static const char * MODEL_LIT_FRAG = R"(
         #version 330 core
         in vec3 vNormal;
         in vec3 vFragPos;
@@ -103,66 +103,12 @@ namespace atto {
         }
     )";
 
-    u32 Renderer::CompileShader( u32 type, const char * source ) {
-        u32 shader = glCreateShader( type );
-        glShaderSource( shader, 1, &source, nullptr );
-        glCompileShader( shader );
-
-        i32 success = 0;
-        glGetShaderiv( shader, GL_COMPILE_STATUS, &success );
-        if ( !success ) {
-            char infoLog[512];
-            glGetShaderInfoLog( shader, sizeof( infoLog ), nullptr, infoLog );
-            const char * typeStr = (type == GL_VERTEX_SHADER) ? "VERTEX" : "FRAGMENT";
-            LOG_ERROR( "Shader compilation failed (%s): %s", typeStr, infoLog );
-            glDeleteShader( shader );
-            return 0;
-        }
-
-        return shader;
-    }
-
-    u32 Renderer::CreateShaderProgram( const char * vertexSrc, const char * fragmentSrc ) {
-        u32 vertShader = CompileShader( GL_VERTEX_SHADER, vertexSrc );
-        if ( vertShader == 0 ) return 0;
-
-        u32 fragShader = CompileShader( GL_FRAGMENT_SHADER, fragmentSrc );
-        if ( fragShader == 0 ) {
-            glDeleteShader( vertShader );
-            return 0;
-        }
-
-        u32 program = glCreateProgram();
-        glAttachShader( program, vertShader );
-        glAttachShader( program, fragShader );
-        glLinkProgram( program );
-
-        i32 success = 0;
-        glGetProgramiv( program, GL_LINK_STATUS, &success );
-        if ( !success ) {
-            char infoLog[512];
-            glGetProgramInfoLog( program, sizeof( infoLog ), nullptr, infoLog );
-            LOG_ERROR( "Shader program linking failed: %s", infoLog );
-            glDeleteProgram( program );
-            program = 0;
-        }
-
-        glDeleteShader( vertShader );
-        glDeleteShader( fragShader );
-
-        return program;
-    }
-
     bool Renderer::Initialize() {
-        // Compile test triangle shader
-        testTriangleShader = CreateShaderProgram( TEST_TRIANGLE_VERT, TEST_TRIANGLE_FRAG );
-        if ( testTriangleShader == 0 ) {
-            LOG_ERROR( "Failed to create test triangle shader" );
+        if ( !flatColorShader.CreateFromSource( FLAT_COLOR_VERT, FLAT_COLOR_FRAG ) ) {
+            LOG_ERROR( "Failed to create flat color shader" );
             return false;
         }
-        testTriangleVPLoc = glGetUniformLocation( testTriangleShader, "uViewProjection" );
 
-        // Position (xyz) + Color (rgb)
         f32 vertices[] = {
             -0.5f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f,
              0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,
@@ -177,39 +123,24 @@ namespace atto {
         glBindBuffer( GL_ARRAY_BUFFER, testTriangleVBO );
         glBufferData( GL_ARRAY_BUFFER, sizeof( vertices ), vertices, GL_STATIC_DRAW );
 
-        // Position attribute (location = 0)
         glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)0 );
         glEnableVertexAttribArray( 0 );
 
-        // Color attribute (location = 1)
         glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)(3 * sizeof( f32 )) );
         glEnableVertexAttribArray( 1 );
 
         glBindVertexArray( 0 );
 
-        // Compile model shader
-        modelShader = CreateShaderProgram( MODEL_VERT, MODEL_FRAG );
-        if ( modelShader == 0 ) {
-            LOG_ERROR( "Failed to create model shader" );
+        if ( !modelLitShader.CreateFromSource( MODEL_LIT_VERT, MODEL_LIT_FRAG ) ) {
+            LOG_ERROR( "Failed to create lit model shader" );
             return false;
         }
-        modelVPLoc = glGetUniformLocation( modelShader, "uViewProjection" );
-        modelModelLoc = glGetUniformLocation( modelShader, "uModel" );
-        modelLightDirLoc = glGetUniformLocation( modelShader, "uLightDir" );
-        modelLightColorLoc = glGetUniformLocation( modelShader, "uLightColor" );
-        modelObjectColorLoc = glGetUniformLocation( modelShader, "uObjectColor" );
 
-        // Compile unlit model shader
-        modelUnlitShader = CreateShaderProgram( MODEL_UNLIT_VERT, MODEL_UNLIT_FRAG );
-        if ( modelUnlitShader == 0 ) {
+        if ( !modelUnlitShader.CreateFromSource( MODEL_UNLIT_VERT, MODEL_UNLIT_FRAG ) ) {
             LOG_ERROR( "Failed to create unlit model shader" );
             return false;
         }
-        modelUnlitVPLoc = glGetUniformLocation( modelUnlitShader, "uViewProjection" );
-        modelUnlitModelLoc = glGetUniformLocation( modelUnlitShader, "uModel" );
-        modelUnlitColorLoc = glGetUniformLocation( modelUnlitShader, "uObjectColor" );
 
-        // Grid VAO/VBO (dynamic, same vertex layout as test triangle)
         glGenVertexArrays( 1, &gridVAO );
         glGenBuffers( 1, &gridVBO );
         glBindVertexArray( gridVAO );
@@ -238,11 +169,6 @@ namespace atto {
             testTriangleVBO = 0;
         }
 
-        if ( testTriangleShader != 0 ) {
-            glDeleteProgram( testTriangleShader );
-            testTriangleShader = 0;
-        }
-
         if ( gridVAO != 0 ) {
             glDeleteVertexArrays( 1, &gridVAO );
             gridVAO = 0;
@@ -252,15 +178,9 @@ namespace atto {
             gridVBO = 0;
         }
 
-        if ( modelShader != 0 ) {
-            glDeleteProgram( modelShader );
-            modelShader = 0;
-        }
-
-        if ( modelUnlitShader != 0 ) {
-            glDeleteProgram( modelUnlitShader );
-            modelUnlitShader = 0;
-        }
+        flatColorShader.Destroy();
+        modelLitShader.Destroy();
+        modelUnlitShader.Destroy();
 
         LOG_INFO( "Renderer shutdown" );
     }
@@ -290,14 +210,14 @@ namespace atto {
     }
 
     void Renderer::RenderTestTriangle() {
-        glUseProgram( testTriangleShader );
-        if ( testTriangleVPLoc >= 0 ) {
-            glUniformMatrix4fv( testTriangleVPLoc, 1, GL_FALSE, glm::value_ptr( viewProjectionMatrix ) );
-        }
+        flatColorShader.Bind();
+        flatColorShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+
         glBindVertexArray( testTriangleVAO );
         glDrawArrays( GL_TRIANGLES, 0, 3 );
         glBindVertexArray( 0 );
-        glUseProgram( 0 );
+
+        flatColorShader.Unbind();
     }
 
     void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix ) {
@@ -305,28 +225,19 @@ namespace atto {
     }
 
     void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
-        glUseProgram( modelShader );
+        modelLitShader.Bind();
 
-        if ( modelVPLoc >= 0 ) {
-            glUniformMatrix4fv( modelVPLoc, 1, GL_FALSE, glm::value_ptr( viewProjectionMatrix ) );
-        }
-        if ( modelModelLoc >= 0 ) {
-            glUniformMatrix4fv( modelModelLoc, 1, GL_FALSE, glm::value_ptr( modelMatrix ) );
-        }
-        if ( modelLightDirLoc >= 0 ) {
-            Vec3 lightDir = Normalize( Vec3( -0.3f, -1.0f, -0.5f ) );
-            glUniform3fv( modelLightDirLoc, 1, glm::value_ptr( lightDir ) );
-        }
-        if ( modelLightColorLoc >= 0 ) {
-            glUniform3f( modelLightColorLoc, 1.0f, 1.0f, 1.0f );
-        }
-        if ( modelObjectColorLoc >= 0 ) {
-            glUniform3fv( modelObjectColorLoc, 1, glm::value_ptr( color ) );
-        }
+        modelLitShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+        modelLitShader.SetMat4( "uModel", modelMatrix );
+
+        Vec3 lightDir = Normalize( Vec3( -0.3f, -1.0f, -0.5f ) );
+        modelLitShader.SetVec3( "uLightDir", lightDir );
+        modelLitShader.SetVec3( "uLightColor", Vec3( 1.0f ) );
+        modelLitShader.SetVec3( "uObjectColor", color );
 
         model.Draw();
 
-        glUseProgram( 0 );
+        modelLitShader.Unbind();
     }
 
     void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix ) {
@@ -334,21 +245,15 @@ namespace atto {
     }
 
     void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
-        glUseProgram( modelUnlitShader );
+        modelUnlitShader.Bind();
 
-        if ( modelUnlitVPLoc >= 0 ) {
-            glUniformMatrix4fv( modelUnlitVPLoc, 1, GL_FALSE, glm::value_ptr( viewProjectionMatrix ) );
-        }
-        if ( modelUnlitModelLoc >= 0 ) {
-            glUniformMatrix4fv( modelUnlitModelLoc, 1, GL_FALSE, glm::value_ptr( modelMatrix ) );
-        }
-        if ( modelUnlitColorLoc >= 0 ) {
-            glUniform3fv( modelUnlitColorLoc, 1, glm::value_ptr( color ) );
-        }
+        modelUnlitShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+        modelUnlitShader.SetMat4( "uModel", modelMatrix );
+        modelUnlitShader.SetVec3( "uObjectColor", color );
 
         model.Draw();
 
-        glUseProgram( 0 );
+        modelUnlitShader.Unbind();
     }
 
     static Vec3 AxisColor( Vec3 axis ) {
@@ -413,15 +318,13 @@ namespace atto {
         glBindBuffer( GL_ARRAY_BUFFER, gridVBO );
         glBufferData( GL_ARRAY_BUFFER, verts.size() * sizeof( GridVert ), verts.data(), GL_DYNAMIC_DRAW );
 
-        glUseProgram( testTriangleShader );
-        if ( testTriangleVPLoc >= 0 ) {
-            glUniformMatrix4fv( testTriangleVPLoc, 1, GL_FALSE, glm::value_ptr( viewProjectionMatrix ) );
-        }
+        flatColorShader.Bind();
+        flatColorShader.SetMat4( "uViewProjection", viewProjectionMatrix );
 
         glDrawArrays( GL_LINES, 0, (i32)verts.size() );
 
         glBindVertexArray( 0 );
-        glUseProgram( 0 );
+        flatColorShader.Unbind();
 
         glEnable( GL_DEPTH_TEST );
     }
