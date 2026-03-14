@@ -274,6 +274,25 @@ namespace atto {
     // AnimatedModel loading helpers
     // =========================================================================
 
+    AnimationVertex::AnimationVertex() {
+        for ( i32 i = 0; i < MAX_BONES_PER_VERTEX; i++ ) {
+            boneIDs[i] = -1;
+            boneWeights[i] = 0.0f;
+        }
+    }
+
+    void AnimationVertex::AddBoneData( i32 boneID, f32 weight ) {
+        for ( i32 i = 0; i < MAX_BONES_PER_VERTEX; i++ ) {
+            if ( boneIDs[i] < 0 ) {
+                boneIDs[i] = boneID;
+                boneWeights[i] = weight;
+                return;
+            }
+        }
+
+        ATTO_ASSERT( false, "AnimationVertex: Exceeded maximum bones per vertex" );
+    }
+
     static void ExtractBoneData(
         aiMesh * mesh,
         std::vector<AnimationVertex> & vertices,
@@ -484,12 +503,12 @@ namespace atto {
 
     void AnimatedModel::DebugPrint() const {
         // Print bones
-        LOG_INFO( "BoneCount: %d", GetBoneCount() );
-        for ( const auto & bonePair : boneInfoMap ) {
-            const std::string & boneName = bonePair.first;
-            const BoneInfo & boneInfo = bonePair.second;
-            LOG_INFO( "  Bone: '%s' (id=%d)", boneName.c_str(), boneInfo.id );
-        }
+        // LOG_INFO( "BoneCount: %d", GetBoneCount() );
+        // for ( const auto & bonePair : boneInfoMap ) {
+        //     const std::string & boneName = bonePair.first;
+        //     const BoneInfo & boneInfo = bonePair.second;
+        //     LOG_INFO( "  Bone: '%s' (id=%d)", boneName.c_str(), boneInfo.id );
+        // }
 
         // Print animations
         LOG_INFO( "AnimationCount: %d", GetAnimationCount() );
@@ -498,14 +517,14 @@ namespace atto {
             LOG_INFO( "  Animation[%d]: '%s' (duration: %.2f, ticks/s: %.2f, channels: %d)",
                 i, clip.name.c_str(), clip.duration, clip.ticksPerSecond, (i32)clip.channels.size()
             );
-            for ( const auto & channel : clip.channels ) {
-                LOG_INFO( "    Channel: '%s' (pos: %zu keys, rot: %zu keys, scale: %zu keys)",
-                    channel.boneName.c_str(),
-                    channel.positionKeys.size(),
-                    channel.rotationKeys.size(),
-                    channel.scaleKeys.size()
-                );
-            }
+            // for ( const auto & channel : clip.channels ) {
+            //     LOG_INFO( "    Channel: '%s' (pos: %zu keys, rot: %zu keys, scale: %zu keys)",
+            //         channel.boneName.c_str(),
+            //         channel.positionKeys.size(),
+            //         channel.rotationKeys.size(),
+            //         channel.scaleKeys.size()
+            //     );
+            // }
         }
     }
 

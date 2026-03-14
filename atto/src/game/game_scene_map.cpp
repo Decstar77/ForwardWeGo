@@ -13,6 +13,7 @@ namespace atto {
         camera.SetLookSensitivity( 0.1f );
 
         playerHands.LoadFromFile( "assets/player/Weapons/Arms_Combat_Knife.fbx" );
+        
         playerHands.DebugPrint();
 
         JsonSerializer serializer( false );

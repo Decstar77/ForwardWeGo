@@ -18,28 +18,14 @@ namespace atto {
     };
 
     struct AnimationVertex {
+        AnimationVertex();
+        void AddBoneData( i32 boneID, f32 weight );
+
         Vec3 position;
         Vec3 normal;
         Vec2 texCoords;
         i32  boneIDs[MAX_BONES_PER_VERTEX];
         f32  boneWeights[MAX_BONES_PER_VERTEX];
-
-        AnimationVertex() {
-            for ( i32 i = 0; i < MAX_BONES_PER_VERTEX; i++ ) {
-                boneIDs[i] = -1;
-                boneWeights[i] = 0.0f;
-            }
-        }
-
-        void AddBoneData( i32 boneID, f32 weight ) {
-            for ( i32 i = 0; i < MAX_BONES_PER_VERTEX; i++ ) {
-                if ( boneIDs[i] < 0 ) {
-                    boneIDs[i] = boneID;
-                    boneWeights[i] = weight;
-                    return;
-                }
-            }
-        }
     };
 
     struct BoneInfo {
