@@ -3,12 +3,11 @@
 
 namespace atto {
 
-    constexpr f32 PlayerHeight = 2.0f;
-    constexpr f32 PlayerEyeHeight = 1.8f;
-
     struct PlayerStart {
         Vec3 spawnPos;
         Mat3 spawnOri;
+
+        void Serialize( Serializer & serializer );
     };
 
     class GameMap {

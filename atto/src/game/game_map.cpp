@@ -2,6 +2,11 @@
 
 namespace atto {
 
+    void PlayerStart::Serialize( Serializer & serializer ) {
+        serializer( "spawnPos", spawnPos );
+        serializer( "spawnOri", spawnOri );
+    }
+
     GameMap::GameMap() {
     }
 
@@ -15,6 +20,9 @@ namespace atto {
     void GameMap::Initialize() {
         model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
         texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
+
+        brushModels.resize( brushes.size() );
+        RebuildAllBrushModels();
     }
 
     void GameMap::StartMap() {
@@ -37,7 +45,7 @@ namespace atto {
             if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
-            Vec3 color = ( i == selectedBrush ) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 0.8f, 0.8f, 0.8f );
+            Vec3 color = (i == selectedBrush) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 0.8f, 0.8f, 0.8f );
             if ( lit ) {
                 renderer.RenderStaticModel( brushModels[i], identity, color );
             }
@@ -51,7 +59,7 @@ namespace atto {
         Brush brush;
         brushes.push_back( brush );
         brushModels.emplace_back();
-        i32 index = static_cast<i32>( brushes.size() ) - 1;
+        i32 index = static_cast<i32>(brushes.size()) - 1;
         RebuildBrushModel( index );
         return index;
     }
@@ -80,6 +88,7 @@ namespace atto {
     }
 
     void GameMap::Serialize( Serializer & serializer ) {
+        serializer( "playerStart", playerStart );
         serializer( "brushes", brushes );
     }
 }

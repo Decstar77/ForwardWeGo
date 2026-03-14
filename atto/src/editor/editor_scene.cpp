@@ -17,6 +17,10 @@ namespace atto {
         flyCamera.SetMoveSpeed( 5.0f );
         flyCamera.SetLookSensitivity( 0.1f );
 
+        JsonSerializer serializer( false );
+        serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( "assets/maps/game.map" ) );
+        map.Serialize( serializer );
+
         map.Initialize();
     }
 
@@ -41,15 +45,21 @@ namespace atto {
 
     void EditorScene::OnUpdate( f32 deltaTime ) {
         Input & input = Engine::Get().GetInput();
-        
+
         if ( input.IsKeyPressed( Key::Escape ) ) {
             Engine::Get().RequestQuit();
         }
 
+        if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
+            JsonSerializer serializer( true );
+            map.Serialize( serializer );
+            Engine::Get().GetAssetManager().WriteTextFile( "assets/maps/game.map", serializer.ToString() );
+        }
+
         bool alt = input.IsKeyDown( Key::LeftAlt ) || input.IsKeyDown( Key::RightAlt );
-        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
-        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
-        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
+        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
+        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
+        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
         if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; }
 
         if ( brushDrag.mode != BrushDragMode::None ) {
@@ -102,16 +112,16 @@ namespace atto {
                     mouseDelta.x * flyCamera.GetLookSensitivity() * DEG_TO_RAD,
                     -mouseDelta.y * flyCamera.GetLookSensitivity() * DEG_TO_RAD
                 );
+
+                f32 speed = flyCamera.GetMoveSpeed() * deltaTime;
+
+                if ( input.IsKeyDown( Key::W ) ) flyCamera.MoveForward( speed );
+                if ( input.IsKeyDown( Key::S ) ) flyCamera.MoveForward( -speed );
+                if ( input.IsKeyDown( Key::D ) ) flyCamera.MoveRight( speed );
+                if ( input.IsKeyDown( Key::A ) ) flyCamera.MoveRight( -speed );
+                if ( input.IsKeyDown( Key::Space ) ) flyCamera.MoveUp( speed );
+                if ( input.IsKeyDown( Key::LeftControl ) ) flyCamera.MoveUp( -speed );
             }
-
-            f32 speed = flyCamera.GetMoveSpeed() * deltaTime;
-
-            if ( input.IsKeyDown( Key::W ) ) flyCamera.MoveForward( speed );
-            if ( input.IsKeyDown( Key::S ) ) flyCamera.MoveForward( -speed );
-            if ( input.IsKeyDown( Key::D ) ) flyCamera.MoveRight( speed );
-            if ( input.IsKeyDown( Key::A ) ) flyCamera.MoveRight( -speed );
-            if ( input.IsKeyDown( Key::Space ) ) flyCamera.MoveUp( speed );
-            if ( input.IsKeyDown( Key::LeftControl ) ) flyCamera.MoveUp( -speed );
         }
         else {
             // Ortho pan with right or middle mouse drag

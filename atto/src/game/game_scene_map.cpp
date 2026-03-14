@@ -14,6 +14,10 @@ namespace atto {
 
         playerHands.LoadFromFile( "assets/player/Weapons/Arms_Combat_Knife.fbx" );
 
+        JsonSerializer serializer( false );
+        serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( "assets/maps/game.map" ) );
+        map.Serialize( serializer );
+
         map.Initialize();
     }
 
@@ -46,7 +50,7 @@ namespace atto {
     void GameMapScene::OnRender( Renderer & renderer ) {
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
         map.Render( renderer, 0.0, 1, -1 );
-        renderer.RenderStaticModelUnlit( playerHands, Mat4(1) );
+        renderer.RenderStaticModelUnlit( playerHands, Mat4( 1 ) );
     }
 
     void GameMapScene::OnShutdown() {
