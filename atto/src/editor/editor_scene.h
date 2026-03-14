@@ -17,6 +17,11 @@ namespace atto {
         Wireframe
     };
 
+    enum class EditorEditMode {
+        None,
+        Brush
+    };
+
     class EditorScene : public Scene<EditorScene> {
     public:
         static const char * GetSceneNameStatic() { return "Editor"; }
@@ -30,18 +35,22 @@ namespace atto {
 
     private:
         void StartImgui();
+        void DrawBrushPanel();
         Mat4 GetOrthoViewProjectionMatrix() const;
 
-        EditorViewMode   viewMode   = EditorViewMode::Cam3D;
+        EditorViewMode   viewMode = EditorViewMode::Cam3D;
         EditorRenderMode renderMode = EditorRenderMode::Lit;
+        EditorEditMode editMode = EditorEditMode::None;
 
         FlyCamera  flyCamera;
 
         Vec3 orthoTarget = Vec3( 0.0f );
-        f32  orthoSize   = 10.0f;
+        f32  orthoSize = 10.0f;
 
         GameMap map;
-       
+
+        i32 selectedBrushIndex = -1;
+
     };
 
 } // namespace atto

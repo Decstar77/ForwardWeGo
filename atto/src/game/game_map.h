@@ -14,14 +14,22 @@ namespace atto {
 
         void Serialize( Serializer & serializer );
 
+        i32 AddBrush();
+        void RemoveBrush( i32 index );
+        void RebuildBrushModel( i32 index );
+        void RebuildAllBrushModels();
+
+        Brush &       GetBrush( i32 index ) { return brushes[index]; }
+        const Brush & GetBrush( i32 index ) const { return brushes[index]; }
+        i32           GetBrushCount() const { return static_cast<i32>( brushes.size() ); }
+
     private:
         std::vector<StaticModel> staticModels;
 
-        // Test stuff
         StaticModel model;
         Texture texture;
 
-        // This is editor stuff
         std::vector<Brush> brushes;
+        std::vector<StaticModel> brushModels;
     };
 }

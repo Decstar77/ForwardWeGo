@@ -50,6 +50,7 @@ namespace atto {
     class StaticModel {
     public:
         void LoadFromFile( const char * filePath, f32 scale = 1.0f );
+        void CreateFromMesh( const std::vector<Vertex> & vertices, const std::vector<u32> & indices );
         void Destroy();
         void Draw() const;
 
@@ -65,18 +66,8 @@ namespace atto {
         void ToStaticModel( StaticModel & model ) const;
         void Serialize( Serializer & serializer );
 
-    private:
-        struct VertexPlane {
-            Vec3 v1;
-            Vec3 v2;
-            Vec3 v3;
-            Vec3 v4;
-            Vec3 normal;
-
-            void Serialize( Serializer & serializer );
-        };
-
-        std::vector<VertexPlane> planes;
+        Vec3 center = Vec3( 0.0f );
+        Vec3 halfExtents = Vec3( 0.5f );
     };
 
 } // namespace atto

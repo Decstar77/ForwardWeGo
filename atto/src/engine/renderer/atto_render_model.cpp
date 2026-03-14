@@ -200,6 +200,13 @@ namespace atto {
         LOG_INFO( "Loaded model '%s' (%d meshes)", filePath, GetMeshCount() );
     }
 
+    void StaticModel::CreateFromMesh( const std::vector<Vertex> & vertices, const std::vector<u32> & indices ) {
+        Destroy();
+        Mesh mesh;
+        mesh.Create( vertices, indices );
+        meshes.push_back( std::move( mesh ) );
+    }
+
     void StaticModel::Destroy() {
         for ( auto & mesh : meshes ) {
             mesh.Destroy();
@@ -214,19 +221,84 @@ namespace atto {
     }
 
     void Brush::ToStaticModel( StaticModel & model ) const {
+        const Vec3 & c = center;
+        const Vec3 & h = halfExtents;
 
+        // 6 faces, 4 vertices each = 24 vertices, 6 indices each = 36 indices
+        std::vector<Vertex> vertices( 24 );
+        std::vector<u32> indices( 36 );
+
+        auto setFace = [&]( i32 face, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3, Vec3 n ) {
+            i32 base = face * 4;
+            vertices[base + 0] = { p0, n, Vec2( 0.0f, 0.0f ) };
+            vertices[base + 1] = { p1, n, Vec2( 1.0f, 0.0f ) };
+            vertices[base + 2] = { p2, n, Vec2( 1.0f, 1.0f ) };
+            vertices[base + 3] = { p3, n, Vec2( 0.0f, 1.0f ) };
+
+            i32 idx = face * 6;
+            indices[idx + 0] = base + 0;
+            indices[idx + 1] = base + 1;
+            indices[idx + 2] = base + 2;
+            indices[idx + 3] = base + 0;
+            indices[idx + 4] = base + 2;
+            indices[idx + 5] = base + 3;
+        };
+
+        // +Z face (front)
+        setFace( 0,
+            c + Vec3( -h.x, -h.y, +h.z ),
+            c + Vec3( +h.x, -h.y, +h.z ),
+            c + Vec3( +h.x, +h.y, +h.z ),
+            c + Vec3( -h.x, +h.y, +h.z ),
+            Vec3( 0, 0, 1 )
+        );
+        // -Z face (back)
+        setFace( 1,
+            c + Vec3( +h.x, -h.y, -h.z ),
+            c + Vec3( -h.x, -h.y, -h.z ),
+            c + Vec3( -h.x, +h.y, -h.z ),
+            c + Vec3( +h.x, +h.y, -h.z ),
+            Vec3( 0, 0, -1 )
+        );
+        // +X face (right)
+        setFace( 2,
+            c + Vec3( +h.x, -h.y, +h.z ),
+            c + Vec3( +h.x, -h.y, -h.z ),
+            c + Vec3( +h.x, +h.y, -h.z ),
+            c + Vec3( +h.x, +h.y, +h.z ),
+            Vec3( 1, 0, 0 )
+        );
+        // -X face (left)
+        setFace( 3,
+            c + Vec3( -h.x, -h.y, -h.z ),
+            c + Vec3( -h.x, -h.y, +h.z ),
+            c + Vec3( -h.x, +h.y, +h.z ),
+            c + Vec3( -h.x, +h.y, -h.z ),
+            Vec3( -1, 0, 0 )
+        );
+        // +Y face (top)
+        setFace( 4,
+            c + Vec3( -h.x, +h.y, +h.z ),
+            c + Vec3( +h.x, +h.y, +h.z ),
+            c + Vec3( +h.x, +h.y, -h.z ),
+            c + Vec3( -h.x, +h.y, -h.z ),
+            Vec3( 0, 1, 0 )
+        );
+        // -Y face (bottom)
+        setFace( 5,
+            c + Vec3( -h.x, -h.y, -h.z ),
+            c + Vec3( +h.x, -h.y, -h.z ),
+            c + Vec3( +h.x, -h.y, +h.z ),
+            c + Vec3( -h.x, -h.y, +h.z ),
+            Vec3( 0, -1, 0 )
+        );
+
+        model.CreateFromMesh( vertices, indices );
     }
 
     void Brush::Serialize( Serializer & serializer ) {
-        serializer( "planes", planes );
-    }
-
-    void Brush::VertexPlane::Serialize( Serializer & serializer ) {
-        serializer( "v1", v1 );
-        serializer( "v2", v2 );
-        serializer( "v3", v3 );
-        serializer( "v4", v4 );
-        serializer( "normal", normal );
+        serializer( "center", center );
+        serializer( "halfExtents", halfExtents );
     }
 
 } // namespace atto

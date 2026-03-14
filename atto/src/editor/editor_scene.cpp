@@ -194,10 +194,78 @@ namespace atto {
         renderMode = static_cast<EditorRenderMode>( rm );
         ImGui::End();
 
+        DrawBrushPanel();
+
         //ImGui::ShowDemoWindow();
         ImGui::Render();
 
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+    }
+
+    void EditorScene::DrawBrushPanel() {
+        ImGui::SetNextWindowSize( ImVec2( 300, 400 ), ImGuiCond_FirstUseEver );
+        ImGui::Begin( "Brushes" );
+
+        if ( ImGui::Button( "+ Add Brush" ) ) {
+            selectedBrushIndex = map.AddBrush();
+        }
+
+        ImGui::Separator();
+
+        i32 brushCount = map.GetBrushCount();
+
+        for ( i32 i = 0; i < brushCount; i++ ) {
+            char label[64];
+            snprintf( label, sizeof( label ), "Brush %d", i );
+
+            bool isSelected = ( selectedBrushIndex == i );
+            if ( ImGui::Selectable( label, isSelected ) ) {
+                selectedBrushIndex = i;
+            }
+        }
+
+        ImGui::Separator();
+
+        if ( selectedBrushIndex >= 0 && selectedBrushIndex < brushCount ) {
+            Brush & brush = map.GetBrush( selectedBrushIndex );
+
+            ImGui::Text( "Brush %d Properties", selectedBrushIndex );
+            ImGui::Spacing();
+
+            bool changed = false;
+
+            Vec3 pos = brush.center;
+            if ( ImGui::DragFloat3( "Position", &pos.x, 0.1f ) ) {
+                brush.center = pos;
+                changed = true;
+            }
+
+            Vec3 size = brush.halfExtents * 2.0f;
+            if ( ImGui::DragFloat3( "Size", &size.x, 0.1f, 0.01f, 1000.0f ) ) {
+                brush.halfExtents = size * 0.5f;
+                changed = true;
+            }
+
+            if ( changed ) {
+                map.RebuildBrushModel( selectedBrushIndex );
+            }
+
+            ImGui::Spacing();
+
+            if ( ImGui::Button( "Delete Selected" ) ) {
+                map.RemoveBrush( selectedBrushIndex );
+                brushCount = map.GetBrushCount();
+                if ( selectedBrushIndex >= brushCount ) {
+                    selectedBrushIndex = brushCount - 1;
+                }
+            }
+        }
+        else {
+            selectedBrushIndex = -1;
+            ImGui::TextDisabled( "No brush selected" );
+        }
+
+        ImGui::End();
     }
 
     void EditorScene::OnShutdown() {
