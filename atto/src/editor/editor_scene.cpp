@@ -71,9 +71,17 @@ namespace atto {
                 else if ( brushDrag.mode == BrushDragMode::Move ) {
                     BrushUpdateMoveDrag( worldPos );
                 }
+                else if ( brushDrag.mode == BrushDragMode::Create ) {
+                    BrushUpdateCreateDrag( worldPos );
+                }
             }
             if ( input.IsMouseButtonReleased( MouseButton::Left ) ) {
-                brushDrag.mode = BrushDragMode::None;
+                if ( brushDrag.mode == BrushDragMode::Create ) {
+                    BrushFinishCreateDrag();
+                }
+                else {
+                    brushDrag.mode = BrushDragMode::None;
+                }
             }
         }
 
@@ -89,8 +97,14 @@ namespace atto {
                     selectedBrushIndex = picked;
                     BrushStartMoveDrag( worldPos );
                 }
+                else if ( selectedBrushIndex >= 0 && BrushTryStartEdgeDrag( worldPos ) ) {
+                    // Edge drag started on selected brush
+                }
+                else if ( selectedBrushIndex >= 0 ) {
+                    selectedBrushIndex = -1;
+                }
                 else {
-                    BrushTryStartEdgeDrag( worldPos );
+                    BrushStartCreateDrag( worldPos );
                 }
             }
             else {
@@ -410,6 +424,7 @@ namespace atto {
 
         Brush & brush = map.GetBrush( brushDrag.brushIndex );
         f32 draggedPos = worldMousePos[brushDrag.axis] - brushDrag.mouseOffset;
+        draggedPos = SnapValue( draggedPos );
 
         constexpr f32 MIN_SIZE = 0.01f;
 
@@ -451,12 +466,97 @@ namespace atto {
         brush.center[vAxis] += worldMousePos[vAxis] - brushDrag.lastWorldPos[vAxis];
         brushDrag.lastWorldPos = worldMousePos;
 
+        brush.center[hAxis] = SnapValue( brush.center[hAxis] );
+        brush.center[vAxis] = SnapValue( brush.center[vAxis] );
+
         map.RebuildBrushModel( brushDrag.brushIndex );
+    }
+
+    f32 EditorScene::SnapValue( f32 value ) const {
+        if ( !snapEnabled || snapSize <= 0.0f ) {
+            return value;
+        }
+        return floorf( value / snapSize + 0.5f ) * snapSize;
+    }
+
+    void EditorScene::BrushStartCreateDrag( Vec3 worldClickPos ) {
+        i32 hAxis, vAxis;
+        BrushGetOrthoAxes( hAxis, vAxis );
+        i32 depthAxis = 3 - hAxis - vAxis;
+
+        Vec3 snapped = worldClickPos;
+        snapped[hAxis] = SnapValue( snapped[hAxis] );
+        snapped[vAxis] = SnapValue( snapped[vAxis] );
+
+        selectedBrushIndex = map.AddBrush();
+
+        Brush & brush = map.GetBrush( selectedBrushIndex );
+        brush.center = Vec3( 0.0f );
+        brush.halfExtents = Vec3( 0.0f );
+        brush.center[hAxis] = snapped[hAxis];
+        brush.center[vAxis] = snapped[vAxis];
+        brush.halfExtents[depthAxis] = 0.5f;
+
+        brushDrag.mode = BrushDragMode::Create;
+        brushDrag.brushIndex = selectedBrushIndex;
+        brushDrag.createStartPos = snapped;
+
+        map.RebuildBrushModel( selectedBrushIndex );
+    }
+
+    void EditorScene::BrushUpdateCreateDrag( Vec3 worldMousePos ) {
+        if ( brushDrag.brushIndex < 0 || brushDrag.brushIndex >= map.GetBrushCount() ) {
+            brushDrag.mode = BrushDragMode::None;
+            return;
+        }
+
+        i32 hAxis, vAxis;
+        BrushGetOrthoAxes( hAxis, vAxis );
+
+        f32 snappedH = SnapValue( worldMousePos[hAxis] );
+        f32 snappedV = SnapValue( worldMousePos[vAxis] );
+
+        f32 minH = Min( brushDrag.createStartPos[hAxis], snappedH );
+        f32 maxH = Max( brushDrag.createStartPos[hAxis], snappedH );
+        f32 minV = Min( brushDrag.createStartPos[vAxis], snappedV );
+        f32 maxV = Max( brushDrag.createStartPos[vAxis], snappedV );
+
+        Brush & brush = map.GetBrush( brushDrag.brushIndex );
+        brush.center[hAxis] = (minH + maxH) * 0.5f;
+        brush.center[vAxis] = (minV + maxV) * 0.5f;
+        brush.halfExtents[hAxis] = (maxH - minH) * 0.5f;
+        brush.halfExtents[vAxis] = (maxV - minV) * 0.5f;
+
+        map.RebuildBrushModel( brushDrag.brushIndex );
+    }
+
+    void EditorScene::BrushFinishCreateDrag() {
+        if ( brushDrag.brushIndex >= 0 && brushDrag.brushIndex < map.GetBrushCount() ) {
+            i32 hAxis, vAxis;
+            BrushGetOrthoAxes( hAxis, vAxis );
+
+            const Brush & brush = map.GetBrush( brushDrag.brushIndex );
+            constexpr f32 MIN_CREATE_SIZE = 0.01f;
+
+            if ( brush.halfExtents[hAxis] < MIN_CREATE_SIZE || brush.halfExtents[vAxis] < MIN_CREATE_SIZE ) {
+                map.RemoveBrush( brushDrag.brushIndex );
+                selectedBrushIndex = -1;
+            }
+        }
+
+        brushDrag.mode = BrushDragMode::None;
     }
 
     void EditorScene::DrawBrushPanel() {
         ImGui::SetNextWindowSize( ImVec2( 300, 400 ), ImGuiCond_FirstUseEver );
         ImGui::Begin( "Brushes" );
+
+        ImGui::Checkbox( "Snap", &snapEnabled );
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth( 80.0f );
+        ImGui::DragFloat( "##SnapSize", &snapSize, 0.05f, 0.01f, 100.0f, "%.2f m" );
+
+        ImGui::Separator();
 
         if ( ImGui::Button( "+ Add Brush" ) ) {
             selectedBrushIndex = map.AddBrush();

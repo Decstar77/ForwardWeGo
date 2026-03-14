@@ -25,7 +25,8 @@ namespace atto {
     enum class BrushDragMode {
         None,
         Edge,
-        Move
+        Move,
+        Create
     };
 
     struct BrushDragState {
@@ -36,6 +37,7 @@ namespace atto {
         f32 fixedEdge = 0;
         f32 mouseOffset = 0;
         Vec3 lastWorldPos = Vec3( 0.0f );
+        Vec3 createStartPos = Vec3( 0.0f );
     };
 
     class EditorScene : public Scene<EditorScene> {
@@ -64,6 +66,12 @@ namespace atto {
         void BrushStartMoveDrag( Vec3 worldClickPos );
         void BrushUpdateMoveDrag( Vec3 worldMousePos );
 
+        void BrushStartCreateDrag( Vec3 worldClickPos );
+        void BrushUpdateCreateDrag( Vec3 worldMousePos );
+        void BrushFinishCreateDrag();
+
+        f32  SnapValue( f32 value ) const;
+
         EditorViewMode   viewMode = EditorViewMode::Cam3D;
         EditorRenderMode renderMode = EditorRenderMode::Lit;
         EditorEditMode editMode = EditorEditMode::None;
@@ -77,6 +85,9 @@ namespace atto {
 
         i32 selectedBrushIndex = -1;
         BrushDragState brushDrag;
+
+        bool snapEnabled = true;
+        f32  snapSize = 1.0f;
 
     };
 
