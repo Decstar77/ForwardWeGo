@@ -22,12 +22,20 @@ namespace atto {
         Brush
     };
 
-    struct BrushEdgeDrag {
-        bool active = false;
+    enum class BrushDragMode {
+        None,
+        Edge,
+        Move
+    };
+
+    struct BrushDragState {
+        BrushDragMode mode = BrushDragMode::None;
         i32 brushIndex = -1;
         i32 axis = -1;
         i32 sign = 0;
         f32 fixedEdge = 0;
+        f32 mouseOffset = 0;
+        Vec3 lastWorldPos = Vec3( 0.0f );
     };
 
     class EditorScene : public Scene<EditorScene> {
@@ -48,10 +56,12 @@ namespace atto {
 
         Vec3 ScreenToWorldOrtho( Vec2 screenPos ) const;
         void GetOrthoAxes( i32 & hAxis, i32 & vAxis ) const;
-        i32  PickBrushOrtho( Vec3 worldPos ) const;
-        i32  PickBrush3D( Vec2 screenPos ) const;
-        bool TryStartEdgeDrag( Vec3 worldClickPos );
-        void UpdateEdgeDrag( Vec3 worldMousePos );
+        i32  BrushPickOrtho( Vec3 worldPos ) const;
+        i32  BrushPick3D( Vec2 screenPos ) const;
+        bool BrushTryStartEdgeDrag( Vec3 worldClickPos );
+        void BrushUpdateEdgeDrag( Vec3 worldMousePos );
+        void BrushStartMoveDrag( Vec3 worldClickPos );
+        void BrushUpdateMoveDrag( Vec3 worldMousePos );
 
         EditorViewMode   viewMode = EditorViewMode::Cam3D;
         EditorRenderMode renderMode = EditorRenderMode::Lit;
@@ -65,7 +75,7 @@ namespace atto {
         GameMap map;
 
         i32 selectedBrushIndex = -1;
-        BrushEdgeDrag edgeDrag;
+        BrushDragState brushDrag;
 
     };
 

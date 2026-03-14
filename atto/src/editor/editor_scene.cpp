@@ -43,32 +43,41 @@ namespace atto {
         Input & input = Engine::Get().GetInput();
 
         bool alt = input.IsKeyDown( Key::LeftAlt ) || input.IsKeyDown( Key::RightAlt );
-        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); edgeDrag.active = false; }
-        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); edgeDrag.active = false; }
-        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); edgeDrag.active = false; }
-        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; edgeDrag.active = false; }
+        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
+        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
+        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
+        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; }
 
-        if ( edgeDrag.active ) {
+        if ( brushDrag.mode != BrushDragMode::None ) {
             if ( input.IsMouseButtonDown( MouseButton::Left ) ) {
                 Vec3 worldPos = ScreenToWorldOrtho( input.GetMousePosition() );
-                UpdateEdgeDrag( worldPos );
+                if ( brushDrag.mode == BrushDragMode::Edge ) {
+                    BrushUpdateEdgeDrag( worldPos );
+                } else if ( brushDrag.mode == BrushDragMode::Move ) {
+                    BrushUpdateMoveDrag( worldPos );
+                }
             }
             if ( input.IsMouseButtonReleased( MouseButton::Left ) ) {
-                edgeDrag.active = false;
+                brushDrag.mode = BrushDragMode::None;
             }
         }
 
         bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse;
-        if ( !imguiWantsMouse && !edgeDrag.active && input.IsMouseButtonPressed( MouseButton::Left ) ) {
+        if ( !imguiWantsMouse && brushDrag.mode == BrushDragMode::None && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             Vec2 mousePos = input.GetMousePosition();
 
             if ( viewMode != EditorViewMode::Cam3D ) {
                 Vec3 worldPos = ScreenToWorldOrtho( mousePos );
-                if ( !TryStartEdgeDrag( worldPos ) ) {
-                    selectedBrushIndex = PickBrushOrtho( worldPos );
+                if ( !BrushTryStartEdgeDrag( worldPos ) ) {
+                    i32 picked = BrushPickOrtho( worldPos );
+                    if ( picked >= 0 && picked == selectedBrushIndex ) {
+                        BrushStartMoveDrag( worldPos );
+                    } else {
+                        selectedBrushIndex = picked;
+                    }
                 }
             } else {
-                selectedBrushIndex = PickBrush3D( mousePos );
+                selectedBrushIndex = BrushPick3D( mousePos );
             }
         }
 
@@ -244,7 +253,7 @@ namespace atto {
         }
     }
 
-    i32 EditorScene::PickBrushOrtho( Vec3 worldPos ) const {
+    i32 EditorScene::BrushPickOrtho( Vec3 worldPos ) const {
         i32 hAxis, vAxis;
         GetOrthoAxes( hAxis, vAxis );
 
@@ -263,7 +272,7 @@ namespace atto {
         return -1;
     }
 
-    i32 EditorScene::PickBrush3D( Vec2 screenPos ) const {
+    i32 EditorScene::BrushPick3D( Vec2 screenPos ) const {
         Vec2i windowSize = Engine::Get().GetWindowSize();
         f32 ndcX = 2.0f * screenPos.x / static_cast<f32>( windowSize.x ) - 1.0f;
         f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>( windowSize.y );
@@ -314,7 +323,7 @@ namespace atto {
         return bestIndex;
     }
 
-    bool EditorScene::TryStartEdgeDrag( Vec3 worldClickPos ) {
+    bool EditorScene::BrushTryStartEdgeDrag( Vec3 worldClickPos ) {
         if ( selectedBrushIndex < 0 || selectedBrushIndex >= map.GetBrushCount() ) {
             return false;
         }
@@ -323,7 +332,7 @@ namespace atto {
         i32 hAxis, vAxis;
         GetOrthoAxes( hAxis, vAxis );
 
-        f32 threshold = orthoSize * 0.03f;
+        f32 threshold = orthoSize * 0.1f;
 
         f32 hMin = brush.center[hAxis] - brush.halfExtents[hAxis];
         f32 hMax = brush.center[hAxis] + brush.halfExtents[hAxis];
@@ -363,40 +372,66 @@ namespace atto {
             return false;
         }
 
-        edgeDrag.active = true;
-        edgeDrag.brushIndex = selectedBrushIndex;
-        edgeDrag.axis = bestAxis;
-        edgeDrag.sign = bestSign;
-        edgeDrag.fixedEdge = brush.center[bestAxis] - bestSign * brush.halfExtents[bestAxis];
+        f32 edgePos = brush.center[bestAxis] + bestSign * brush.halfExtents[bestAxis];
+
+        brushDrag.mode = BrushDragMode::Edge;
+        brushDrag.brushIndex = selectedBrushIndex;
+        brushDrag.axis = bestAxis;
+        brushDrag.sign = bestSign;
+        brushDrag.fixedEdge = brush.center[bestAxis] - bestSign * brush.halfExtents[bestAxis];
+        brushDrag.mouseOffset = worldClickPos[bestAxis] - edgePos;
         return true;
     }
 
-    void EditorScene::UpdateEdgeDrag( Vec3 worldMousePos ) {
-        if ( !edgeDrag.active || edgeDrag.brushIndex < 0 || edgeDrag.brushIndex >= map.GetBrushCount() ) {
-            edgeDrag.active = false;
+    void EditorScene::BrushUpdateEdgeDrag( Vec3 worldMousePos ) {
+        if ( brushDrag.brushIndex < 0 || brushDrag.brushIndex >= map.GetBrushCount() ) {
+            brushDrag.mode = BrushDragMode::None;
             return;
         }
 
-        Brush & brush = map.GetBrush( edgeDrag.brushIndex );
-        f32 draggedPos = worldMousePos[edgeDrag.axis];
+        Brush & brush = map.GetBrush( brushDrag.brushIndex );
+        f32 draggedPos = worldMousePos[brushDrag.axis] - brushDrag.mouseOffset;
 
         constexpr f32 MIN_SIZE = 0.01f;
 
-        if ( edgeDrag.sign > 0 ) {
-            if ( draggedPos < edgeDrag.fixedEdge + MIN_SIZE ) {
-                draggedPos = edgeDrag.fixedEdge + MIN_SIZE;
+        if ( brushDrag.sign > 0 ) {
+            if ( draggedPos < brushDrag.fixedEdge + MIN_SIZE ) {
+                draggedPos = brushDrag.fixedEdge + MIN_SIZE;
             }
-            brush.center[edgeDrag.axis] = ( edgeDrag.fixedEdge + draggedPos ) * 0.5f;
-            brush.halfExtents[edgeDrag.axis] = ( draggedPos - edgeDrag.fixedEdge ) * 0.5f;
+            brush.center[brushDrag.axis] = ( brushDrag.fixedEdge + draggedPos ) * 0.5f;
+            brush.halfExtents[brushDrag.axis] = ( draggedPos - brushDrag.fixedEdge ) * 0.5f;
         } else {
-            if ( draggedPos > edgeDrag.fixedEdge - MIN_SIZE ) {
-                draggedPos = edgeDrag.fixedEdge - MIN_SIZE;
+            if ( draggedPos > brushDrag.fixedEdge - MIN_SIZE ) {
+                draggedPos = brushDrag.fixedEdge - MIN_SIZE;
             }
-            brush.center[edgeDrag.axis] = ( draggedPos + edgeDrag.fixedEdge ) * 0.5f;
-            brush.halfExtents[edgeDrag.axis] = ( edgeDrag.fixedEdge - draggedPos ) * 0.5f;
+            brush.center[brushDrag.axis] = ( draggedPos + brushDrag.fixedEdge ) * 0.5f;
+            brush.halfExtents[brushDrag.axis] = ( brushDrag.fixedEdge - draggedPos ) * 0.5f;
         }
 
-        map.RebuildBrushModel( edgeDrag.brushIndex );
+        map.RebuildBrushModel( brushDrag.brushIndex );
+    }
+
+    void EditorScene::BrushStartMoveDrag( Vec3 worldClickPos ) {
+        brushDrag.mode = BrushDragMode::Move;
+        brushDrag.brushIndex = selectedBrushIndex;
+        brushDrag.lastWorldPos = worldClickPos;
+    }
+
+    void EditorScene::BrushUpdateMoveDrag( Vec3 worldMousePos ) {
+        if ( brushDrag.brushIndex < 0 || brushDrag.brushIndex >= map.GetBrushCount() ) {
+            brushDrag.mode = BrushDragMode::None;
+            return;
+        }
+
+        i32 hAxis, vAxis;
+        GetOrthoAxes( hAxis, vAxis );
+
+        Brush & brush = map.GetBrush( brushDrag.brushIndex );
+        brush.center[hAxis] += worldMousePos[hAxis] - brushDrag.lastWorldPos[hAxis];
+        brush.center[vAxis] += worldMousePos[vAxis] - brushDrag.lastWorldPos[vAxis];
+        brushDrag.lastWorldPos = worldMousePos;
+
+        map.RebuildBrushModel( brushDrag.brushIndex );
     }
 
     void EditorScene::DrawBrushPanel() {
