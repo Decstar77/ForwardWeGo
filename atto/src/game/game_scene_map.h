@@ -8,8 +8,10 @@ namespace atto {
     constexpr f32 PlayerHeight = 2.0f;
     constexpr f32 PlayerEyeHeight = 1.8f;
 
-    // Viewmodel offset in camera-local space: +X=right, +Y=up, -Z=forward
-    constexpr Vec3 ArmsLocalOffset = Vec3( 0.15f, -0.25f, -0.3f );
+    // Viewmodel tuning: offset in camera-local space (+X=right, +Y=up, -Z=forward), uniform scale
+    //constexpr Vec3 ArmsLocalOffset = Vec3( 0.15f, -0.25f, -0.3f );
+    inline static Vec3 ArmsLocalOffset = Vec3( 0.0f, -0.25f, -0.1f );
+    constexpr f32  ArmsScale       = 0.01f;
 
     class GameMapScene : public Scene<GameMapScene> {
     public:

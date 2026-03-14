@@ -57,7 +57,11 @@ namespace atto {
         map.Render( renderer, 0.0, 1, -1 );
 
         Mat4 cameraWorld = glm::inverse( camera.GetViewMatrix() );
-        Mat4 armsMatrix = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset );
+
+        Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
+        localCorrection = glm::scale( localCorrection, Vec3( ArmsScale ) );
+
+        Mat4 armsMatrix = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
 
         renderer.RenderAnimatedModel( playerHands, animator, armsMatrix );
     }
