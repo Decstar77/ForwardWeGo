@@ -46,6 +46,16 @@ namespace atto {
 
         f32 speed = camera.GetMoveSpeed() * deltaTime;
 
+        // if ( input.IsKeyPressed( Key::G ) ) ArmsLocalOffset.y += 0.01f;
+        // if ( input.IsKeyPressed( Key::H ) ) ArmsLocalOffset.y -= 0.01f;
+
+        // if ( input.IsKeyPressed( Key::J ) ) ArmsLocalOffset.z += 0.01f;
+        // if ( input.IsKeyPressed( Key::K ) ) ArmsLocalOffset.z -= 0.01f;
+
+        // if ( input.IsKeyPressed( Key::L ) ) {
+        //     LOG_INFO( "ArmsLocalOffset: (%f, %f, %f)", ArmsLocalOffset.x, ArmsLocalOffset.y, ArmsLocalOffset.z );
+        // }
+
         if ( input.IsKeyDown( Key::W ) ) camera.MoveForward( speed );
         if ( input.IsKeyDown( Key::S ) ) camera.MoveForward( -speed );
         if ( input.IsKeyDown( Key::D ) ) camera.MoveRight( speed );
@@ -53,6 +63,7 @@ namespace atto {
     }
 
     void GameMapScene::OnRender( Renderer & renderer ) {
+        renderer.SetViewport( 0, 0, camera.GetViewportWidth(), camera.GetViewportHeight() );
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
         map.Render( renderer, 0.0, 1, -1 );
 

@@ -200,6 +200,8 @@ namespace atto {
     }
 
     void EditorScene::OnRender( Renderer & renderer ) {
+        renderer.SetViewport( 0, 0, flyCamera.GetViewportWidth(), flyCamera.GetViewportHeight() );
+
         if ( viewMode == EditorViewMode::Cam3D ) {
             renderer.SetViewProjectionMatrix( flyCamera.GetViewProjectionMatrix() );
         }
@@ -455,8 +457,8 @@ namespace atto {
 
         const Brush & brush = map.GetBrush( selectedBrushIndex );
         brushDrag.moveOffset = Vec3( 0.0f );
-        brushDrag.moveOffset[hAxis] = ( brush.center[hAxis] - brush.halfExtents[hAxis] ) - worldClickPos[hAxis];
-        brushDrag.moveOffset[vAxis] = ( brush.center[vAxis] - brush.halfExtents[vAxis] ) - worldClickPos[vAxis];
+        brushDrag.moveOffset[hAxis] = (brush.center[hAxis] - brush.halfExtents[hAxis]) - worldClickPos[hAxis];
+        brushDrag.moveOffset[vAxis] = (brush.center[vAxis] - brush.halfExtents[vAxis]) - worldClickPos[vAxis];
     }
 
     void EditorScene::BrushUpdateMoveDrag( Vec3 worldMousePos ) {

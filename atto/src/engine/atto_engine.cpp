@@ -164,14 +164,6 @@ namespace atto {
             ToggleFullscreen();
         }
 
-        // Temporary scene transitioning
-        if ( input.IsKeyPressed( Key::KP0 ) ) {
-            TransitionToScene( "GameOfWar" );
-        }
-        if ( input.IsKeyPressed( Key::KP1 ) ) {
-            TransitionToScene( "ShapeEditor" );
-        }
-
         audioSystem.Update();
 
         // Update game

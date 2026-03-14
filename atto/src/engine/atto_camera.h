@@ -118,6 +118,9 @@ namespace atto {
         Mat4 GetProjectionMatrix() const;
         Mat4 GetViewProjectionMatrix() const;
 
+        i32 GetViewportWidth() const { return viewportWidth; }
+        i32 GetViewportHeight() const { return viewportHeight; }
+
     private:
         Vec3 position = Vec3( 0.0f, 0.0f, 3.0f );
         f32  yaw = -HALF_PI;
@@ -127,8 +130,8 @@ namespace atto {
         f32  nearClip = 0.1f;
         f32  farClip = 1000.0f;
         f32  moveSpeed = 5.0f;
+        
         f32  lookSensitivity = 0.1f;
-
         i32  viewportWidth = 1280;
         i32  viewportHeight = 720;
     };
@@ -167,6 +170,9 @@ namespace atto {
         Mat4 GetViewMatrix() const;
         Mat4 GetProjectionMatrix() const;
         Mat4 GetViewProjectionMatrix() const;
+
+        i32 GetViewportWidth() const { return viewportWidth; }
+        i32 GetViewportHeight() const { return viewportHeight; }
 
     private:
         Vec3 position = Vec3( 0.0f, 0.0f, 3.0f );
