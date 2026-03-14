@@ -449,7 +449,14 @@ namespace atto {
     void EditorScene::BrushStartMoveDrag( Vec3 worldClickPos ) {
         brushDrag.mode = BrushDragMode::Move;
         brushDrag.brushIndex = selectedBrushIndex;
-        brushDrag.lastWorldPos = worldClickPos;
+
+        i32 hAxis, vAxis;
+        BrushGetOrthoAxes( hAxis, vAxis );
+
+        const Brush & brush = map.GetBrush( selectedBrushIndex );
+        brushDrag.moveOffset = Vec3( 0.0f );
+        brushDrag.moveOffset[hAxis] = ( brush.center[hAxis] - brush.halfExtents[hAxis] ) - worldClickPos[hAxis];
+        brushDrag.moveOffset[vAxis] = ( brush.center[vAxis] - brush.halfExtents[vAxis] ) - worldClickPos[vAxis];
     }
 
     void EditorScene::BrushUpdateMoveDrag( Vec3 worldMousePos ) {
@@ -462,12 +469,8 @@ namespace atto {
         BrushGetOrthoAxes( hAxis, vAxis );
 
         Brush & brush = map.GetBrush( brushDrag.brushIndex );
-        brush.center[hAxis] += worldMousePos[hAxis] - brushDrag.lastWorldPos[hAxis];
-        brush.center[vAxis] += worldMousePos[vAxis] - brushDrag.lastWorldPos[vAxis];
-        brushDrag.lastWorldPos = worldMousePos;
-
-        brush.center[hAxis] = SnapValue( brush.center[hAxis] );
-        brush.center[vAxis] = SnapValue( brush.center[vAxis] );
+        brush.center[hAxis] = SnapValue( worldMousePos[hAxis] + brushDrag.moveOffset[hAxis] ) + brush.halfExtents[hAxis];
+        brush.center[vAxis] = SnapValue( worldMousePos[vAxis] + brushDrag.moveOffset[vAxis] ) + brush.halfExtents[vAxis];
 
         map.RebuildBrushModel( brushDrag.brushIndex );
     }

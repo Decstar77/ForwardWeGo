@@ -38,6 +38,7 @@ namespace atto {
         f32 mouseOffset = 0;
         Vec3 lastWorldPos = Vec3( 0.0f );
         Vec3 createStartPos = Vec3( 0.0f );
+        Vec3 moveOffset = Vec3( 0.0f );
     };
 
     class EditorScene : public Scene<EditorScene> {
