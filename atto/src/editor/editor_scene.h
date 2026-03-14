@@ -1,5 +1,6 @@
 #include "engine/atto_engine.h"
 #include "engine/renderer/atto_render_model.h"
+#include "game/game_map.h"
 
 namespace atto {
 
@@ -39,8 +40,8 @@ namespace atto {
         Vec3 orthoTarget = Vec3( 0.0f );
         f32  orthoSize   = 10.0f;
 
-        StaticModel model;
-        Texture texture;
+        GameMap map;
+       
     };
 
 } // namespace atto

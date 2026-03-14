@@ -2,6 +2,7 @@
 
 #include "../atto_core.h"
 #include "../atto_math.h"
+#include "../atto_assets.h"
 
 namespace atto {
 
@@ -26,7 +27,7 @@ namespace atto {
     };
 
     // Will add more later
-    struct Material  {
+    struct Material {
         std::string name;
         Texture albedo;
     };
@@ -53,10 +54,29 @@ namespace atto {
         void Draw() const;
 
         bool IsLoaded() const { return !meshes.empty(); }
-        i32 GetMeshCount() const { return static_cast<i32>( meshes.size() ); }
+        i32 GetMeshCount() const { return static_cast<i32>(meshes.size()); }
 
     private:
         std::vector<Mesh> meshes;
+    };
+
+    class Brush {
+    public:
+        void ToStaticModel( StaticModel & model ) const;
+        void Serialize( Serializer & serializer );
+
+    private:
+        struct VertexPlane {
+            Vec3 v1;
+            Vec3 v2;
+            Vec3 v3;
+            Vec3 v4;
+            Vec3 normal;
+
+            void Serialize( Serializer & serializer );
+        };
+
+        std::vector<VertexPlane> planes;
     };
 
 } // namespace atto

@@ -213,4 +213,20 @@ namespace atto {
         }
     }
 
+    void Brush::ToStaticModel( StaticModel & model ) const {
+
+    }
+
+    void Brush::Serialize( Serializer & serializer ) {
+        serializer( "planes", planes );
+    }
+
+    void Brush::VertexPlane::Serialize( Serializer & serializer ) {
+        serializer( "v1", v1 );
+        serializer( "v2", v2 );
+        serializer( "v3", v3 );
+        serializer( "v4", v4 );
+        serializer( "normal", normal );
+    }
+
 } // namespace atto

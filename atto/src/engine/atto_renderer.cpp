@@ -182,7 +182,7 @@ namespace atto {
         glEnableVertexAttribArray( 0 );
 
         // Color attribute (location = 1)
-        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)( 3 * sizeof( f32 ) ) );
+        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)(3 * sizeof( f32 )) );
         glEnableVertexAttribArray( 1 );
 
         glBindVertexArray( 0 );
@@ -205,7 +205,7 @@ namespace atto {
             LOG_ERROR( "Failed to create unlit model shader" );
             return false;
         }
-        modelUnlitVPLoc    = glGetUniformLocation( modelUnlitShader, "uViewProjection" );
+        modelUnlitVPLoc = glGetUniformLocation( modelUnlitShader, "uViewProjection" );
         modelUnlitModelLoc = glGetUniformLocation( modelUnlitShader, "uModel" );
         modelUnlitColorLoc = glGetUniformLocation( modelUnlitShader, "uObjectColor" );
 
@@ -216,7 +216,7 @@ namespace atto {
         glBindBuffer( GL_ARRAY_BUFFER, gridVBO );
         glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)0 );
         glEnableVertexAttribArray( 0 );
-        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)( 3 * sizeof( f32 ) ) );
+        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)(3 * sizeof( f32 )) );
         glEnableVertexAttribArray( 1 );
         glBindVertexArray( 0 );
 
@@ -361,38 +361,38 @@ namespace atto {
         f32 cV = Dot( center, axisV );
 
         f32 startH = cH - halfExtentH;
-        f32 endH   = cH + halfExtentH;
+        f32 endH = cH + halfExtentH;
         f32 startV = cV - halfExtentV;
-        f32 endV   = cV + halfExtentV;
+        f32 endV = cV + halfExtentV;
 
         i32 firstH = (i32)floorf( startH / spacing ) - 1;
-        i32 lastH  = (i32)ceilf( endH / spacing ) + 1;
+        i32 lastH = (i32)ceilf( endH / spacing ) + 1;
         i32 firstV = (i32)floorf( startV / spacing ) - 1;
-        i32 lastV  = (i32)ceilf( endV / spacing ) + 1;
+        i32 lastV = (i32)ceilf( endV / spacing ) + 1;
 
         i32 countH = lastH - firstH + 1;
         i32 countV = lastV - firstV + 1;
         if ( countH > 500 ) { firstH = -(250); lastH = 250; }
         if ( countV > 500 ) { firstV = -(250); lastV = 250; }
 
-        f32 lineStartH = ( firstH - 1 ) * spacing;
-        f32 lineEndH   = ( lastH + 1 )  * spacing;
-        f32 lineStartV = ( firstV - 1 ) * spacing;
-        f32 lineEndV   = ( lastV + 1 )  * spacing;
+        f32 lineStartH = (firstH - 1) * spacing;
+        f32 lineEndH = (lastH + 1) * spacing;
+        f32 lineStartV = (firstV - 1) * spacing;
+        f32 lineEndV = (lastV + 1) * spacing;
 
         std::vector<GridVert> verts;
-        verts.reserve( ( (lastV - firstV + 1) + (lastH - firstH + 1) ) * 2 );
+        verts.reserve( ((lastV - firstV + 1) + (lastH - firstH + 1)) * 2 );
 
         for ( i32 i = firstV; i <= lastV; i++ ) {
             f32 v = i * spacing;
-            Vec3 col = ( i == 0 ) ? axisHCol : ( ( i % 10 == 0 ) ? majorColor : minorColor );
+            Vec3 col = (i == 0) ? axisHCol : ((i % 10 == 0) ? majorColor : minorColor);
             verts.push_back( { axisH * lineStartH + axisV * v, col } );
-            verts.push_back( { axisH * lineEndH   + axisV * v, col } );
+            verts.push_back( { axisH * lineEndH + axisV * v, col } );
         }
 
         for ( i32 i = firstH; i <= lastH; i++ ) {
             f32 h = i * spacing;
-            Vec3 col = ( i == 0 ) ? axisVCol : ( ( i % 10 == 0 ) ? majorColor : minorColor );
+            Vec3 col = (i == 0) ? axisVCol : ((i % 10 == 0) ? majorColor : minorColor);
             verts.push_back( { axisH * h + axisV * lineStartV, col } );
             verts.push_back( { axisH * h + axisV * lineEndV,   col } );
         }

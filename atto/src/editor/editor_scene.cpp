@@ -17,8 +17,7 @@ namespace atto {
         flyCamera.SetMoveSpeed( 5.0f );
         flyCamera.SetLookSensitivity( 0.1f );
 
-        model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
-        texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
+        map.Initialize();
     }
 
     void EditorScene::StartImgui() {
@@ -164,11 +163,7 @@ namespace atto {
 
         renderer.RenderTestTriangle();
 
-        if ( renderMode == EditorRenderMode::Lit ) {
-            renderer.RenderStaticModel( model, Mat4( 1.0f ) );
-        } else {
-            renderer.RenderStaticModelUnlit( model, Mat4( 1.0f ) );
-        }
+        map.Render( renderer, 0.0, renderMode == EditorRenderMode::Lit );
 
         renderer.SetWireframe( false );
 

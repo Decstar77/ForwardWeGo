@@ -2,6 +2,7 @@
 
 #include "atto_core.h"
 #include "atto_math.h"
+#include "renderer/atto_render_model.h"
 
 namespace atto {
 
