@@ -165,6 +165,10 @@ namespace atto {
         glUniformMatrix4fv( location, 1, GL_FALSE, &value[0][0] );
     }
 
+    void Shader::SetMat4Array( i32 location, const Mat4 * values, i32 count ) const {
+        glUniformMatrix4fv( location, count, GL_FALSE, &values[0][0][0] );
+    }
+
     // By name (convenience, does a lookup each call)
     void Shader::SetInt( const char * name, i32 value ) const {
         SetInt( GetUniformLocation( name ), value );
@@ -192,6 +196,10 @@ namespace atto {
 
     void Shader::SetMat4( const char * name, const Mat4 & value ) const {
         SetMat4( GetUniformLocation( name ), value );
+    }
+
+    void Shader::SetMat4Array( const char * name, const Mat4 * values, i32 count ) const {
+        SetMat4Array( GetUniformLocation( name ), values, count );
     }
 
 }

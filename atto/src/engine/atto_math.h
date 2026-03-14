@@ -10,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace atto {
 
@@ -26,6 +27,9 @@ namespace atto {
     using Mat2 = glm::mat2;
     using Mat3 = glm::mat3;
     using Mat4 = glm::mat4;
+
+    // Quaternion alias
+    using Quat = glm::quat;
 
     // Constants
     constexpr f32 PI = 3.14159265358979323846f;
