@@ -10,7 +10,7 @@ namespace atto {
 
         void Initialize();
         void Update( f32 dt );
-        void Render( Renderer & renderer, f32 dt, bool lit );
+        void Render( Renderer & renderer, f32 dt, bool lit, i32 selectedBrush = -1 );
 
         void Serialize( Serializer & serializer );
 

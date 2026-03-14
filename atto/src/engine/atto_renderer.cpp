@@ -301,6 +301,10 @@ namespace atto {
     }
 
     void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix ) {
+        RenderStaticModel( model, modelMatrix, Vec3( 0.8f ) );
+    }
+
+    void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
         glUseProgram( modelShader );
 
         if ( modelVPLoc >= 0 ) {
@@ -317,7 +321,7 @@ namespace atto {
             glUniform3f( modelLightColorLoc, 1.0f, 1.0f, 1.0f );
         }
         if ( modelObjectColorLoc >= 0 ) {
-            glUniform3f( modelObjectColorLoc, 0.8f, 0.8f, 0.8f );
+            glUniform3fv( modelObjectColorLoc, 1, glm::value_ptr( color ) );
         }
 
         model.Draw();
@@ -326,6 +330,10 @@ namespace atto {
     }
 
     void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix ) {
+        RenderStaticModelUnlit( model, modelMatrix, Vec3( 0.8f ) );
+    }
+
+    void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
         glUseProgram( modelUnlitShader );
 
         if ( modelUnlitVPLoc >= 0 ) {
@@ -335,7 +343,7 @@ namespace atto {
             glUniformMatrix4fv( modelUnlitModelLoc, 1, GL_FALSE, glm::value_ptr( modelMatrix ) );
         }
         if ( modelUnlitColorLoc >= 0 ) {
-            glUniform3f( modelUnlitColorLoc, 0.8f, 0.8f, 0.8f );
+            glUniform3fv( modelUnlitColorLoc, 1, glm::value_ptr( color ) );
         }
 
         model.Draw();

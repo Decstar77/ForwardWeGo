@@ -43,10 +43,34 @@ namespace atto {
         Input & input = Engine::Get().GetInput();
 
         bool alt = input.IsKeyDown( Key::LeftAlt ) || input.IsKeyDown( Key::RightAlt );
-        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); }
-        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); }
-        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); }
-        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; }
+        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); edgeDrag.active = false; }
+        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); edgeDrag.active = false; }
+        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); edgeDrag.active = false; }
+        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; edgeDrag.active = false; }
+
+        if ( edgeDrag.active ) {
+            if ( input.IsMouseButtonDown( MouseButton::Left ) ) {
+                Vec3 worldPos = ScreenToWorldOrtho( input.GetMousePosition() );
+                UpdateEdgeDrag( worldPos );
+            }
+            if ( input.IsMouseButtonReleased( MouseButton::Left ) ) {
+                edgeDrag.active = false;
+            }
+        }
+
+        bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse;
+        if ( !imguiWantsMouse && !edgeDrag.active && input.IsMouseButtonPressed( MouseButton::Left ) ) {
+            Vec2 mousePos = input.GetMousePosition();
+
+            if ( viewMode != EditorViewMode::Cam3D ) {
+                Vec3 worldPos = ScreenToWorldOrtho( mousePos );
+                if ( !TryStartEdgeDrag( worldPos ) ) {
+                    selectedBrushIndex = PickBrushOrtho( worldPos );
+                }
+            } else {
+                selectedBrushIndex = PickBrush3D( mousePos );
+            }
+        }
 
         if ( viewMode == EditorViewMode::Cam3D ) {
             if ( input.IsMouseButtonPressed( MouseButton::Right ) ) {
@@ -163,7 +187,7 @@ namespace atto {
 
         renderer.RenderTestTriangle();
 
-        map.Render( renderer, 0.0, renderMode == EditorRenderMode::Lit );
+        map.Render( renderer, 0.0, renderMode == EditorRenderMode::Lit, selectedBrushIndex );
 
         renderer.SetWireframe( false );
 
@@ -200,6 +224,179 @@ namespace atto {
         ImGui::Render();
 
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
+    }
+
+    Vec3 EditorScene::ScreenToWorldOrtho( Vec2 screenPos ) const {
+        Vec2i windowSize = Engine::Get().GetWindowSize();
+        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>( windowSize.x ) - 1.0f;
+        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>( windowSize.y );
+        Mat4 invVP = glm::inverse( GetOrthoViewProjectionMatrix() );
+        Vec4 world = invVP * Vec4( ndcX, ndcY, 0.0f, 1.0f );
+        return Vec3( world ) / world.w;
+    }
+
+    void EditorScene::GetOrthoAxes( i32 & hAxis, i32 & vAxis ) const {
+        switch ( viewMode ) {
+            case EditorViewMode::XY: hAxis = 0; vAxis = 1; break;
+            case EditorViewMode::ZY: hAxis = 2; vAxis = 1; break;
+            case EditorViewMode::XZ: hAxis = 0; vAxis = 2; break;
+            default: hAxis = 0; vAxis = 1; break;
+        }
+    }
+
+    i32 EditorScene::PickBrushOrtho( Vec3 worldPos ) const {
+        i32 hAxis, vAxis;
+        GetOrthoAxes( hAxis, vAxis );
+
+        for ( i32 i = map.GetBrushCount() - 1; i >= 0; i-- ) {
+            const Brush & brush = map.GetBrush( i );
+            f32 minH = brush.center[hAxis] - brush.halfExtents[hAxis];
+            f32 maxH = brush.center[hAxis] + brush.halfExtents[hAxis];
+            f32 minV = brush.center[vAxis] - brush.halfExtents[vAxis];
+            f32 maxV = brush.center[vAxis] + brush.halfExtents[vAxis];
+
+            if ( worldPos[hAxis] >= minH && worldPos[hAxis] <= maxH &&
+                 worldPos[vAxis] >= minV && worldPos[vAxis] <= maxV ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    i32 EditorScene::PickBrush3D( Vec2 screenPos ) const {
+        Vec2i windowSize = Engine::Get().GetWindowSize();
+        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>( windowSize.x ) - 1.0f;
+        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>( windowSize.y );
+
+        Mat4 invVP = glm::inverse( flyCamera.GetViewProjectionMatrix() );
+        Vec4 nearNDC = invVP * Vec4( ndcX, ndcY, -1.0f, 1.0f );
+        Vec4 farNDC = invVP * Vec4( ndcX, ndcY, 1.0f, 1.0f );
+        Vec3 nearWorld = Vec3( nearNDC ) / nearNDC.w;
+        Vec3 farWorld = Vec3( farNDC ) / farNDC.w;
+
+        Vec3 rayOrigin = nearWorld;
+        Vec3 rayDir = Normalize( farWorld - nearWorld );
+
+        i32 bestIndex = -1;
+        f32 bestT = 1e30f;
+
+        for ( i32 i = 0; i < map.GetBrushCount(); i++ ) {
+            const Brush & brush = map.GetBrush( i );
+            Vec3 aabbMin = brush.center - brush.halfExtents;
+            Vec3 aabbMax = brush.center + brush.halfExtents;
+
+            f32 tmin = -1e30f;
+            f32 tmax = 1e30f;
+            bool hit = true;
+
+            for ( i32 a = 0; a < 3; a++ ) {
+                if ( Abs( rayDir[a] ) < 1e-8f ) {
+                    if ( rayOrigin[a] < aabbMin[a] || rayOrigin[a] > aabbMax[a] ) {
+                        hit = false;
+                        break;
+                    }
+                } else {
+                    f32 t1 = ( aabbMin[a] - rayOrigin[a] ) / rayDir[a];
+                    f32 t2 = ( aabbMax[a] - rayOrigin[a] ) / rayDir[a];
+                    if ( t1 > t2 ) { f32 tmp = t1; t1 = t2; t2 = tmp; }
+                    if ( t1 > tmin ) tmin = t1;
+                    if ( t2 < tmax ) tmax = t2;
+                    if ( tmin > tmax ) { hit = false; break; }
+                }
+            }
+
+            if ( hit && tmin >= 0.0f && tmin < bestT ) {
+                bestT = tmin;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex;
+    }
+
+    bool EditorScene::TryStartEdgeDrag( Vec3 worldClickPos ) {
+        if ( selectedBrushIndex < 0 || selectedBrushIndex >= map.GetBrushCount() ) {
+            return false;
+        }
+
+        const Brush & brush = map.GetBrush( selectedBrushIndex );
+        i32 hAxis, vAxis;
+        GetOrthoAxes( hAxis, vAxis );
+
+        f32 threshold = orthoSize * 0.03f;
+
+        f32 hMin = brush.center[hAxis] - brush.halfExtents[hAxis];
+        f32 hMax = brush.center[hAxis] + brush.halfExtents[hAxis];
+        f32 vMin = brush.center[vAxis] - brush.halfExtents[vAxis];
+        f32 vMax = brush.center[vAxis] + brush.halfExtents[vAxis];
+
+        bool inVRange = worldClickPos[vAxis] >= vMin - threshold && worldClickPos[vAxis] <= vMax + threshold;
+        bool inHRange = worldClickPos[hAxis] >= hMin - threshold && worldClickPos[hAxis] <= hMax + threshold;
+
+        i32 bestAxis = -1;
+        i32 bestSign = 0;
+        f32 bestDist = threshold;
+
+        if ( inVRange ) {
+            f32 d = Abs( worldClickPos[hAxis] - hMin );
+            if ( d < bestDist && ( worldClickPos[hAxis] - brush.center[hAxis] ) < 0.0f ) {
+                bestAxis = hAxis; bestSign = -1; bestDist = d;
+            }
+            d = Abs( worldClickPos[hAxis] - hMax );
+            if ( d < bestDist && ( worldClickPos[hAxis] - brush.center[hAxis] ) > 0.0f ) {
+                bestAxis = hAxis; bestSign = 1; bestDist = d;
+            }
+        }
+
+        if ( inHRange ) {
+            f32 d = Abs( worldClickPos[vAxis] - vMin );
+            if ( d < bestDist && ( worldClickPos[vAxis] - brush.center[vAxis] ) < 0.0f ) {
+                bestAxis = vAxis; bestSign = -1; bestDist = d;
+            }
+            d = Abs( worldClickPos[vAxis] - vMax );
+            if ( d < bestDist && ( worldClickPos[vAxis] - brush.center[vAxis] ) > 0.0f ) {
+                bestAxis = vAxis; bestSign = 1; bestDist = d;
+            }
+        }
+
+        if ( bestAxis < 0 ) {
+            return false;
+        }
+
+        edgeDrag.active = true;
+        edgeDrag.brushIndex = selectedBrushIndex;
+        edgeDrag.axis = bestAxis;
+        edgeDrag.sign = bestSign;
+        edgeDrag.fixedEdge = brush.center[bestAxis] - bestSign * brush.halfExtents[bestAxis];
+        return true;
+    }
+
+    void EditorScene::UpdateEdgeDrag( Vec3 worldMousePos ) {
+        if ( !edgeDrag.active || edgeDrag.brushIndex < 0 || edgeDrag.brushIndex >= map.GetBrushCount() ) {
+            edgeDrag.active = false;
+            return;
+        }
+
+        Brush & brush = map.GetBrush( edgeDrag.brushIndex );
+        f32 draggedPos = worldMousePos[edgeDrag.axis];
+
+        constexpr f32 MIN_SIZE = 0.01f;
+
+        if ( edgeDrag.sign > 0 ) {
+            if ( draggedPos < edgeDrag.fixedEdge + MIN_SIZE ) {
+                draggedPos = edgeDrag.fixedEdge + MIN_SIZE;
+            }
+            brush.center[edgeDrag.axis] = ( edgeDrag.fixedEdge + draggedPos ) * 0.5f;
+            brush.halfExtents[edgeDrag.axis] = ( draggedPos - edgeDrag.fixedEdge ) * 0.5f;
+        } else {
+            if ( draggedPos > edgeDrag.fixedEdge - MIN_SIZE ) {
+                draggedPos = edgeDrag.fixedEdge - MIN_SIZE;
+            }
+            brush.center[edgeDrag.axis] = ( draggedPos + edgeDrag.fixedEdge ) * 0.5f;
+            brush.halfExtents[edgeDrag.axis] = ( edgeDrag.fixedEdge - draggedPos ) * 0.5f;
+        }
+
+        map.RebuildBrushModel( edgeDrag.brushIndex );
     }
 
     void EditorScene::DrawBrushPanel() {

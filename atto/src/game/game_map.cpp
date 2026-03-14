@@ -20,7 +20,7 @@ namespace atto {
     void GameMap::Update( f32 dt ) {
     }
 
-    void GameMap::Render( Renderer & renderer, f32 dt, bool lit ) {
+    void GameMap::Render( Renderer & renderer, f32 dt, bool lit, i32 selectedBrush ) {
         if ( lit ) {
             renderer.RenderStaticModel( model, Mat4( 1.0f ) );
         }
@@ -29,15 +29,16 @@ namespace atto {
         }
 
         Mat4 identity( 1.0f );
-        for ( const auto & bm : brushModels ) {
-            if ( !bm.IsLoaded() ) {
+        for ( i32 i = 0; i < static_cast<i32>( brushModels.size() ); i++ ) {
+            if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
+            Vec3 color = ( i == selectedBrush ) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 0.8f, 0.8f, 0.8f );
             if ( lit ) {
-                renderer.RenderStaticModel( bm, identity );
+                renderer.RenderStaticModel( brushModels[i], identity, color );
             }
             else {
-                renderer.RenderStaticModelUnlit( bm, identity );
+                renderer.RenderStaticModelUnlit( brushModels[i], identity, color );
             }
         }
     }

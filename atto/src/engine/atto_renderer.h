@@ -23,7 +23,9 @@ namespace atto {
         void SetWireframe( bool enabled );
         void RenderTestTriangle();
         void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix );
+        void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color );
         void RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix );
+        void RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color );
         void RenderGrid( Vec3 axisH, Vec3 axisV, Vec3 center, f32 spacing, f32 halfExtentH, f32 halfExtentV );
 
     private:

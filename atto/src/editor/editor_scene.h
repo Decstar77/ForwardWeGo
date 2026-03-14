@@ -22,6 +22,14 @@ namespace atto {
         Brush
     };
 
+    struct BrushEdgeDrag {
+        bool active = false;
+        i32 brushIndex = -1;
+        i32 axis = -1;
+        i32 sign = 0;
+        f32 fixedEdge = 0;
+    };
+
     class EditorScene : public Scene<EditorScene> {
     public:
         static const char * GetSceneNameStatic() { return "Editor"; }
@@ -38,6 +46,13 @@ namespace atto {
         void DrawBrushPanel();
         Mat4 GetOrthoViewProjectionMatrix() const;
 
+        Vec3 ScreenToWorldOrtho( Vec2 screenPos ) const;
+        void GetOrthoAxes( i32 & hAxis, i32 & vAxis ) const;
+        i32  PickBrushOrtho( Vec3 worldPos ) const;
+        i32  PickBrush3D( Vec2 screenPos ) const;
+        bool TryStartEdgeDrag( Vec3 worldClickPos );
+        void UpdateEdgeDrag( Vec3 worldMousePos );
+
         EditorViewMode   viewMode = EditorViewMode::Cam3D;
         EditorRenderMode renderMode = EditorRenderMode::Lit;
         EditorEditMode editMode = EditorEditMode::None;
@@ -50,6 +65,7 @@ namespace atto {
         GameMap map;
 
         i32 selectedBrushIndex = -1;
+        BrushEdgeDrag edgeDrag;
 
     };
 
