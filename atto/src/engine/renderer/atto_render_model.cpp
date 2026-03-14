@@ -510,6 +510,158 @@ namespace atto {
     }
 
     // =========================================================================
+    // Animator
+    // =========================================================================
+
+    Animator::Animator() {
+        for ( i32 i = 0; i < MAX_BONES; i++ ) {
+            finalBoneMatrices[i] = Mat4( 1.0f );
+        }
+    }
+
+    void Animator::PlayAnimation( const AnimatedModel & animModel, i32 animationIndex, bool loop ) {
+        model = &animModel;
+        looping = loop;
+        currentTime = 0.0f;
+
+        const auto & animations = model->GetAnimations();
+        if ( animationIndex >= 0 && animationIndex < static_cast<i32>( animations.size() ) ) {
+            currentClip = &animations[animationIndex];
+        }
+        else {
+            currentClip = nullptr;
+            LOG_WARN( "Animation index %d out of range (model has %d animations)", animationIndex, static_cast<i32>( animations.size() ) );
+        }
+    }
+
+    void Animator::Update( f32 dt ) {
+        if ( !currentClip || !model ) {
+            return;
+        }
+
+        f32 ticksPerSecond = currentClip->ticksPerSecond;
+        currentTime += dt * ticksPerSecond;
+
+        if ( looping ) {
+            currentTime = fmod( currentTime, currentClip->duration );
+        }
+        else {
+            if ( currentTime > currentClip->duration ) {
+                currentTime = currentClip->duration;
+            }
+        }
+
+        CalculateBoneTransform( model->GetRootNode(), Mat4( 1.0f ) );
+    }
+
+    void Animator::CalculateBoneTransform( const BoneNode & node, const Mat4 & parentTransform ) {
+        Mat4 nodeTransform = node.transformation;
+
+        const BoneAnimationChannel * channel = FindChannel( node.name );
+        if ( channel ) {
+            Vec3 position = InterpolatePosition( currentTime, *channel );
+            Quat rotation = InterpolateRotation( currentTime, *channel );
+            Vec3 scale = InterpolateScale( currentTime, *channel );
+
+            Mat4 translationMatrix = glm::translate( Mat4( 1.0f ), position );
+            Mat4 rotationMatrix = glm::mat4_cast( rotation );
+            Mat4 scaleMatrix = glm::scale( Mat4( 1.0f ), scale );
+
+            nodeTransform = translationMatrix * rotationMatrix * scaleMatrix;
+        }
+
+        Mat4 globalTransform = parentTransform * nodeTransform;
+
+        const auto & boneInfoMap = model->GetBoneInfoMap();
+        auto it = boneInfoMap.find( node.name );
+        if ( it != boneInfoMap.end() ) {
+            const BoneInfo & boneInfo = it->second;
+            finalBoneMatrices[boneInfo.id] = model->GetGlobalInverseTransform() * globalTransform * boneInfo.offsetMatrix;
+        }
+
+        for ( const auto & child : node.children ) {
+            CalculateBoneTransform( child, globalTransform );
+        }
+    }
+
+    const BoneAnimationChannel * Animator::FindChannel( const std::string & nodeName ) const {
+        if ( !currentClip ) return nullptr;
+
+        for ( const auto & channel : currentClip->channels ) {
+            if ( channel.boneName == nodeName ) {
+                return &channel;
+            }
+        }
+        return nullptr;
+    }
+
+    Vec3 Animator::InterpolatePosition( f32 animTime, const BoneAnimationChannel & channel ) {
+        const auto & keys = channel.positionKeys;
+        if ( keys.size() == 1 ) {
+            return keys[0].position;
+        }
+
+        i32 index = 0;
+        for ( i32 i = 0; i < static_cast<i32>( keys.size() ) - 1; i++ ) {
+            if ( animTime < keys[i + 1].time ) {
+                index = i;
+                break;
+            }
+        }
+
+        i32 nextIndex = index + 1;
+        f32 deltaTime = keys[nextIndex].time - keys[index].time;
+        f32 factor = ( deltaTime > 0.0f ) ? ( animTime - keys[index].time ) / deltaTime : 0.0f;
+        factor = Clamp( factor, 0.0f, 1.0f );
+
+        return Lerp( keys[index].position, keys[nextIndex].position, factor );
+    }
+
+    Quat Animator::InterpolateRotation( f32 animTime, const BoneAnimationChannel & channel ) {
+        const auto & keys = channel.rotationKeys;
+        if ( keys.size() == 1 ) {
+            return glm::normalize( keys[0].rotation );
+        }
+
+        i32 index = 0;
+        for ( i32 i = 0; i < static_cast<i32>( keys.size() ) - 1; i++ ) {
+            if ( animTime < keys[i + 1].time ) {
+                index = i;
+                break;
+            }
+        }
+
+        i32 nextIndex = index + 1;
+        f32 deltaTime = keys[nextIndex].time - keys[index].time;
+        f32 factor = ( deltaTime > 0.0f ) ? ( animTime - keys[index].time ) / deltaTime : 0.0f;
+        factor = Clamp( factor, 0.0f, 1.0f );
+
+        return glm::normalize( glm::slerp( keys[index].rotation, keys[nextIndex].rotation, factor ) );
+    }
+
+    Vec3 Animator::InterpolateScale( f32 animTime, const BoneAnimationChannel & channel ) {
+        const auto & keys = channel.scaleKeys;
+        if ( keys.size() == 1 ) {
+            return keys[0].scale;
+        }
+
+        i32 index = 0;
+        for ( i32 i = 0; i < static_cast<i32>( keys.size() ) - 1; i++ ) {
+            if ( animTime < keys[i + 1].time ) {
+                index = i;
+                break;
+            }
+        }
+
+        i32 nextIndex = index + 1;
+        f32 deltaTime = keys[nextIndex].time - keys[index].time;
+        f32 factor = ( deltaTime > 0.0f ) ? ( animTime - keys[index].time ) / deltaTime : 0.0f;
+        factor = Clamp( factor, 0.0f, 1.0f );
+
+        return Lerp( keys[index].scale, keys[nextIndex].scale, factor );
+    }
+
+    // =========================================================================
     // Brush
     // =========================================================================
 

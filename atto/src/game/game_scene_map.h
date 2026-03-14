@@ -21,6 +21,7 @@ namespace atto {
 
     private:
         GameMap         map;
+        Animator animator;
         AnimatedModel   playerHands;
         FPSCamera       camera;
     };

@@ -103,6 +103,47 @@ namespace atto {
         }
     )";
 
+    static const char * SKINNED_LIT_VERT = R"(
+        #version 330 core
+        layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec3 aNormal;
+        layout (location = 2) in vec2 aTexCoords;
+        layout (location = 3) in ivec4 aBoneIDs;
+        layout (location = 4) in vec4 aBoneWeights;
+
+        const int MAX_BONES = 128;
+
+        uniform mat4 uViewProjection;
+        uniform mat4 uModel;
+        uniform mat4 uBoneMatrices[MAX_BONES];
+
+        out vec3 vNormal;
+        out vec3 vFragPos;
+
+        void main() {
+            mat4 boneTransform = mat4(0.0);
+            bool hasBones = false;
+            for (int i = 0; i < 4; i++) {
+                if (aBoneIDs[i] >= 0) {
+                    boneTransform += uBoneMatrices[aBoneIDs[i]] * aBoneWeights[i];
+                    hasBones = true;
+                }
+            }
+            if (!hasBones) {
+                boneTransform = mat4(1.0);
+            }
+
+            vec4 skinnedPos = boneTransform * vec4(aPos, 1.0);
+            vec4 worldPos = uModel * skinnedPos;
+            vFragPos = worldPos.xyz;
+
+            vec3 skinnedNormal = mat3(boneTransform) * aNormal;
+            vNormal = mat3(transpose(inverse(uModel))) * skinnedNormal;
+
+            gl_Position = uViewProjection * worldPos;
+        }
+    )";
+
     bool Renderer::Initialize() {
         if ( !flatColorShader.CreateFromSource( FLAT_COLOR_VERT, FLAT_COLOR_FRAG ) ) {
             LOG_ERROR( "Failed to create flat color shader" );
@@ -138,6 +179,11 @@ namespace atto {
 
         if ( !modelUnlitShader.CreateFromSource( MODEL_UNLIT_VERT, MODEL_UNLIT_FRAG ) ) {
             LOG_ERROR( "Failed to create unlit model shader" );
+            return false;
+        }
+
+        if ( !skinnedLitShader.CreateFromSource( SKINNED_LIT_VERT, MODEL_LIT_FRAG ) ) {
+            LOG_ERROR( "Failed to create skinned lit shader" );
             return false;
         }
 
@@ -181,6 +227,7 @@ namespace atto {
         flatColorShader.Destroy();
         modelLitShader.Destroy();
         modelUnlitShader.Destroy();
+        skinnedLitShader.Destroy();
 
         LOG_INFO( "Renderer shutdown" );
     }
@@ -254,6 +301,28 @@ namespace atto {
         model.Draw();
 
         modelUnlitShader.Unbind();
+    }
+
+    void Renderer::RenderAnimatedModel( const AnimatedModel & model, const Animator & animator, const Mat4 & modelMatrix ) {
+        RenderAnimatedModel( model, animator, modelMatrix, Vec3( 0.8f ) );
+    }
+
+    void Renderer::RenderAnimatedModel( const AnimatedModel & model, const Animator & animator, const Mat4 & modelMatrix, const Vec3 & color ) {
+        skinnedLitShader.Bind();
+
+        skinnedLitShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+        skinnedLitShader.SetMat4( "uModel", modelMatrix );
+
+        skinnedLitShader.SetMat4Array( "uBoneMatrices[0]", animator.GetFinalBoneMatrices(), MAX_BONES );
+
+        Vec3 lightDir = Normalize( Vec3( -0.3f, -1.0f, -0.5f ) );
+        skinnedLitShader.SetVec3( "uLightDir", lightDir );
+        skinnedLitShader.SetVec3( "uLightColor", Vec3( 1.0f ) );
+        skinnedLitShader.SetVec3( "uObjectColor", color );
+
+        model.Draw();
+
+        skinnedLitShader.Unbind();
     }
 
     static Vec3 AxisColor( Vec3 axis ) {

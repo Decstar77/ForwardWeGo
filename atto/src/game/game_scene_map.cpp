@@ -20,6 +20,8 @@ namespace atto {
         map.Serialize( serializer );
 
         map.Initialize();
+
+        animator.PlayAnimation( playerHands, 5, true );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
@@ -40,6 +42,8 @@ namespace atto {
             );
         }
 
+        animator.Update( deltaTime );
+
         f32 speed = camera.GetMoveSpeed() * deltaTime;
 
         if ( input.IsKeyDown( Key::W ) ) camera.MoveForward( speed );
@@ -51,6 +55,7 @@ namespace atto {
     void GameMapScene::OnRender( Renderer & renderer ) {
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
         map.Render( renderer, 0.0, 1, -1 );
+        renderer.RenderAnimatedModel( playerHands, animator, Mat4( 1 ) );
         //renderer.RenderStaticModelUnlit( playerHands, Mat4( 1 ) );
     }
 

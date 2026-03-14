@@ -153,6 +153,34 @@ namespace atto {
         std::vector<AnimationClip>                  animations;
     };
 
+    class Animator {
+    public:
+        Animator();
+
+        void PlayAnimation( const AnimatedModel & model, i32 animationIndex = 0, bool loop = true );
+        void Update( f32 dt );
+
+        const Mat4 * GetFinalBoneMatrices() const { return finalBoneMatrices; }
+        bool IsPlaying() const { return currentClip != nullptr; }
+        f32  GetCurrentTime() const { return currentTime; }
+        f32  GetDuration() const { return currentClip ? currentClip->duration / currentClip->ticksPerSecond : 0.0f; }
+
+    private:
+        void CalculateBoneTransform( const BoneNode & node, const Mat4 & parentTransform );
+
+        static Vec3 InterpolatePosition( f32 animTime, const BoneAnimationChannel & channel );
+        static Quat InterpolateRotation( f32 animTime, const BoneAnimationChannel & channel );
+        static Vec3 InterpolateScale( f32 animTime, const BoneAnimationChannel & channel );
+
+        const BoneAnimationChannel * FindChannel( const std::string & nodeName ) const;
+
+        Mat4                    finalBoneMatrices[MAX_BONES];
+        const AnimatedModel *   model = nullptr;
+        const AnimationClip *   currentClip = nullptr;
+        f32                     currentTime = 0.0f;
+        bool                    looping = true;
+    };
+
     class Brush {
     public:
         void ToStaticModel( StaticModel & model ) const;
