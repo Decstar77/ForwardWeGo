@@ -1,9 +1,10 @@
 #include "engine/atto_engine.h"
 #include "engine/renderer/atto_render_model.h"
+#include "engine/renderer/atto_render_material.h"
 #include "game/game_map.h"
 
 namespace atto {
-    
+
     constexpr f32 PlayerHeight = 2.0f;
     constexpr f32 PlayerEyeHeight = 1.8f;
 

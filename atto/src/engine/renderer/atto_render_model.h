@@ -12,26 +12,6 @@ namespace atto {
         Vec2 texCoords;
     };
 
-    class Texture {
-    public:
-        void LoadFromFile( const char * filePath );
-        void Destroy();
-
-        i32 GetWidth() const { return width; }
-        i32 GetHeight() const { return height; }
-
-    private:
-        i32 width = 0;
-        i32 height = 0;
-        u32 texture = 0;
-    };
-
-    // Will add more later
-    struct Material {
-        std::string name;
-        Texture albedo;
-    };
-
     class Mesh {
     public:
         void Create( const std::vector<Vertex> & vertices, const std::vector<u32> & indices );
@@ -62,7 +42,10 @@ namespace atto {
     };
 
     class AnimatedModel {
+    public:
         void LoadFromFile( const char * filePath, f32 scale = 1.0f );
+
+    private:
     };
 
     class Brush {
