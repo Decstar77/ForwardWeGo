@@ -61,6 +61,10 @@ namespace atto {
         std::vector<Mesh> meshes;
     };
 
+    class AnimatedModel {
+        void LoadFromFile( const char * filePath, f32 scale = 1.0f );
+    };
+
     class Brush {
     public:
         void ToStaticModel( StaticModel & model ) const;

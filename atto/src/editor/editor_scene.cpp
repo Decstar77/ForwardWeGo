@@ -41,6 +41,10 @@ namespace atto {
 
     void EditorScene::OnUpdate( f32 deltaTime ) {
         Input & input = Engine::Get().GetInput();
+        
+        if ( input.IsKeyPressed( Key::Escape ) ) {
+            Engine::Get().RequestQuit();
+        }
 
         bool alt = input.IsKeyDown( Key::LeftAlt ) || input.IsKeyDown( Key::RightAlt );
         if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
@@ -53,7 +57,8 @@ namespace atto {
                 Vec3 worldPos = ScreenToWorldOrtho( input.GetMousePosition() );
                 if ( brushDrag.mode == BrushDragMode::Edge ) {
                     BrushUpdateEdgeDrag( worldPos );
-                } else if ( brushDrag.mode == BrushDragMode::Move ) {
+                }
+                else if ( brushDrag.mode == BrushDragMode::Move ) {
                     BrushUpdateMoveDrag( worldPos );
                 }
             }
@@ -72,11 +77,13 @@ namespace atto {
                     i32 picked = BrushPickOrtho( worldPos );
                     if ( picked >= 0 && picked == selectedBrushIndex ) {
                         BrushStartMoveDrag( worldPos );
-                    } else {
+                    }
+                    else {
                         selectedBrushIndex = picked;
                     }
                 }
-            } else {
+            }
+            else {
                 selectedBrushIndex = BrushPick3D( mousePos );
             }
         }
@@ -105,41 +112,46 @@ namespace atto {
             if ( input.IsKeyDown( Key::A ) ) flyCamera.MoveRight( -speed );
             if ( input.IsKeyDown( Key::Space ) ) flyCamera.MoveUp( speed );
             if ( input.IsKeyDown( Key::LeftControl ) ) flyCamera.MoveUp( -speed );
-        } else {
+        }
+        else {
             // Ortho pan with right or middle mouse drag
             if ( input.IsMouseButtonDown( MouseButton::Right ) || input.IsMouseButtonDown( MouseButton::Middle ) ) {
                 Vec2 mouseDelta = input.GetMouseDelta();
                 Vec2i windowSize = Engine::Get().GetWindowSize();
-                f32 scale = ( 2.0f * orthoSize ) / static_cast<f32>( windowSize.y );
+                f32 scale = (2.0f * orthoSize) / static_cast<f32>(windowSize.y);
 
                 switch ( viewMode ) {
-                    case EditorViewMode::XY:
-                        orthoTarget.x -= mouseDelta.x * scale;
-                        orthoTarget.y += mouseDelta.y * scale;
-                        break;
-                    case EditorViewMode::ZY:
-                        orthoTarget.z -= mouseDelta.x * scale;
-                        orthoTarget.y += mouseDelta.y * scale;
-                        break;
-                    case EditorViewMode::XZ:
-                        orthoTarget.x -= mouseDelta.x * scale;
-                        orthoTarget.z -= mouseDelta.y * scale;
-                        break;
-                    default: break;
+                case EditorViewMode::XY:
+                    orthoTarget.x -= mouseDelta.x * scale;
+                    orthoTarget.y += mouseDelta.y * scale;
+                    break;
+                case EditorViewMode::ZY:
+                    orthoTarget.z -= mouseDelta.x * scale;
+                    orthoTarget.y += mouseDelta.y * scale;
+                    break;
+                case EditorViewMode::XZ:
+                    orthoTarget.x -= mouseDelta.x * scale;
+                    orthoTarget.z -= mouseDelta.y * scale;
+                    break;
+                default: break;
                 }
             }
 
             f32 scroll = input.GetScrollDelta();
             if ( scroll != 0.0f ) {
-                orthoSize *= ( scroll > 0.0f ) ? 0.9f : 1.1f;
+                orthoSize *= (scroll > 0.0f) ? 0.9f : 1.1f;
                 orthoSize = Clamp( orthoSize, 0.1f, 1000.0f );
             }
+        }
+
+        if ( input.IsKeyPressed( Key::F5 ) ) {
+            Engine::Get().TransitionToScene( "GameMapScene" );
         }
     }
 
     Mat4 EditorScene::GetOrthoViewProjectionMatrix() const {
         Vec2i windowSize = Engine::Get().GetWindowSize();
-        f32 aspect = ( windowSize.y > 0 ) ? static_cast<f32>( windowSize.x ) / static_cast<f32>( windowSize.y ) : 1.0f;
+        f32 aspect = (windowSize.y > 0) ? static_cast<f32>(windowSize.x) / static_cast<f32>(windowSize.y) : 1.0f;
         f32 halfH = orthoSize;
         f32 halfW = orthoSize * aspect;
 
@@ -148,16 +160,16 @@ namespace atto {
         constexpr f32 d = 500.0f;
         Mat4 view( 1.0f );
         switch ( viewMode ) {
-            case EditorViewMode::XY:
-                view = glm::lookAt( orthoTarget + Vec3( 0, 0, d ), orthoTarget, Vec3( 0, 1, 0 ) );
-                break;
-            case EditorViewMode::ZY:
-                view = glm::lookAt( orthoTarget + Vec3( -d, 0, 0 ), orthoTarget, Vec3( 0, 1, 0 ) );
-                break;
-            case EditorViewMode::XZ:
-                view = glm::lookAt( orthoTarget + Vec3( 0, d, 0 ), orthoTarget, Vec3( 0, 0, -1 ) );
-                break;
-            default: break;
+        case EditorViewMode::XY:
+            view = glm::lookAt( orthoTarget + Vec3( 0, 0, d ), orthoTarget, Vec3( 0, 1, 0 ) );
+            break;
+        case EditorViewMode::ZY:
+            view = glm::lookAt( orthoTarget + Vec3( -d, 0, 0 ), orthoTarget, Vec3( 0, 1, 0 ) );
+            break;
+        case EditorViewMode::XZ:
+            view = glm::lookAt( orthoTarget + Vec3( 0, d, 0 ), orthoTarget, Vec3( 0, 0, -1 ) );
+            break;
+        default: break;
         }
 
         return proj * view;
@@ -166,27 +178,28 @@ namespace atto {
     void EditorScene::OnRender( Renderer & renderer ) {
         if ( viewMode == EditorViewMode::Cam3D ) {
             renderer.SetViewProjectionMatrix( flyCamera.GetViewProjectionMatrix() );
-        } else {
+        }
+        else {
             renderer.SetViewProjectionMatrix( GetOrthoViewProjectionMatrix() );
 
             Vec2i windowSize = Engine::Get().GetWindowSize();
-            f32 aspect = ( windowSize.y > 0 ) ? static_cast<f32>( windowSize.x ) / static_cast<f32>( windowSize.y ) : 1.0f;
+            f32 aspect = (windowSize.y > 0) ? static_cast<f32>(windowSize.x) / static_cast<f32>(windowSize.y) : 1.0f;
             f32 halfH = orthoSize;
             f32 halfW = orthoSize * aspect;
 
             f32 spacing = powf( 10.0f, floorf( log10f( orthoSize * 0.2f ) ) );
 
             switch ( viewMode ) {
-                case EditorViewMode::XY:
-                    renderer.RenderGrid( Vec3( 1, 0, 0 ), Vec3( 0, 1, 0 ), orthoTarget, spacing, halfW, halfH );
-                    break;
-                case EditorViewMode::ZY:
-                    renderer.RenderGrid( Vec3( 0, 0, 1 ), Vec3( 0, 1, 0 ), orthoTarget, spacing, halfW, halfH );
-                    break;
-                case EditorViewMode::XZ:
-                    renderer.RenderGrid( Vec3( 1, 0, 0 ), Vec3( 0, 0, 1 ), orthoTarget, spacing, halfW, halfH );
-                    break;
-                default: break;
+            case EditorViewMode::XY:
+                renderer.RenderGrid( Vec3( 1, 0, 0 ), Vec3( 0, 1, 0 ), orthoTarget, spacing, halfW, halfH );
+                break;
+            case EditorViewMode::ZY:
+                renderer.RenderGrid( Vec3( 0, 0, 1 ), Vec3( 0, 1, 0 ), orthoTarget, spacing, halfW, halfH );
+                break;
+            case EditorViewMode::XZ:
+                renderer.RenderGrid( Vec3( 1, 0, 0 ), Vec3( 0, 0, 1 ), orthoTarget, spacing, halfW, halfH );
+                break;
+            default: break;
             }
         }
 
@@ -211,20 +224,20 @@ namespace atto {
         ImGui::Begin( "##ViewMode", nullptr,
             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
-        ImGui::Text( "View: %s", modeLabels[static_cast<i32>( viewMode )] );
+        ImGui::Text( "View: %s", modeLabels[static_cast<i32>(viewMode)] );
         ImGui::End();
 
         Vec2i windowSize = Engine::Get().GetWindowSize();
-        ImGui::SetNextWindowPos( ImVec2( static_cast<f32>( windowSize.x ) - 10.0f, 10.0f ), ImGuiCond_Always, ImVec2( 1.0f, 0.0f ) );
+        ImGui::SetNextWindowPos( ImVec2( static_cast<f32>(windowSize.x) - 10.0f, 10.0f ), ImGuiCond_Always, ImVec2( 1.0f, 0.0f ) );
         ImGui::SetNextWindowBgAlpha( 0.5f );
         ImGui::Begin( "##RenderMode", nullptr,
             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
-        i32 rm = static_cast<i32>( renderMode );
-        ImGui::RadioButton( "Lit",       &rm, 0 ); ImGui::SameLine();
-        ImGui::RadioButton( "Unlit",     &rm, 1 ); ImGui::SameLine();
+        i32 rm = static_cast<i32>(renderMode);
+        ImGui::RadioButton( "Lit", &rm, 0 ); ImGui::SameLine();
+        ImGui::RadioButton( "Unlit", &rm, 1 ); ImGui::SameLine();
         ImGui::RadioButton( "Wireframe", &rm, 2 );
-        renderMode = static_cast<EditorRenderMode>( rm );
+        renderMode = static_cast<EditorRenderMode>(rm);
         ImGui::End();
 
         DrawBrushPanel();
@@ -237,8 +250,8 @@ namespace atto {
 
     Vec3 EditorScene::ScreenToWorldOrtho( Vec2 screenPos ) const {
         Vec2i windowSize = Engine::Get().GetWindowSize();
-        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>( windowSize.x ) - 1.0f;
-        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>( windowSize.y );
+        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>(windowSize.x) - 1.0f;
+        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>(windowSize.y);
         Mat4 invVP = glm::inverse( GetOrthoViewProjectionMatrix() );
         Vec4 world = invVP * Vec4( ndcX, ndcY, 0.0f, 1.0f );
         return Vec3( world ) / world.w;
@@ -246,10 +259,10 @@ namespace atto {
 
     void EditorScene::GetOrthoAxes( i32 & hAxis, i32 & vAxis ) const {
         switch ( viewMode ) {
-            case EditorViewMode::XY: hAxis = 0; vAxis = 1; break;
-            case EditorViewMode::ZY: hAxis = 2; vAxis = 1; break;
-            case EditorViewMode::XZ: hAxis = 0; vAxis = 2; break;
-            default: hAxis = 0; vAxis = 1; break;
+        case EditorViewMode::XY: hAxis = 0; vAxis = 1; break;
+        case EditorViewMode::ZY: hAxis = 2; vAxis = 1; break;
+        case EditorViewMode::XZ: hAxis = 0; vAxis = 2; break;
+        default: hAxis = 0; vAxis = 1; break;
         }
     }
 
@@ -265,7 +278,7 @@ namespace atto {
             f32 maxV = brush.center[vAxis] + brush.halfExtents[vAxis];
 
             if ( worldPos[hAxis] >= minH && worldPos[hAxis] <= maxH &&
-                 worldPos[vAxis] >= minV && worldPos[vAxis] <= maxV ) {
+                worldPos[vAxis] >= minV && worldPos[vAxis] <= maxV ) {
                 return i;
             }
         }
@@ -274,8 +287,8 @@ namespace atto {
 
     i32 EditorScene::BrushPick3D( Vec2 screenPos ) const {
         Vec2i windowSize = Engine::Get().GetWindowSize();
-        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>( windowSize.x ) - 1.0f;
-        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>( windowSize.y );
+        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>(windowSize.x) - 1.0f;
+        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>(windowSize.y);
 
         Mat4 invVP = glm::inverse( flyCamera.GetViewProjectionMatrix() );
         Vec4 nearNDC = invVP * Vec4( ndcX, ndcY, -1.0f, 1.0f );
@@ -304,9 +317,10 @@ namespace atto {
                         hit = false;
                         break;
                     }
-                } else {
-                    f32 t1 = ( aabbMin[a] - rayOrigin[a] ) / rayDir[a];
-                    f32 t2 = ( aabbMax[a] - rayOrigin[a] ) / rayDir[a];
+                }
+                else {
+                    f32 t1 = (aabbMin[a] - rayOrigin[a]) / rayDir[a];
+                    f32 t2 = (aabbMax[a] - rayOrigin[a]) / rayDir[a];
                     if ( t1 > t2 ) { f32 tmp = t1; t1 = t2; t2 = tmp; }
                     if ( t1 > tmin ) tmin = t1;
                     if ( t2 < tmax ) tmax = t2;
@@ -348,22 +362,22 @@ namespace atto {
 
         if ( inVRange ) {
             f32 d = Abs( worldClickPos[hAxis] - hMin );
-            if ( d < bestDist && ( worldClickPos[hAxis] - brush.center[hAxis] ) < 0.0f ) {
+            if ( d < bestDist && (worldClickPos[hAxis] - brush.center[hAxis]) < 0.0f ) {
                 bestAxis = hAxis; bestSign = -1; bestDist = d;
             }
             d = Abs( worldClickPos[hAxis] - hMax );
-            if ( d < bestDist && ( worldClickPos[hAxis] - brush.center[hAxis] ) > 0.0f ) {
+            if ( d < bestDist && (worldClickPos[hAxis] - brush.center[hAxis]) > 0.0f ) {
                 bestAxis = hAxis; bestSign = 1; bestDist = d;
             }
         }
 
         if ( inHRange ) {
             f32 d = Abs( worldClickPos[vAxis] - vMin );
-            if ( d < bestDist && ( worldClickPos[vAxis] - brush.center[vAxis] ) < 0.0f ) {
+            if ( d < bestDist && (worldClickPos[vAxis] - brush.center[vAxis]) < 0.0f ) {
                 bestAxis = vAxis; bestSign = -1; bestDist = d;
             }
             d = Abs( worldClickPos[vAxis] - vMax );
-            if ( d < bestDist && ( worldClickPos[vAxis] - brush.center[vAxis] ) > 0.0f ) {
+            if ( d < bestDist && (worldClickPos[vAxis] - brush.center[vAxis]) > 0.0f ) {
                 bestAxis = vAxis; bestSign = 1; bestDist = d;
             }
         }
@@ -398,14 +412,15 @@ namespace atto {
             if ( draggedPos < brushDrag.fixedEdge + MIN_SIZE ) {
                 draggedPos = brushDrag.fixedEdge + MIN_SIZE;
             }
-            brush.center[brushDrag.axis] = ( brushDrag.fixedEdge + draggedPos ) * 0.5f;
-            brush.halfExtents[brushDrag.axis] = ( draggedPos - brushDrag.fixedEdge ) * 0.5f;
-        } else {
+            brush.center[brushDrag.axis] = (brushDrag.fixedEdge + draggedPos) * 0.5f;
+            brush.halfExtents[brushDrag.axis] = (draggedPos - brushDrag.fixedEdge) * 0.5f;
+        }
+        else {
             if ( draggedPos > brushDrag.fixedEdge - MIN_SIZE ) {
                 draggedPos = brushDrag.fixedEdge - MIN_SIZE;
             }
-            brush.center[brushDrag.axis] = ( draggedPos + brushDrag.fixedEdge ) * 0.5f;
-            brush.halfExtents[brushDrag.axis] = ( brushDrag.fixedEdge - draggedPos ) * 0.5f;
+            brush.center[brushDrag.axis] = (draggedPos + brushDrag.fixedEdge) * 0.5f;
+            brush.halfExtents[brushDrag.axis] = (brushDrag.fixedEdge - draggedPos) * 0.5f;
         }
 
         map.RebuildBrushModel( brushDrag.brushIndex );
@@ -450,7 +465,7 @@ namespace atto {
             char label[64];
             snprintf( label, sizeof( label ), "Brush %d", i );
 
-            bool isSelected = ( selectedBrushIndex == i );
+            bool isSelected = (selectedBrushIndex == i);
             if ( ImGui::Selectable( label, isSelected ) ) {
                 selectedBrushIndex = i;
             }

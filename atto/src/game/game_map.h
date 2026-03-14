@@ -3,12 +3,23 @@
 
 namespace atto {
 
+    constexpr f32 PlayerHeight = 2.0f;
+    constexpr f32 PlayerEyeHeight = 1.8f;
+
+    struct PlayerStart {
+        Vec3 spawnPos;
+        Mat3 spawnOri;
+    };
+
     class GameMap {
     public:
         GameMap();
         ~GameMap();
 
         void Initialize();
+
+        void StartMap();
+
         void Update( f32 dt );
         void Render( Renderer & renderer, f32 dt, bool lit, i32 selectedBrush = -1 );
 
@@ -25,6 +36,8 @@ namespace atto {
 
     private:
         std::vector<StaticModel> staticModels;
+
+        PlayerStart playerStart;
 
         StaticModel model;
         Texture texture;

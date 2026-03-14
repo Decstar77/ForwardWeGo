@@ -17,6 +17,10 @@ namespace atto {
         texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
     }
 
+    void GameMap::StartMap() {
+
+    }
+
     void GameMap::Update( f32 dt ) {
     }
 
