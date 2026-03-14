@@ -55,7 +55,8 @@ namespace atto {
         Mat4 GetOrthoViewProjectionMatrix() const;
 
         Vec3 ScreenToWorldOrtho( Vec2 screenPos ) const;
-        void GetOrthoAxes( i32 & hAxis, i32 & vAxis ) const;
+
+        void BrushGetOrthoAxes( i32 & hAxis, i32 & vAxis ) const;
         i32  BrushPickOrtho( Vec3 worldPos ) const;
         i32  BrushPick3D( Vec2 screenPos ) const;
         bool BrushTryStartEdgeDrag( Vec3 worldClickPos );

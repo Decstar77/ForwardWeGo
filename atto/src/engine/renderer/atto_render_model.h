@@ -186,6 +186,9 @@ namespace atto {
         void ToStaticModel( StaticModel & model ) const;
         void Serialize( Serializer & serializer );
 
+        bool IsPointInside( Vec3 point ) const;
+        bool IsPointInside( Vec3 point, i32 hAxis, i32 vAxis) const;
+
         Vec3 center = Vec3( 0.0f );
         Vec3 halfExtents = Vec3( 0.5f );
     };

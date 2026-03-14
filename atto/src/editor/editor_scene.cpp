@@ -47,7 +47,7 @@ namespace atto {
         Input & input = Engine::Get().GetInput();
 
         if ( input.IsKeyPressed( Key::Escape ) ) {
-            Engine::Get().RequestQuit();
+            selectedBrushIndex = -1;
         }
 
         if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
@@ -83,14 +83,14 @@ namespace atto {
 
             if ( viewMode != EditorViewMode::Cam3D ) {
                 Vec3 worldPos = ScreenToWorldOrtho( mousePos );
-                if ( !BrushTryStartEdgeDrag( worldPos ) ) {
-                    i32 picked = BrushPickOrtho( worldPos );
-                    if ( picked >= 0 && picked == selectedBrushIndex ) {
-                        BrushStartMoveDrag( worldPos );
-                    }
-                    else {
-                        selectedBrushIndex = picked;
-                    }
+
+                i32 picked = BrushPickOrtho( worldPos );
+                if ( picked >= 0 ) {
+                    selectedBrushIndex = picked;
+                    BrushStartMoveDrag( worldPos );
+                }
+                else {
+                    BrushTryStartEdgeDrag( worldPos );
                 }
             }
             else {
@@ -267,7 +267,7 @@ namespace atto {
         return Vec3( world ) / world.w;
     }
 
-    void EditorScene::GetOrthoAxes( i32 & hAxis, i32 & vAxis ) const {
+    void EditorScene::BrushGetOrthoAxes( i32 & hAxis, i32 & vAxis ) const {
         switch ( viewMode ) {
         case EditorViewMode::XY: hAxis = 0; vAxis = 1; break;
         case EditorViewMode::ZY: hAxis = 2; vAxis = 1; break;
@@ -278,17 +278,11 @@ namespace atto {
 
     i32 EditorScene::BrushPickOrtho( Vec3 worldPos ) const {
         i32 hAxis, vAxis;
-        GetOrthoAxes( hAxis, vAxis );
+        BrushGetOrthoAxes( hAxis, vAxis );
 
         for ( i32 i = map.GetBrushCount() - 1; i >= 0; i-- ) {
             const Brush & brush = map.GetBrush( i );
-            f32 minH = brush.center[hAxis] - brush.halfExtents[hAxis];
-            f32 maxH = brush.center[hAxis] + brush.halfExtents[hAxis];
-            f32 minV = brush.center[vAxis] - brush.halfExtents[vAxis];
-            f32 maxV = brush.center[vAxis] + brush.halfExtents[vAxis];
-
-            if ( worldPos[hAxis] >= minH && worldPos[hAxis] <= maxH &&
-                worldPos[vAxis] >= minV && worldPos[vAxis] <= maxV ) {
+            if ( brush.IsPointInside( worldPos, hAxis, vAxis ) ) {
                 return i;
             }
         }
@@ -354,17 +348,18 @@ namespace atto {
 
         const Brush & brush = map.GetBrush( selectedBrushIndex );
         i32 hAxis, vAxis;
-        GetOrthoAxes( hAxis, vAxis );
+        BrushGetOrthoAxes( hAxis, vAxis );
 
-        f32 threshold = orthoSize * 0.1f;
 
         f32 hMin = brush.center[hAxis] - brush.halfExtents[hAxis];
         f32 hMax = brush.center[hAxis] + brush.halfExtents[hAxis];
         f32 vMin = brush.center[vAxis] - brush.halfExtents[vAxis];
         f32 vMax = brush.center[vAxis] + brush.halfExtents[vAxis];
 
-        bool inVRange = worldClickPos[vAxis] >= vMin - threshold && worldClickPos[vAxis] <= vMax + threshold;
-        bool inHRange = worldClickPos[hAxis] >= hMin - threshold && worldClickPos[hAxis] <= hMax + threshold;
+        bool inVRange = worldClickPos[vAxis] >= vMin && worldClickPos[vAxis] <= vMax;
+        bool inHRange = worldClickPos[hAxis] >= hMin && worldClickPos[hAxis] <= hMax;
+
+        f32 threshold = orthoSize * 1.1f;
 
         i32 bestAxis = -1;
         i32 bestSign = 0;
@@ -449,7 +444,7 @@ namespace atto {
         }
 
         i32 hAxis, vAxis;
-        GetOrthoAxes( hAxis, vAxis );
+        BrushGetOrthoAxes( hAxis, vAxis );
 
         Brush & brush = map.GetBrush( brushDrag.brushIndex );
         brush.center[hAxis] += worldMousePos[hAxis] - brushDrag.lastWorldPos[hAxis];

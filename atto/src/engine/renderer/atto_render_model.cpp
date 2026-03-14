@@ -611,7 +611,7 @@ namespace atto {
 
         i32 nextIndex = index + 1;
         f32 deltaTime = keys[nextIndex].time - keys[index].time;
-        f32 factor = ( deltaTime > 0.0f ) ? ( animTime - keys[index].time ) / deltaTime : 0.0f;
+        f32 factor = (deltaTime > 0.0f) ? (animTime - keys[index].time) / deltaTime : 0.0f;
         factor = Clamp( factor, 0.0f, 1.0f );
 
         return Lerp( keys[index].position, keys[nextIndex].position, factor );
@@ -633,7 +633,7 @@ namespace atto {
 
         i32 nextIndex = index + 1;
         f32 deltaTime = keys[nextIndex].time - keys[index].time;
-        f32 factor = ( deltaTime > 0.0f ) ? ( animTime - keys[index].time ) / deltaTime : 0.0f;
+        f32 factor = (deltaTime > 0.0f) ? (animTime - keys[index].time) / deltaTime : 0.0f;
         factor = Clamp( factor, 0.0f, 1.0f );
 
         return glm::normalize( glm::slerp( keys[index].rotation, keys[nextIndex].rotation, factor ) );
@@ -655,7 +655,7 @@ namespace atto {
 
         i32 nextIndex = index + 1;
         f32 deltaTime = keys[nextIndex].time - keys[index].time;
-        f32 factor = ( deltaTime > 0.0f ) ? ( animTime - keys[index].time ) / deltaTime : 0.0f;
+        f32 factor = (deltaTime > 0.0f) ? (animTime - keys[index].time) / deltaTime : 0.0f;
         factor = Clamp( factor, 0.0f, 1.0f );
 
         return Lerp( keys[index].scale, keys[nextIndex].scale, factor );
@@ -745,6 +745,17 @@ namespace atto {
     void Brush::Serialize( Serializer & serializer ) {
         serializer( "center", center );
         serializer( "halfExtents", halfExtents );
+    }
+
+    bool Brush::IsPointInside( Vec3 point ) const {
+        return  point.x >= center.x - halfExtents.x && point.x <= center.x + halfExtents.x &&
+                point.y >= center.y - halfExtents.y && point.y <= center.y + halfExtents.y &&
+                point.z >= center.z - halfExtents.z && point.z <= center.z + halfExtents.z;
+    }
+
+    bool Brush::IsPointInside( Vec3 point, i32 hAxis, i32 vAxis ) const {
+        return  point[hAxis] >= center[hAxis] - halfExtents[hAxis] && point[hAxis] <= center[hAxis] + halfExtents[hAxis] &&
+                point[vAxis] >= center[vAxis] - halfExtents[vAxis] && point[vAxis] <= center[vAxis] + halfExtents[vAxis];
     }
 
 } // namespace atto
