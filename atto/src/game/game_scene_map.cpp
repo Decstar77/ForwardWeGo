@@ -55,8 +55,11 @@ namespace atto {
     void GameMapScene::OnRender( Renderer & renderer ) {
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
         map.Render( renderer, 0.0, 1, -1 );
-        renderer.RenderAnimatedModel( playerHands, animator, Mat4( 1 ) );
-        //renderer.RenderStaticModelUnlit( playerHands, Mat4( 1 ) );
+
+        Mat4 cameraWorld = glm::inverse( camera.GetViewMatrix() );
+        Mat4 armsMatrix = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset );
+
+        renderer.RenderAnimatedModel( playerHands, animator, armsMatrix );
     }
 
     void GameMapScene::OnShutdown() {
