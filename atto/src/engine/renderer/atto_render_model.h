@@ -17,14 +17,14 @@ namespace atto {
         Vec2 texCoords;
     };
 
-    struct SkinnedVertex {
+    struct AnimationVertex {
         Vec3 position;
         Vec3 normal;
         Vec2 texCoords;
         i32  boneIDs[MAX_BONES_PER_VERTEX];
         f32  boneWeights[MAX_BONES_PER_VERTEX];
 
-        SkinnedVertex() {
+        AnimationVertex() {
             for ( i32 i = 0; i < MAX_BONES_PER_VERTEX; i++ ) {
                 boneIDs[i] = -1;
                 boneWeights[i] = 0.0f;
@@ -97,9 +97,9 @@ namespace atto {
         i32 indexCount = 0;
     };
 
-    class SkinnedMesh {
+    class AnimatedMesh {
     public:
-        void Create( const std::vector<SkinnedVertex> & vertices, const std::vector<u32> & indices );
+        void Create( const std::vector<AnimationVertex> & vertices, const std::vector<u32> & indices );
         void Destroy();
         void Draw() const;
 
@@ -132,18 +132,20 @@ namespace atto {
         void Destroy();
         void Draw() const;
 
+        void DebugPrint() const;
+
         bool IsLoaded() const { return !meshes.empty(); }
         i32  GetMeshCount() const { return static_cast<i32>(meshes.size()); }
         i32  GetBoneCount() const { return boneCounter; }
         i32  GetAnimationCount() const { return static_cast<i32>(animations.size()); }
 
-        const std::unordered_map<std::string, BoneInfo> & GetBoneInfoMap() const { return boneInfoMap; }
-        const BoneNode &                    GetRootNode() const { return rootNode; }
-        const Mat4 &                        GetGlobalInverseTransform() const { return globalInverseTransform; }
-        const std::vector<AnimationClip> &  GetAnimations() const { return animations; }
+        const std::unordered_map<std::string, BoneInfo> &   GetBoneInfoMap() const { return boneInfoMap; }
+        const BoneNode &                                    GetRootNode() const { return rootNode; }
+        const Mat4 &                                        GetGlobalInverseTransform() const { return globalInverseTransform; }
+        const std::vector<AnimationClip> &                  GetAnimations() const { return animations; }
 
     private:
-        std::vector<SkinnedMesh>                    meshes;
+        std::vector<AnimatedMesh>                   meshes;
         std::unordered_map<std::string, BoneInfo>   boneInfoMap;
         i32                                         boneCounter = 0;
         BoneNode                                    rootNode;

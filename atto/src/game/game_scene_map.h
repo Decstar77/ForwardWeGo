@@ -20,9 +20,9 @@ namespace atto {
         void OnResize( i32 width, i32 height ) override;
 
     private:
-        GameMap     map;
-        StaticModel playerHands;
-        FPSCamera   camera;
+        GameMap         map;
+        AnimatedModel   playerHands;
+        FPSCamera       camera;
     };
 
 }

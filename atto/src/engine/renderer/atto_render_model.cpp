@@ -85,7 +85,7 @@ namespace atto {
     // SkinnedMesh (with bone weights)
     // =========================================================================
 
-    void SkinnedMesh::Create( const std::vector<SkinnedVertex> & vertices, const std::vector<u32> & indices ) {
+    void AnimatedMesh::Create( const std::vector<AnimationVertex> & vertices, const std::vector<u32> & indices ) {
         indexCount = static_cast<i32>(indices.size());
 
         glGenVertexArrays( 1, &vao );
@@ -95,42 +95,42 @@ namespace atto {
         glBindVertexArray( vao );
 
         glBindBuffer( GL_ARRAY_BUFFER, vbo );
-        glBufferData( GL_ARRAY_BUFFER, vertices.size() * sizeof( SkinnedVertex ), vertices.data(), GL_STATIC_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, vertices.size() * sizeof( AnimationVertex ), vertices.data(), GL_STATIC_DRAW );
 
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ebo );
         glBufferData( GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof( u32 ), indices.data(), GL_STATIC_DRAW );
 
         // Position (location = 0)
-        glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( SkinnedVertex ), (void *)offsetof( SkinnedVertex, position ) );
+        glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( AnimationVertex ), (void *)offsetof( AnimationVertex, position ) );
         glEnableVertexAttribArray( 0 );
 
         // Normal (location = 1)
-        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( SkinnedVertex ), (void *)offsetof( SkinnedVertex, normal ) );
+        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( AnimationVertex ), (void *)offsetof( AnimationVertex, normal ) );
         glEnableVertexAttribArray( 1 );
 
         // TexCoords (location = 2)
-        glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( SkinnedVertex ), (void *)offsetof( SkinnedVertex, texCoords ) );
+        glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, sizeof( AnimationVertex ), (void *)offsetof( AnimationVertex, texCoords ) );
         glEnableVertexAttribArray( 2 );
 
         // BoneIDs (location = 3) - integer attribute
-        glVertexAttribIPointer( 3, MAX_BONES_PER_VERTEX, GL_INT, sizeof( SkinnedVertex ), (void *)offsetof( SkinnedVertex, boneIDs ) );
+        glVertexAttribIPointer( 3, MAX_BONES_PER_VERTEX, GL_INT, sizeof( AnimationVertex ), (void *)offsetof( AnimationVertex, boneIDs ) );
         glEnableVertexAttribArray( 3 );
 
         // BoneWeights (location = 4)
-        glVertexAttribPointer( 4, MAX_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof( SkinnedVertex ), (void *)offsetof( SkinnedVertex, boneWeights ) );
+        glVertexAttribPointer( 4, MAX_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof( AnimationVertex ), (void *)offsetof( AnimationVertex, boneWeights ) );
         glEnableVertexAttribArray( 4 );
 
         glBindVertexArray( 0 );
     }
 
-    void SkinnedMesh::Destroy() {
+    void AnimatedMesh::Destroy() {
         if ( ebo != 0 ) { glDeleteBuffers( 1, &ebo ); ebo = 0; }
         if ( vbo != 0 ) { glDeleteBuffers( 1, &vbo ); vbo = 0; }
         if ( vao != 0 ) { glDeleteVertexArrays( 1, &vao ); vao = 0; }
         indexCount = 0;
     }
 
-    void SkinnedMesh::Draw() const {
+    void AnimatedMesh::Draw() const {
         glBindVertexArray( vao );
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0 );
         glBindVertexArray( 0 );
@@ -276,7 +276,7 @@ namespace atto {
 
     static void ExtractBoneData(
         aiMesh * mesh,
-        std::vector<SkinnedVertex> & vertices,
+        std::vector<AnimationVertex> & vertices,
         std::unordered_map<std::string, BoneInfo> & boneInfoMap,
         i32 & boneCounter
     ) {
@@ -304,19 +304,19 @@ namespace atto {
         }
     }
 
-    static SkinnedMesh ProcessSkinnedMesh(
+    static AnimatedMesh ProcessSkinnedMesh(
         aiMesh * mesh,
         const aiScene * scene,
         f32 scale,
         std::unordered_map<std::string, BoneInfo> & boneInfoMap,
         i32 & boneCounter
     ) {
-        std::vector<SkinnedVertex> vertices;
+        std::vector<AnimationVertex> vertices;
         std::vector<u32> indices;
 
         vertices.resize( mesh->mNumVertices );
         for ( u32 i = 0; i < mesh->mNumVertices; i++ ) {
-            SkinnedVertex & vertex = vertices[i];
+            AnimationVertex & vertex = vertices[i];
 
             vertex.position.x = mesh->mVertices[i].x * scale;
             vertex.position.y = mesh->mVertices[i].y * scale;
@@ -343,7 +343,7 @@ namespace atto {
 
         ExtractBoneData( mesh, vertices, boneInfoMap, boneCounter );
 
-        SkinnedMesh result;
+        AnimatedMesh result;
         result.Create( vertices, indices );
         return result;
     }
@@ -351,7 +351,7 @@ namespace atto {
     static void ProcessSkinnedNode(
         aiNode * node,
         const aiScene * scene,
-        std::vector<SkinnedMesh> & meshes,
+        std::vector<AnimatedMesh> & meshes,
         f32 scale,
         std::unordered_map<std::string, BoneInfo> & boneInfoMap,
         i32 & boneCounter
@@ -387,9 +387,9 @@ namespace atto {
 
             AnimationClip clip;
             clip.name = anim->mName.C_Str();
-            clip.duration = static_cast<f32>(anim->mDuration);
+            clip.duration = static_cast<f32>( anim->mDuration );
             clip.ticksPerSecond = anim->mTicksPerSecond != 0.0
-                ? static_cast<f32>(anim->mTicksPerSecond)
+                ? static_cast<f32>( anim->mTicksPerSecond )
                 : 25.0f;
 
             clip.channels.reserve( anim->mNumChannels );
@@ -402,7 +402,7 @@ namespace atto {
                 channel.positionKeys.reserve( nodeAnim->mNumPositionKeys );
                 for ( u32 k = 0; k < nodeAnim->mNumPositionKeys; k++ ) {
                     PositionKeyframe key;
-                    key.time = static_cast<f32>(nodeAnim->mPositionKeys[k].mTime);
+                    key.time = static_cast<f32>( nodeAnim->mPositionKeys[k].mTime );
                     key.position = AiVec3ToGlm( nodeAnim->mPositionKeys[k].mValue );
                     channel.positionKeys.push_back( key );
                 }
@@ -410,7 +410,7 @@ namespace atto {
                 channel.rotationKeys.reserve( nodeAnim->mNumRotationKeys );
                 for ( u32 k = 0; k < nodeAnim->mNumRotationKeys; k++ ) {
                     RotationKeyframe key;
-                    key.time = static_cast<f32>(nodeAnim->mRotationKeys[k].mTime);
+                    key.time = static_cast<f32>( nodeAnim->mRotationKeys[k].mTime );
                     key.rotation = AiQuatToGlm( nodeAnim->mRotationKeys[k].mValue );
                     channel.rotationKeys.push_back( key );
                 }
@@ -418,7 +418,7 @@ namespace atto {
                 channel.scaleKeys.reserve( nodeAnim->mNumScalingKeys );
                 for ( u32 k = 0; k < nodeAnim->mNumScalingKeys; k++ ) {
                     ScaleKeyframe key;
-                    key.time = static_cast<f32>(nodeAnim->mScalingKeys[k].mTime);
+                    key.time = static_cast<f32>( nodeAnim->mScalingKeys[k].mTime );
                     key.scale = AiVec3ToGlm( nodeAnim->mScalingKeys[k].mValue );
                     channel.scaleKeys.push_back( key );
                 }
@@ -460,7 +460,7 @@ namespace atto {
             const AnimationClip & clip = animations[i];
             LOG_INFO( "  Animation[%d]: '%s' (duration: %.1f, ticks/s: %.1f, channels: %d)",
                 i, clip.name.c_str(), clip.duration, clip.ticksPerSecond,
-                static_cast<i32>(clip.channels.size()) );
+                static_cast<i32>( clip.channels.size() ) );
         }
     }
 
@@ -482,6 +482,33 @@ namespace atto {
         }
     }
 
+    void AnimatedModel::DebugPrint() const {
+        // Print bones
+        LOG_INFO( "BoneCount: %d", GetBoneCount() );
+        for ( const auto & bonePair : boneInfoMap ) {
+            const std::string & boneName = bonePair.first;
+            const BoneInfo & boneInfo = bonePair.second;
+            LOG_INFO( "  Bone: '%s' (id=%d)", boneName.c_str(), boneInfo.id );
+        }
+
+        // Print animations
+        LOG_INFO( "AnimationCount: %d", GetAnimationCount() );
+        for ( i32 i = 0; i < GetAnimationCount(); i++ ) {
+            const AnimationClip & clip = animations[i];
+            LOG_INFO( "  Animation[%d]: '%s' (duration: %.2f, ticks/s: %.2f, channels: %d)",
+                i, clip.name.c_str(), clip.duration, clip.ticksPerSecond, (i32)clip.channels.size()
+            );
+            for ( const auto & channel : clip.channels ) {
+                LOG_INFO( "    Channel: '%s' (pos: %zu keys, rot: %zu keys, scale: %zu keys)",
+                    channel.boneName.c_str(),
+                    channel.positionKeys.size(),
+                    channel.rotationKeys.size(),
+                    channel.scaleKeys.size()
+                );
+            }
+        }
+    }
+
     // =========================================================================
     // Brush
     // =========================================================================
@@ -494,21 +521,22 @@ namespace atto {
         std::vector<Vertex> vertices( 24 );
         std::vector<u32> indices( 36 );
 
-        auto setFace = [&]( i32 face, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3, Vec3 n ) {
-            i32 base = face * 4;
-            vertices[base + 0] = { p0, n, Vec2( 0.0f, 0.0f ) };
-            vertices[base + 1] = { p1, n, Vec2( 1.0f, 0.0f ) };
-            vertices[base + 2] = { p2, n, Vec2( 1.0f, 1.0f ) };
-            vertices[base + 3] = { p3, n, Vec2( 0.0f, 1.0f ) };
+        auto setFace = [&]( i32 face, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3, Vec3 n )
+            {
+                i32 base = face * 4;
+                vertices[base + 0] = { p0, n, Vec2( 0.0f, 0.0f ) };
+                vertices[base + 1] = { p1, n, Vec2( 1.0f, 0.0f ) };
+                vertices[base + 2] = { p2, n, Vec2( 1.0f, 1.0f ) };
+                vertices[base + 3] = { p3, n, Vec2( 0.0f, 1.0f ) };
 
-            i32 idx = face * 6;
-            indices[idx + 0] = base + 0;
-            indices[idx + 1] = base + 1;
-            indices[idx + 2] = base + 2;
-            indices[idx + 3] = base + 0;
-            indices[idx + 4] = base + 2;
-            indices[idx + 5] = base + 3;
-        };
+                i32 idx = face * 6;
+                indices[idx + 0] = base + 0;
+                indices[idx + 1] = base + 1;
+                indices[idx + 2] = base + 2;
+                indices[idx + 3] = base + 0;
+                indices[idx + 4] = base + 2;
+                indices[idx + 5] = base + 3;
+            };
 
         // +Z face (front)
         setFace( 0,
