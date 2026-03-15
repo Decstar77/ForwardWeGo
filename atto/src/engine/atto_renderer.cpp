@@ -628,6 +628,10 @@ namespace atto {
         DebugLine( corners[3], corners[7], color );
     }
 
+    void Renderer::DebugCapsule( const Capsule & cap, const Vec3 & color ) {
+ 
+    }
+
     void Renderer::FlushDebugLines() {
         if ( debugLineVerts.empty() ) {
             return;

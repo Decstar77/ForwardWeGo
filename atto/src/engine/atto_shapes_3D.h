@@ -23,11 +23,22 @@ namespace atto {
         f32     height;  // distance between the two hemisphere centres
         f32     radius;
 
+        
+        inline Vec3 GetTopTip() const { return base + Vec3( 0.0f, height, 0.0f ); }
+        inline Vec3 GetBottomTip() const { return base - Vec3( 0.0f, height, 0.0f ); }
+
         inline static Capsule FromBaseTopRadius( const Vec3 & base, const Vec3 & top, f32 radius ) { return { base, glm::distance( base, top ), radius }; }
         inline static Capsule FromEndpoints( const Vec3 & p0, const Vec3 & p1, f32 radius ) { return { p0, glm::distance( p0, p1 ), radius }; }
-        inline static Capsule FromCenterHeightAxis( const Vec3 & center, f32 height, const Vec3 & axisDir, f32 radius ) {
-            Vec3 halfAxis = glm::normalize( axisDir ) * (height * 0.5f);
-            Vec3 base = center - halfAxis;
+        inline static Capsule FromTips( const Vec3 & bottomTip, const Vec3 & topTip, f32 radius ) {
+            Vec3 axis = topTip - bottomTip;
+            f32 axisLen = glm::length( axis );
+            if ( axisLen < 2.0f * radius ) {
+                // Degenerate, collapse to a sphere
+                return { bottomTip + axis * 0.5f, 0.0f, radius };
+            }
+            Vec3 dir = axis / axisLen;
+            Vec3 base = bottomTip + dir * radius;
+            f32 height = axisLen - 2.0f * radius;
             return { base, height, radius };
         }
     };

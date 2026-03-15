@@ -37,7 +37,7 @@ namespace atto {
             "footsteps/Light-Armor-Concrete-Walking-8.wav",
             "footsteps/Light-Armor-Concrete-Walking-9.wav",
             "footsteps/Light-Armor-Concrete-Walking-10.wav",
-        } );
+            } );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
@@ -81,6 +81,11 @@ namespace atto {
         // if ( input.IsKeyPressed( Key::L ) ) {
         //     LOG_INFO( "ArmsLocalOffset: (%f, %f, %f)", ArmsLocalOffset.x, ArmsLocalOffset.y, ArmsLocalOffset.z );
         // }
+
+        // Hack
+        Vec3 playerPos = camera.GetPosition();
+        playerPos.y = 0;
+        playerCapsule = Capsule::FromTips( playerPos, playerPos + Vec3( 0, PlayerHeight, 0 ), 0.2f );
 
         bool isMoving = false;
         if ( input.IsKeyDown( Key::W ) ) { camera.MoveForward( speed );  isMoving = true; }
