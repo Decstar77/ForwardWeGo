@@ -43,7 +43,7 @@ namespace atto {
         virtual void Serialize( Serializer & serializer );
 
     protected:
-        EntityType type;
+        EntityType type = EntityType::None;
         GameMap * map = nullptr;
         Vec3 position = Vec3( 0.0f, 0.0f, 0.0f );
         Mat3 orientation = Mat3( 1 );

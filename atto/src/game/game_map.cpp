@@ -23,6 +23,8 @@ namespace atto {
         model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
         texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
 
+       // CreateEntity( EntityType::Barrel );
+
         brushModels.resize( brushes.size() );
         brushCollsion.resize( brushes.size() );
         RebuildAllBrushModels();
@@ -81,8 +83,7 @@ namespace atto {
         }
 
         entity->SetMap( this );
-        entities.emplace_back( std::move( entity ) );
-        return entity.get();
+        return entities.emplace_back( std::move( entity ) ).get();
     }
 
     void GameMap::DestroyEntity( Entity * entity ) {
@@ -180,5 +181,24 @@ namespace atto {
     void GameMap::Serialize( Serializer & serializer ) {
         serializer( "playerStart", playerStart );
         serializer( "brushes", brushes );
+
+        if ( serializer.IsSaving() ) {
+            std::vector<Entity> entityData;
+            for ( auto & entity : entities ) {
+                entityData.emplace_back( *entity );
+            }
+
+            serializer( "entities", entityData );
+        }
+        else {
+            entities.clear();
+            std::vector<Entity> entityData;
+            serializer( "entities", entityData );
+            for ( auto & entity : entityData ) {
+                Entity * newEntity = CreateEntity( entity.GetType() );
+                *newEntity = entity;
+                newEntity->SetMap( this );
+            }
+        }
     }
 }
