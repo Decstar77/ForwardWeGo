@@ -31,6 +31,7 @@ namespace atto {
 
         PlayerStart & GetPlayerStart() { return playerStart; }
         const PlayerStart & GetPlayerStart() const { return playerStart; }
+        bool IsPlayerStartColliding() const;
 
 
         // =========== Brushes ===========

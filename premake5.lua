@@ -41,6 +41,7 @@ project "atto"
         "vendor/imgui/imgui_impl_opengl3.cpp",
         "vendor/imgui/imgui_tables.cpp",
         "vendor/imgui/imgui_widgets.cpp",
+        "vendor/imgui-gizmo/ImGuizmo.cpp",
     }
 
     includedirs {
@@ -49,6 +50,7 @@ project "atto"
         "vendor/json",
         "vendor/audio",
         "vendor/imgui",
+        "vendor/imgui-gizmo",
         "vendor/clipper2/CPP/Clipper2Lib/include",
         "vendor/fpm",
         "vendor/enet/include",

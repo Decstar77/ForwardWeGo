@@ -111,6 +111,17 @@ namespace atto {
         }
     }
 
+    bool GameMap::IsPlayerStartColliding() const {
+        Capsule cap = playerStart.GetCapsule();
+        for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
+            AlignedBox box = AlignedBox::FromCenterSize( brushes[i].center, brushes[i].halfExtents * 2.0f );
+            if ( IntersectionTest::CapsuleAlignedBox( cap, box ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void GameMap::Serialize( Serializer & serializer ) {
         serializer( "playerStart", playerStart );
         serializer( "brushes", brushes );

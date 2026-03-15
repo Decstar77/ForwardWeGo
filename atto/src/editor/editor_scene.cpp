@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <ImGuizmo.h>
 
 namespace atto {
 
@@ -88,7 +89,7 @@ namespace atto {
             }
         }
 
-        bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse;
+        bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver() || ImGuizmo::IsUsing();
         if ( !imguiWantsMouse && brushDrag.mode == BrushDragMode::None && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             Vec2 mousePos = input.GetMousePosition();
 
@@ -239,7 +240,8 @@ namespace atto {
         map.Render( renderer, 0.0, renderMode == EditorRenderMode::Lit, selectedBrushIndex );
 
         const PlayerStart & playerStart = map.GetPlayerStart();
-        renderer.DebugCapsule( playerStart.GetCapsule() );
+        Vec3 capsuleColor = map.IsPlayerStartColliding() ? Vec3( 1.0f, 0.0f, 0.0f ) : Vec3( 0.0f, 1.0f, 0.0f );
+        renderer.DebugCapsule( playerStart.GetCapsule(), capsuleColor );
 
         renderer.SetWireframe( false );
 
@@ -251,6 +253,58 @@ namespace atto {
         ImGui_ImplGlfw_NewFrame();
 
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
+
+        {
+            ImGuiIO & io = ImGui::GetIO();
+            ImGuizmo::SetRect( 0, 0, io.DisplaySize.x, io.DisplaySize.y );
+            ImGuizmo::SetOrthographic( viewMode != EditorViewMode::Cam3D );
+
+            Mat4 view;
+            Mat4 proj;
+            if ( viewMode == EditorViewMode::Cam3D ) {
+                view = flyCamera.GetViewMatrix();
+                proj = flyCamera.GetProjectionMatrix();
+            }
+            else {
+                Vec2i ws = Engine::Get().GetWindowSize();
+                f32 aspect = (ws.y > 0) ? static_cast<f32>(ws.x) / static_cast<f32>(ws.y) : 1.0f;
+                f32 halfH = orthoSize;
+                f32 halfW = orthoSize * aspect;
+                proj = glm::ortho( -halfW, halfW, -halfH, halfH, -1000.0f, 1000.0f );
+
+                constexpr f32 d = 500.0f;
+                switch ( viewMode ) {
+                case EditorViewMode::XY:
+                    view = glm::lookAt( orthoTarget + Vec3( 0, 0, d ), orthoTarget, Vec3( 0, 1, 0 ) );
+                    break;
+                case EditorViewMode::ZY:
+                    view = glm::lookAt( orthoTarget + Vec3( -d, 0, 0 ), orthoTarget, Vec3( 0, 1, 0 ) );
+                    break;
+                case EditorViewMode::XZ:
+                    view = glm::lookAt( orthoTarget + Vec3( 0, d, 0 ), orthoTarget, Vec3( 0, 0, -1 ) );
+                    break;
+                default: break;
+                }
+            }
+
+            PlayerStart & ps = map.GetPlayerStart();
+            Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), ps.spawnPos );
+
+            f32 snap3[3] = { snapSize, snapSize, snapSize };
+
+            if ( ImGuizmo::Manipulate(
+                glm::value_ptr( view ),
+                glm::value_ptr( proj ),
+                ImGuizmo::TRANSLATE,
+                ImGuizmo::WORLD,
+                glm::value_ptr( gizmoMatrix ),
+                nullptr,
+                snapEnabled ? snap3 : nullptr ) )
+            {
+                ps.spawnPos = Vec3( gizmoMatrix[3] );
+            }
+        }
 
         static const char * modeLabels[] = { "XY (Front)", "ZY (Side)", "XZ (Top)", "3D Camera" };
         ImGui::SetNextWindowPos( ImVec2( 10, 10 ), ImGuiCond_Always );
@@ -454,6 +508,7 @@ namespace atto {
         }
 
         map.RebuildBrushModel( brushDrag.brushIndex );
+        map.RebuildBrushCollision(brushDrag.brushIndex );
     }
 
     void EditorScene::BrushStartMoveDrag( Vec3 worldClickPos ) {
@@ -483,6 +538,7 @@ namespace atto {
         brush.center[vAxis] = SnapValue( worldMousePos[vAxis] + brushDrag.moveOffset[vAxis] ) + brush.halfExtents[vAxis];
 
         map.RebuildBrushModel( brushDrag.brushIndex );
+        map.RebuildBrushCollision(brushDrag.brushIndex );
     }
 
     f32 EditorScene::SnapValue( f32 value ) const {
@@ -515,6 +571,7 @@ namespace atto {
         brushDrag.createStartPos = snapped;
 
         map.RebuildBrushModel( selectedBrushIndex );
+        map.RebuildBrushCollision( selectedBrushIndex );
     }
 
     void EditorScene::BrushUpdateCreateDrag( Vec3 worldMousePos ) {
@@ -541,6 +598,7 @@ namespace atto {
         brush.halfExtents[vAxis] = (maxV - minV) * 0.5f;
 
         map.RebuildBrushModel( brushDrag.brushIndex );
+        map.RebuildBrushCollision(  brushDrag.brushIndex  );
     }
 
     void EditorScene::BrushFinishCreateDrag() {
