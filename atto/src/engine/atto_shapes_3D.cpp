@@ -55,7 +55,4 @@ namespace atto {
         return sqDist <= sphere.radius * sphere.radius;
     }
 
-    bool CollisionTest::SphereAlignedBox( const Sphere & sphere, const AlignedBox & box, Manifold & manifold ) {
-
-    }
 }

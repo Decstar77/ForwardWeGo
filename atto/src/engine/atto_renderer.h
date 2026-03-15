@@ -2,6 +2,7 @@
 
 #include "atto_core.h"
 #include "atto_math.h"
+#include "atto_shapes_3D.h"
 #include "renderer/atto_render_model.h"
 #include "renderer/atto_render_material.h"
 
@@ -24,7 +25,6 @@ namespace atto {
 
         void SetViewProjectionMatrix( const Mat4 & vp );
         void SetWireframe( bool enabled );
-        void RenderTestTriangle();
         void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix );
         void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color );
         void RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix );
@@ -35,6 +35,11 @@ namespace atto {
 
         void LoadSkybox( const char * filePath );
         void RenderSkybox( const Mat4 & view, const Mat4 & projection );
+
+        // Debug line drawing
+        void DebugLine( const Vec3 & a, const Vec3 & b );
+        void DebugShpere( const Sphere & sphere );
+        void DebugAlignedBox( const AlignedBox & box );
 
     private:
         Mat4 viewProjectionMatrix = Mat4( 1.0f );

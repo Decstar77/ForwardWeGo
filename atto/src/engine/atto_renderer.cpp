@@ -342,17 +342,6 @@ namespace atto {
         glPolygonMode( GL_FRONT_AND_BACK, enabled ? GL_LINE : GL_FILL );
     }
 
-    void Renderer::RenderTestTriangle() {
-        flatColorShader.Bind();
-        flatColorShader.SetMat4( "uViewProjection", viewProjectionMatrix );
-
-        glBindVertexArray( testTriangleVAO );
-        glDrawArrays( GL_TRIANGLES, 0, 3 );
-        glBindVertexArray( 0 );
-
-        flatColorShader.Unbind();
-    }
-
     void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix ) {
         RenderStaticModel( model, modelMatrix, Vec3( 0.8f ) );
     }

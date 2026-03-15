@@ -22,7 +22,9 @@ namespace atto {
         texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
 
         brushModels.resize( brushes.size() );
+        brushCollsion.resize( brushes.size() );
         RebuildAllBrushModels();
+        RebuildAllBrushCollision();
     }
 
     void GameMap::StartMap() {
@@ -81,9 +83,23 @@ namespace atto {
         brushes[index].ToStaticModel( brushModels[index] );
     }
 
+    void GameMap::RebuildBrushCollision( i32 index ) {
+        if ( index < 0 || index >= static_cast<i32>( brushes.size() ) ) {
+            return;
+        }
+
+        brushCollsion[index] = AlignedBox::FromCenterSize( brushes[index].center, brushes[index].halfExtents );
+    }
+
     void GameMap::RebuildAllBrushModels() {
         for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
             RebuildBrushModel( i );
+        }
+    }
+
+    void GameMap::RebuildAllBrushCollision() {
+        for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
+            RebuildBrushCollision( i );
         }
     }
 

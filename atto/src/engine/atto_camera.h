@@ -1,13 +1,9 @@
 #pragma once
 
-/*
-    Atto Engine - Camera System
-    2D camera with zoom, pan, and screen-to-world coordinate conversion
-*/
-
 #include "atto_core.h"
 #include "atto_math.h"
 #include "atto_shapes_2D.h"
+#include "atto_shapes_3D.h"
 
 namespace atto {
 
