@@ -47,6 +47,10 @@ namespace atto {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_1_Anim", false );
         }
 
+        if ( animator.IsFinished() && animator.GetCurrentAnimation()->name != "Armature|Knife_Idle_Anim" ) {
+            //animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
+        }
+
         animator.Update( deltaTime );
 
         f32 speed = camera.GetMoveSpeed() * deltaTime;

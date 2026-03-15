@@ -653,6 +653,10 @@ namespace atto {
             return keys[0].position;
         }
 
+        if ( animTime >= keys.back().time ) {
+            return keys.back().position;
+        }
+
         i32 index = 0;
         for ( i32 i = 0; i < static_cast<i32>( keys.size() ) - 1; i++ ) {
             if ( animTime < keys[i + 1].time ) {
@@ -675,6 +679,10 @@ namespace atto {
             return glm::normalize( keys[0].rotation );
         }
 
+        if ( animTime >= keys.back().time ) {
+            return glm::normalize( keys.back().rotation );
+        }
+
         i32 index = 0;
         for ( i32 i = 0; i < static_cast<i32>( keys.size() ) - 1; i++ ) {
             if ( animTime < keys[i + 1].time ) {
@@ -695,6 +703,10 @@ namespace atto {
         const auto & keys = channel.scaleKeys;
         if ( keys.size() == 1 ) {
             return keys[0].scale;
+        }
+
+        if ( animTime >= keys.back().time ) {
+            return keys.back().scale;
         }
 
         i32 index = 0;
