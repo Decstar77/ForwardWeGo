@@ -61,10 +61,10 @@ namespace atto {
         }
 
         bool alt = input.IsKeyDown( Key::LeftAlt ) || input.IsKeyDown( Key::RightAlt );
-        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
-        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
-        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; }
-        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; }
+        if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
+        if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
+        if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
+        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Lit;}
 
         if ( brushDrag.mode != BrushDragMode::None ) {
             if ( input.IsMouseButtonDown( MouseButton::Left ) ) {
@@ -300,8 +300,7 @@ namespace atto {
                 ImGuizmo::WORLD,
                 glm::value_ptr( gizmoMatrix ),
                 nullptr,
-                snapEnabled ? snap3 : nullptr ) )
-            {
+                snapEnabled ? snap3 : nullptr ) ) {
                 ps.spawnPos = Vec3( gizmoMatrix[3] );
             }
         }
@@ -508,7 +507,7 @@ namespace atto {
         }
 
         map.RebuildBrushModel( brushDrag.brushIndex );
-        map.RebuildBrushCollision(brushDrag.brushIndex );
+        map.RebuildBrushCollision( brushDrag.brushIndex );
     }
 
     void EditorScene::BrushStartMoveDrag( Vec3 worldClickPos ) {
@@ -538,7 +537,7 @@ namespace atto {
         brush.center[vAxis] = SnapValue( worldMousePos[vAxis] + brushDrag.moveOffset[vAxis] ) + brush.halfExtents[vAxis];
 
         map.RebuildBrushModel( brushDrag.brushIndex );
-        map.RebuildBrushCollision(brushDrag.brushIndex );
+        map.RebuildBrushCollision( brushDrag.brushIndex );
     }
 
     f32 EditorScene::SnapValue( f32 value ) const {
@@ -598,7 +597,7 @@ namespace atto {
         brush.halfExtents[vAxis] = (maxV - minV) * 0.5f;
 
         map.RebuildBrushModel( brushDrag.brushIndex );
-        map.RebuildBrushCollision(  brushDrag.brushIndex  );
+        map.RebuildBrushCollision( brushDrag.brushIndex );
     }
 
     void EditorScene::BrushFinishCreateDrag() {

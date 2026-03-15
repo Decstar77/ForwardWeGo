@@ -63,6 +63,7 @@ namespace atto {
         Brush brush;
         brushes.push_back( brush );
         brushModels.emplace_back();
+        brushCollsion.emplace_back();
         i32 index = static_cast<i32>(brushes.size()) - 1;
         RebuildBrushModel( index );
         return index;
@@ -75,6 +76,7 @@ namespace atto {
         brushModels[index].Destroy();
         brushes.erase( brushes.begin() + index );
         brushModels.erase( brushModels.begin() + index );
+        brushCollsion.erase( brushCollsion.begin() + index );
     }
 
     void GameMap::RebuildBrushModel( i32 index ) {
