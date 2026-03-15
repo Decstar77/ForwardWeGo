@@ -33,6 +33,9 @@ namespace atto {
         void RenderAnimatedModel( const AnimatedModel & model, const Animator & animator, const Mat4 & modelMatrix, const Vec3 & color );
         void RenderGrid( Vec3 axisH, Vec3 axisV, Vec3 center, f32 spacing, f32 halfExtentH, f32 halfExtentV );
 
+        void LoadSkybox( const char * filePath );
+        void RenderSkybox( const Mat4 & view, const Mat4 & projection );
+
     private:
         Mat4 viewProjectionMatrix = Mat4( 1.0f );
 
@@ -48,6 +51,12 @@ namespace atto {
         Shader modelLitShader;
         Shader modelUnlitShader;
         Shader skinnedLitShader;
+
+        // Skybox resources
+        Shader skyboxShader;
+        u32 skyboxVAO = 0;
+        u32 skyboxVBO = 0;
+        u32 skyboxTexture = 0;
 
         Color clearColor = Color( 0.1f, 0.1f, 0.12f, 1.0f );
     };

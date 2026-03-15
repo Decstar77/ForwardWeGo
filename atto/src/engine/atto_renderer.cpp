@@ -4,6 +4,7 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <stb_image/std_image.h>
 #include <vector>
 #include <cmath>
 
@@ -103,6 +104,61 @@ namespace atto {
         }
     )";
 
+    static const char * SKYBOX_VERT = R"(
+        #version 330 core
+        layout (location = 0) in vec3 aPos;
+
+        uniform mat4 uProjection;
+        uniform mat4 uView;
+
+        out vec3 vWorldDir;
+
+        void main() {
+            vWorldDir = aPos;
+            vec4 pos = uProjection * uView * vec4(aPos, 1.0);
+            gl_Position = pos.xyww;
+        }
+    )";
+
+    static const char * SKYBOX_FRAG = R"(
+        #version 330 core
+        in vec3 vWorldDir;
+
+        uniform sampler2D uEquirectMap;
+
+        out vec4 FragColor;
+
+        const float PI = 3.14159265359;
+
+        void main() {
+            vec3 dir = normalize(vWorldDir);
+            float phi = atan(dir.z, dir.x);
+            float theta = asin(clamp(dir.y, -1.0, 1.0));
+            vec2 uv = vec2(phi / (2.0 * PI) + 0.5, theta / PI + 0.5);
+            FragColor = texture(uEquirectMap, uv);
+        }
+    )";
+
+    static const f32 SKYBOX_CUBE_VERTICES[] = {
+        -1.0f,  1.0f, -1.0f,   -1.0f, -1.0f, -1.0f,    1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,    1.0f,  1.0f, -1.0f,   -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,   -1.0f, -1.0f, -1.0f,   -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,   -1.0f,  1.0f,  1.0f,   -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,    1.0f, -1.0f,  1.0f,    1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,    1.0f,  1.0f, -1.0f,    1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,   -1.0f,  1.0f,  1.0f,    1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,    1.0f, -1.0f,  1.0f,   -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,    1.0f,  1.0f, -1.0f,    1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,   -1.0f,  1.0f,  1.0f,   -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,   -1.0f, -1.0f,  1.0f,    1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,   -1.0f, -1.0f,  1.0f,    1.0f, -1.0f,  1.0f,
+    };
+
     static const char * SKINNED_LIT_VERT = R"(
         #version 330 core
         layout (location = 0) in vec3 aPos;
@@ -199,6 +255,20 @@ namespace atto {
         glEnableVertexAttribArray( 1 );
         glBindVertexArray( 0 );
 
+        if ( !skyboxShader.CreateFromSource( SKYBOX_VERT, SKYBOX_FRAG ) ) {
+            LOG_ERROR( "Failed to create skybox shader" );
+            return false;
+        }
+
+        glGenVertexArrays( 1, &skyboxVAO );
+        glGenBuffers( 1, &skyboxVBO );
+        glBindVertexArray( skyboxVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, skyboxVBO );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( SKYBOX_CUBE_VERTICES ), SKYBOX_CUBE_VERTICES, GL_STATIC_DRAW );
+        glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( f32 ), (void *)0 );
+        glEnableVertexAttribArray( 0 );
+        glBindVertexArray( 0 );
+
         glEnable( GL_DEPTH_TEST );
 
         LOG_INFO( "Renderer initialized" );
@@ -226,10 +296,24 @@ namespace atto {
             gridVBO = 0;
         }
 
+        if ( skyboxVAO != 0 ) {
+            glDeleteVertexArrays( 1, &skyboxVAO );
+            skyboxVAO = 0;
+        }
+        if ( skyboxVBO != 0 ) {
+            glDeleteBuffers( 1, &skyboxVBO );
+            skyboxVBO = 0;
+        }
+        if ( skyboxTexture != 0 ) {
+            glDeleteTextures( 1, &skyboxTexture );
+            skyboxTexture = 0;
+        }
+
         flatColorShader.Destroy();
         modelLitShader.Destroy();
         modelUnlitShader.Destroy();
         skinnedLitShader.Destroy();
+        skyboxShader.Destroy();
 
         LOG_INFO( "Renderer shutdown" );
     }
@@ -325,6 +409,83 @@ namespace atto {
         model.Draw();
 
         skinnedLitShader.Unbind();
+    }
+
+    void Renderer::LoadSkybox( const char * filePath ) {
+        if ( skyboxTexture != 0 ) {
+            glDeleteTextures( 1, &skyboxTexture );
+            skyboxTexture = 0;
+        }
+
+        stbi_set_flip_vertically_on_load( true );
+
+        glGenTextures( 1, &skyboxTexture );
+        glBindTexture( GL_TEXTURE_2D, skyboxTexture );
+
+        if ( stbi_is_hdr( filePath ) ) {
+            int w, h, channels;
+            f32 * data = stbi_loadf( filePath, &w, &h, &channels, 3 );
+            if ( !data ) {
+                LOG_ERROR( "Failed to load HDR skybox '%s'", filePath );
+                glDeleteTextures( 1, &skyboxTexture );
+                skyboxTexture = 0;
+                return;
+            }
+
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, w, h, 0, GL_RGB, GL_FLOAT, data );
+            stbi_image_free( data );
+        }
+        else {
+            int w, h, channels;
+            stbi_uc * data = stbi_load( filePath, &w, &h, &channels, STBI_rgb_alpha );
+            if ( !data ) {
+                LOG_ERROR( "Failed to load skybox '%s'", filePath );
+                glDeleteTextures( 1, &skyboxTexture );
+                skyboxTexture = 0;
+                return;
+            }
+
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+            stbi_image_free( data );
+        }
+
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        LOG_INFO( "Skybox loaded: %s", filePath );
+    }
+
+    void Renderer::RenderSkybox( const Mat4 & view, const Mat4 & projection ) {
+        if ( skyboxTexture == 0 ) {
+            return;
+        }
+
+        // Strip translation from the view matrix so the skybox stays centered on the camera
+        Mat4 skyboxView = Mat4( Mat3( view ) );
+
+        glDepthFunc( GL_LEQUAL );
+        glDepthMask( GL_FALSE );
+
+        skyboxShader.Bind();
+        skyboxShader.SetMat4( "uView", skyboxView );
+        skyboxShader.SetMat4( "uProjection", projection );
+        skyboxShader.SetInt( "uEquirectMap", 0 );
+
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, skyboxTexture );
+
+        glBindVertexArray( skyboxVAO );
+        glDrawArrays( GL_TRIANGLES, 0, 36 );
+        glBindVertexArray( 0 );
+
+        skyboxShader.Unbind();
+
+        glDepthMask( GL_TRUE );
+        glDepthFunc( GL_LESS );
     }
 
     static Vec3 AxisColor( Vec3 axis ) {

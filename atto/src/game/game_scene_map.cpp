@@ -21,6 +21,9 @@ namespace atto {
         map.Initialize();
 
         animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
+
+        Renderer & renderer = Engine::Get().GetRenderer();
+        renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
@@ -48,7 +51,7 @@ namespace atto {
         }
 
         if ( animator.IsFinished() && animator.GetCurrentAnimation()->name != "Armature|Knife_Idle_Anim" ) {
-            //animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
+            animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
         }
 
         animator.Update( deltaTime );
@@ -79,12 +82,10 @@ namespace atto {
         Mat4 cameraWorld = glm::inverse( camera.GetViewMatrix() );
 
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
-        //localCorrection = glm::scale( localCorrection, Vec3( ArmsScale ) );
-
         Mat4 armsMatrix = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
 
         renderer.RenderAnimatedModel( playerHands, animator, armsMatrix );
-        //renderer.RenderAnimatedModel( playerHands, animator, glm::scale(glm::mat4(1), glm::vec3(10) ) );
+        renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
     }
 
     void GameMapScene::OnShutdown() {

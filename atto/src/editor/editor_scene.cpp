@@ -22,6 +22,9 @@ namespace atto {
         map.Serialize( serializer );
 
         map.Initialize();
+
+        Renderer & renderer = Engine::Get().GetRenderer();
+        renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
     }
 
     void EditorScene::StartImgui() {
@@ -238,6 +241,10 @@ namespace atto {
         map.Render( renderer, 0.0, renderMode == EditorRenderMode::Lit, selectedBrushIndex );
 
         renderer.SetWireframe( false );
+
+        if ( viewMode == EditorViewMode::Cam3D ) {
+            renderer.RenderSkybox( flyCamera.GetViewMatrix(), flyCamera.GetProjectionMatrix() );
+        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

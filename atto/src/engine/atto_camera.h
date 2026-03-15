@@ -7,7 +7,7 @@
 
 #include "atto_core.h"
 #include "atto_math.h"
-#include "atto_shapes.h"
+#include "atto_shapes_2D.h"
 
 namespace atto {
 
