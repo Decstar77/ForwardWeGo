@@ -1,6 +1,8 @@
 #include "engine/atto_engine.h"
 #include "engine/atto_assets.h"
 
+#include "entities_def.h"
+
 namespace atto {
 
     constexpr f32 PlayerHeight = 2.0f;
@@ -11,7 +13,7 @@ namespace atto {
         Mat3 spawnOri;
 
         void Serialize( Serializer & serializer );
-        
+
         inline Capsule GetCapsule() const { return Capsule::FromTips( spawnPos, Vec3( spawnPos.x, spawnPos.y + PlayerHeight, spawnPos.z ), 0.4f ); }
     };
 
@@ -33,6 +35,9 @@ namespace atto {
         const PlayerStart & GetPlayerStart() const { return playerStart; }
         bool IsPlayerStartColliding() const;
 
+        // =========== Entities ===========
+        Entity *        CreateEntity( EntityType type );
+        void            DestroyEntity( Entity * entity );
 
         // =========== Brushes ===========
         i32             AddBrush();
@@ -43,20 +48,19 @@ namespace atto {
         void            RebuildAllBrushCollision();
         void            DebugDrawBrushCollision( Renderer & renderer ) const;
         Vec3            ResolvePlayerCollision( const Capsule & playerCapsule ) const;
-        Brush & GetBrush( i32 index ) { return brushes[index]; }
-        const Brush & GetBrush( i32 index ) const { return brushes[index]; }
+        Brush &         GetBrush( i32 index ) { return brushes[index]; }
+        const Brush &   GetBrush( i32 index ) const { return brushes[index]; }
         i32             GetBrushCount() const { return static_cast<i32>(brushes.size()); }
 
     private:
-        std::vector<StaticModel> staticModels;
-
         PlayerStart playerStart;
 
         StaticModel model;
         Texture texture;
 
-        std::vector<Brush>          brushes;
-        std::vector<StaticModel>    brushModels;
-        std::vector<AlignedBox>     brushCollsion;
+        std::vector<std::unique_ptr<Entity>>    entities;
+        std::vector<Brush>                      brushes;
+        std::vector<StaticModel>                brushModels;
+        std::vector<AlignedBox>                 brushCollsion;
     };
 }

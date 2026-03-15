@@ -27,6 +27,10 @@ namespace atto {
         brushCollsion.resize( brushes.size() );
         RebuildAllBrushModels();
         RebuildAllBrushCollision();
+
+        for ( auto & entity : entities ) {
+            entity->OnSpawn();
+        }
     }
 
     void GameMap::StartMap() {
@@ -34,6 +38,9 @@ namespace atto {
     }
 
     void GameMap::Update( f32 dt ) {
+        for ( auto & entity : entities ) {
+            entity->OnUpdate( dt );
+        }
     }
 
     void GameMap::Render( Renderer & renderer, f32 dt, bool lit, i32 selectedBrush ) {
@@ -55,6 +62,34 @@ namespace atto {
             }
             else {
                 renderer.RenderStaticModelUnlit( brushModels[i], identity, color );
+            }
+        }
+
+        for ( auto & entity : entities ) {
+            entity->OnRender( renderer );
+        }
+    }
+
+    Entity * GameMap::CreateEntity( EntityType type ) {
+        std::unique_ptr<Entity> entity = nullptr;
+        switch ( type ) {
+        case EntityType::Barrel:
+            entity = std::make_unique<Entity_Barrel>();
+            break;
+        default:
+            return nullptr;
+        }
+
+        entity->SetMap( this );
+        entities.emplace_back( std::move( entity ) );
+        return entity.get();
+    }
+
+    void GameMap::DestroyEntity( Entity * entity ) {
+        for ( i32 i = 0; i < static_cast<i32>( entities.size() ); i++ ) {
+            if ( entities[i].get() == entity ) {
+                entities.erase( entities.begin() + i );
+                return;
             }
         }
     }

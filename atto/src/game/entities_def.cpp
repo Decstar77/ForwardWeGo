@@ -1,30 +1,40 @@
 #include "entities_def.h"
 
 namespace atto {
-    static FixedList<UnitDef, 128> unitDefs;
-
-    void InitializeUnitDefs() {
-        unitDefs.Clear();
-        unitDefs.AddEmpty();
-
-        {
-            UnitDef & scout  = unitDefs.AddEmpty();
-            scout.type = UnitType::SOL_SCOUT;
-            scout.speed = fp( 80 );
-            scout.health = fp( 100 );
-            scout.radius = fp( 1 ) / fp( 2 );
-            scout.spriteName = "assets/scout/scout_idle_side.png";
-            scout.frameWidth = 12;
-            scout.frameHeight = 12;
-            scout.sheetWidth = 48;
-            scout.sheetHeight = 12;
-            scout.startFrame = 0;
-            scout.frameCount = 4;
+    void Entity::Serialize( Serializer & serializer ) {
+        // @SPEED: We should use a SmallString for this but the serializer doesn't support it yet
+        if ( serializer.IsSaving() ) {
+            std::string typeStr = EntityTypeToString( type );
+            serializer( "Type", typeStr );
         }
+        else {
+            std::string typeStr;
+            serializer( "Type", typeStr );
+            type = StringToEntityType( typeStr.c_str() );
+        }
+
+        serializer( "Position", position );
+        serializer( "Orientation", orientation );
     }
 
+    Entity_Barrel::Entity_Barrel() {
+        type = EntityType::Barrel;
+    }
 
-    const UnitDef * GetUnitDef( UnitType type ) {
-        return &unitDefs[static_cast<i32>(type)];
+    void Entity_Barrel::OnSpawn() {
+        model.LoadFromFile( "assets/player/props/barrel.fbx" );
+    }
+
+    void Entity_Barrel::OnUpdate( f32 dt ) {
+    }
+
+    void Entity_Barrel::OnRender( Renderer & renderer ) {
+        Mat4 modelMatrix = Mat4( 1.0f );
+        modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
+        renderer.RenderStaticModel( model, modelMatrix );
+    }
+
+    void Entity_Barrel::OnDespawn() {
+        model.Destroy();
     }
 }

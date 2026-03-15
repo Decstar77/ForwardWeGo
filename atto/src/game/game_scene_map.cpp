@@ -18,6 +18,8 @@ namespace atto {
         serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( "assets/maps/game.map" ) );
         map.Serialize( serializer );
 
+        map.CreateEntity( EntityType::Barrel );
+
         map.Initialize();
 
         animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
