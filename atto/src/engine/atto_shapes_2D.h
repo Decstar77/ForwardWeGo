@@ -60,10 +60,10 @@ namespace atto {
         f32     height;
     };
 
-    struct Triangle {
-        Triangle();
-        Triangle( const Vec2 & a, const Vec2 & b, const Vec2 & c );
-        Triangle( f32 ax, f32 ay, f32 bx, f32 by, f32 cx, f32 cy );
+    struct Triangle2D {
+        Triangle2D();
+        Triangle2D( const Vec2 & a, const Vec2 & b, const Vec2 & c );
+        Triangle2D( f32 ax, f32 ay, f32 bx, f32 by, f32 cx, f32 cy );
 
         void    Serialize( Serializer & serializer );
 
@@ -89,7 +89,7 @@ namespace atto {
         static Polygon CreateCircle( const Vec2 & center, f32 radius, i32 segments = 32 );
         static Polygon CreateCircle( const Circle & circle, i32 segments = 32 );
         static Polygon CreateTriangle( const Vec2 & a, const Vec2 & b, const Vec2 & c );
-        static Polygon CreateTriangle( const Triangle & triangle );
+        static Polygon CreateTriangle( const Triangle2D & triangle );
 
         // Boolean operations - return new polygon
         Polygon Union( const Polygon & other ) const;
@@ -149,7 +149,7 @@ namespace atto {
         f64 GetArea() const;
 
         // Triangulate the polygon
-        std::vector<Triangle> Triangulate() const;
+        std::vector<Triangle2D> Triangulate() const;
 
         // Serialization
         void Serialize( Serializer & serializer );

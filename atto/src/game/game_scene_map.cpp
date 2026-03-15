@@ -24,6 +24,20 @@ namespace atto {
 
         Renderer & renderer = Engine::Get().GetRenderer();
         renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
+
+        sndFootsteps.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndFootsteps.LoadSounds( {
+            "footsteps/Light-Armor-Concrete-Walking-1.wav",
+            "footsteps/Light-Armor-Concrete-Walking-2.wav",
+            "footsteps/Light-Armor-Concrete-Walking-3.wav",
+            "footsteps/Light-Armor-Concrete-Walking-4.wav",
+            "footsteps/Light-Armor-Concrete-Walking-5.wav",
+            "footsteps/Light-Armor-Concrete-Walking-6.wav",
+            "footsteps/Light-Armor-Concrete-Walking-7.wav",
+            "footsteps/Light-Armor-Concrete-Walking-8.wav",
+            "footsteps/Light-Armor-Concrete-Walking-9.wav",
+            "footsteps/Light-Armor-Concrete-Walking-10.wav",
+        } );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
@@ -68,10 +82,22 @@ namespace atto {
         //     LOG_INFO( "ArmsLocalOffset: (%f, %f, %f)", ArmsLocalOffset.x, ArmsLocalOffset.y, ArmsLocalOffset.z );
         // }
 
-        if ( input.IsKeyDown( Key::W ) ) camera.MoveForward( speed );
-        if ( input.IsKeyDown( Key::S ) ) camera.MoveForward( -speed );
-        if ( input.IsKeyDown( Key::D ) ) camera.MoveRight( speed );
-        if ( input.IsKeyDown( Key::A ) ) camera.MoveRight( -speed );
+        bool isMoving = false;
+        if ( input.IsKeyDown( Key::W ) ) { camera.MoveForward( speed );  isMoving = true; }
+        if ( input.IsKeyDown( Key::S ) ) { camera.MoveForward( -speed ); isMoving = true; }
+        if ( input.IsKeyDown( Key::D ) ) { camera.MoveRight( speed );    isMoving = true; }
+        if ( input.IsKeyDown( Key::A ) ) { camera.MoveRight( -speed );   isMoving = true; }
+
+        if ( isMoving ) {
+            footstepTimer += deltaTime;
+            if ( footstepTimer >= footstepInterval ) {
+                footstepTimer -= footstepInterval;
+                sndFootsteps.Play();
+            }
+        }
+        else {
+            footstepTimer = footstepInterval;
+        }
     }
 
     void GameMapScene::OnRender( Renderer & renderer ) {

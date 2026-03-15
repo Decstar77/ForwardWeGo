@@ -242,7 +242,7 @@ namespace atto {
     =============================
     =============================
     */
-    Triangle::Triangle() : a( 0, 0 ), b( 0, 0 ), c( 0, 0 ) {
+    Triangle2D::Triangle2D() : a( 0, 0 ), b( 0, 0 ), c( 0, 0 ) {
 
     }
 
@@ -250,7 +250,7 @@ namespace atto {
     =============================
     =============================
     */
-    Triangle::Triangle( const Vec2 & a, const Vec2 & b, const Vec2 & c ) : a( a ), b( b ), c( c ) {
+    Triangle2D::Triangle2D( const Vec2 & a, const Vec2 & b, const Vec2 & c ) : a( a ), b( b ), c( c ) {
 
     }
 
@@ -258,7 +258,7 @@ namespace atto {
     =============================
     =============================
     */
-    Triangle::Triangle( f32 ax, f32 ay, f32 bx, f32 by, f32 cx, f32 cy )
+    Triangle2D::Triangle2D( f32 ax, f32 ay, f32 bx, f32 by, f32 cx, f32 cy )
         : a( ax, ay ), b( bx, by ), c( cx, cy ) {
     }
 
@@ -266,7 +266,7 @@ namespace atto {
     =============================
     =============================
     */
-    void Triangle::Serialize( Serializer & serializer ) {
+    void Triangle2D::Serialize( Serializer & serializer ) {
         serializer( "a", a );
         serializer( "b", b );
         serializer( "c", c );
@@ -366,7 +366,7 @@ namespace atto {
         return poly;
     }
 
-    Polygon Polygon::CreateTriangle( const Triangle & triangle ) {
+    Polygon Polygon::CreateTriangle( const Triangle2D & triangle ) {
         return CreateTriangle( triangle.a, triangle.b, triangle.c );
     }
 
@@ -644,8 +644,8 @@ namespace atto {
         return totalArea;
     }
 
-    std::vector<Triangle> Polygon::Triangulate() const {
-        std::vector<Triangle> result;
+    std::vector<Triangle2D> Polygon::Triangulate() const {
+        std::vector<Triangle2D> result;
 
         if ( paths->empty() ) {
             return result;
@@ -662,7 +662,7 @@ namespace atto {
         result.reserve( triangles.size() );
         for ( const auto & tri : triangles ) {
             if ( tri.size() >= 3 ) {
-                result.push_back( Triangle(
+                result.push_back( Triangle2D(
                     FromClipperPoint( tri[0] ),
                     FromClipperPoint( tri[1] ),
                     FromClipperPoint( tri[2] )

@@ -29,6 +29,10 @@ namespace atto {
         Animator        animator;
         AnimatedModel   playerHands;
         FPSCamera       camera;
+
+        SoundCollection sndFootsteps;
+        f32             footstepTimer    = 0.0f;
+        f32             footstepInterval = 0.6f;
     };
 
 }

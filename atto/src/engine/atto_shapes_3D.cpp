@@ -25,34 +25,38 @@ namespace atto {
         // X axis
         {
             f32 v = sphere.center[0];
-            if (v < box.min[0]) {
+            if ( v < box.min[0] ) {
                 sqDist += (box.min[0] - v) * (box.min[0] - v);
             }
-            else if (v > box.max[0]) {
+            else if ( v > box.max[0] ) {
                 sqDist += (v - box.max[0]) * (v - box.max[0]);
             }
         }
         // Y axis
         {
             f32 v = sphere.center[1];
-            if (v < box.min[1]) {
+            if ( v < box.min[1] ) {
                 sqDist += (box.min[1] - v) * (box.min[1] - v);
             }
-            else if (v > box.max[1]) {
+            else if ( v > box.max[1] ) {
                 sqDist += (v - box.max[1]) * (v - box.max[1]);
             }
         }
         // Z axis
         {
             f32 v = sphere.center[2];
-            if (v < box.min[2]) {
+            if ( v < box.min[2] ) {
                 sqDist += (box.min[2] - v) * (box.min[2] - v);
             }
-            else if (v > box.max[2]) {
+            else if ( v > box.max[2] ) {
                 sqDist += (v - box.max[2]) * (v - box.max[2]);
             }
         }
         return sqDist <= sphere.radius * sphere.radius;
+    }
+
+    bool IntersectionTest::CapsuleAlignedBox( const Capsule & capsule, const AlignedBox & box ) {
+     
     }
 
 }
