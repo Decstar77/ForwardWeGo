@@ -111,6 +111,24 @@ namespace atto {
         }
     }
 
+    Vec3 GameMap::ResolvePlayerCollision( const Capsule & playerCapsule ) const {
+        Vec3 correction( 0.0f );
+        Capsule cap = playerCapsule;
+
+        for ( i32 iter = 0; iter < 4; iter++ ) {
+            for ( i32 i = 0; i < static_cast<i32>( brushCollsion.size() ); i++ ) {
+                SweepResult result;
+                if ( CollisionSweep::CapsuleAlignedBox( cap, brushCollsion[i], result ) ) {
+                    Vec3 push = result.normal * result.pen;
+                    cap.base += push;
+                    correction += push;
+                }
+            }
+        }
+
+        return correction;
+    }
+
     bool GameMap::IsPlayerStartColliding() const {
         Capsule cap = playerStart.GetCapsule();
         for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {

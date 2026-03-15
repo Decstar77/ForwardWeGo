@@ -42,6 +42,7 @@ namespace atto {
         void            RebuildAllBrushModels();
         void            RebuildAllBrushCollision();
         void            DebugDrawBrushCollision( Renderer & renderer ) const;
+        Vec3            ResolvePlayerCollision( const Capsule & playerCapsule ) const;
         Brush & GetBrush( i32 index ) { return brushes[index]; }
         const Brush & GetBrush( i32 index ) const { return brushes[index]; }
         i32             GetBrushCount() const { return static_cast<i32>(brushes.size()); }

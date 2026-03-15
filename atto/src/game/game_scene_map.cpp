@@ -82,16 +82,27 @@ namespace atto {
         //     LOG_INFO( "ArmsLocalOffset: (%f, %f, %f)", ArmsLocalOffset.x, ArmsLocalOffset.y, ArmsLocalOffset.z );
         // }
 
-        // Hack
-        Vec3 playerPos = camera.GetPosition();
-        playerPos.y = 0;
-        playerCapsule = Capsule::FromTips( playerPos, playerPos + Vec3( 0, PlayerHeight, 0 ), 0.2f );
-
         bool isMoving = false;
         if ( input.IsKeyDown( Key::W ) ) { camera.MoveForward( speed );  isMoving = true; }
         if ( input.IsKeyDown( Key::S ) ) { camera.MoveForward( -speed ); isMoving = true; }
         if ( input.IsKeyDown( Key::D ) ) { camera.MoveRight( speed );    isMoving = true; }
         if ( input.IsKeyDown( Key::A ) ) { camera.MoveRight( -speed );   isMoving = true; }
+
+        Vec3 playerPos = camera.GetPosition();
+        playerPos.y = 0.0f;
+        playerCapsule = Capsule::FromTips( playerPos, playerPos + Vec3( 0, PlayerHeight, 0 ), 0.2f );
+
+        Vec3 correction = map.ResolvePlayerCollision( playerCapsule );
+        correction.y = 0.0f;
+        if ( correction.x != 0.0f || correction.z != 0.0f ) {
+            Vec3 camPos = camera.GetPosition();
+            camPos += correction;
+            camera.SetPosition( camPos );
+
+            playerPos = camPos;
+            playerPos.y = 0.0f;
+            playerCapsule = Capsule::FromTips( playerPos, playerPos + Vec3( 0, PlayerHeight, 0 ), 0.2f );
+        }
 
         if ( isMoving ) {
             footstepTimer += deltaTime;
