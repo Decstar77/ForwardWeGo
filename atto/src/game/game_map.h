@@ -24,6 +24,9 @@ namespace atto {
 
         void Serialize( Serializer & serializer );
 
+        PlayerStart & GetPlayerStart() { return playerStart; }
+        const PlayerStart & GetPlayerStart() const { return playerStart; }
+
 
         // =========== Brushes ===========
         i32             AddBrush();
@@ -32,6 +35,7 @@ namespace atto {
         void            RebuildBrushCollision( i32 index );
         void            RebuildAllBrushModels();
         void            RebuildAllBrushCollision();
+        void            DebugDrawBrushCollision( Renderer & renderer ) const;
         Brush &         GetBrush( i32 index ) { return brushes[index]; }
         const Brush &   GetBrush( i32 index ) const { return brushes[index]; }
         i32             GetBrushCount() const { return static_cast<i32>( brushes.size() ); }
@@ -44,9 +48,8 @@ namespace atto {
         StaticModel model;
         Texture texture;
 
-        std::vector<Brush> brushes;
-        std::vector<StaticModel> brushModels;
-
+        std::vector<Brush>          brushes;
+        std::vector<StaticModel>    brushModels;
         std::vector<AlignedBox>     brushCollsion;
     };
 }

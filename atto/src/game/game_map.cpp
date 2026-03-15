@@ -8,6 +8,8 @@ namespace atto {
     }
 
     GameMap::GameMap() {
+        playerStart.spawnPos = Vec3( 0.0f, 0.0f, 3.0f );
+        playerStart.spawnOri = Mat3( 1 );
     }
 
     GameMap::~GameMap() {
@@ -88,7 +90,7 @@ namespace atto {
             return;
         }
 
-        brushCollsion[index] = AlignedBox::FromCenterSize( brushes[index].center, brushes[index].halfExtents );
+        brushCollsion[index] = AlignedBox::FromCenterSize( brushes[index].center, brushes[index].halfExtents * 2.0f );
     }
 
     void GameMap::RebuildAllBrushModels() {
@@ -100,6 +102,12 @@ namespace atto {
     void GameMap::RebuildAllBrushCollision() {
         for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
             RebuildBrushCollision( i );
+        }
+    }
+
+    void GameMap::DebugDrawBrushCollision( Renderer & renderer ) const {
+        for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
+            renderer.DebugAlignedBox( brushCollsion[i] );
         }
     }
 

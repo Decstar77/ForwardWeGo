@@ -37,11 +37,12 @@ namespace atto {
         void RenderSkybox( const Mat4 & view, const Mat4 & projection );
 
         // Debug line drawing
-        void DebugLine( const Vec3 & a, const Vec3 & b );
-        void DebugShpere( const Sphere & sphere );
-        void DebugAlignedBox( const AlignedBox & box );
+        void DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
+        void DebugSphere( const Sphere & sphere, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
+        void DebugAlignedBox( const AlignedBox & box, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
 
     private:
+        void FlushDebugLines();
         Mat4 viewProjectionMatrix = Mat4( 1.0f );
 
         // Test triangle / grid resources
@@ -62,6 +63,12 @@ namespace atto {
         u32 skyboxVAO = 0;
         u32 skyboxVBO = 0;
         u32 skyboxTexture = 0;
+
+        // Debug line resources
+        struct DebugLineVert { Vec3 pos; Vec3 color; };
+        u32 debugLineVAO = 0;
+        u32 debugLineVBO = 0;
+        std::vector<DebugLineVert> debugLineVerts;
 
         Color clearColor = Color( 0.1f, 0.1f, 0.12f, 1.0f );
     };

@@ -255,6 +255,16 @@ namespace atto {
         glEnableVertexAttribArray( 1 );
         glBindVertexArray( 0 );
 
+        glGenVertexArrays( 1, &debugLineVAO );
+        glGenBuffers( 1, &debugLineVBO );
+        glBindVertexArray( debugLineVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, debugLineVBO );
+        glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)0 );
+        glEnableVertexAttribArray( 0 );
+        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof( f32 ), (void *)(3 * sizeof( f32 )) );
+        glEnableVertexAttribArray( 1 );
+        glBindVertexArray( 0 );
+
         if ( !skyboxShader.CreateFromSource( SKYBOX_VERT, SKYBOX_FRAG ) ) {
             LOG_ERROR( "Failed to create skybox shader" );
             return false;
@@ -296,6 +306,15 @@ namespace atto {
             gridVBO = 0;
         }
 
+        if ( debugLineVAO != 0 ) {
+            glDeleteVertexArrays( 1, &debugLineVAO );
+            debugLineVAO = 0;
+        }
+        if ( debugLineVBO != 0 ) {
+            glDeleteBuffers( 1, &debugLineVBO );
+            debugLineVBO = 0;
+        }
+
         if ( skyboxVAO != 0 ) {
             glDeleteVertexArrays( 1, &skyboxVAO );
             skyboxVAO = 0;
@@ -324,6 +343,7 @@ namespace atto {
     }
 
     void Renderer::EndFrame() {
+        FlushDebugLines();
     }
 
     void Renderer::SetClearColor( const Color & color ) {
@@ -548,6 +568,88 @@ namespace atto {
         flatColorShader.Unbind();
 
         glEnable( GL_DEPTH_TEST );
+    }
+
+    void Renderer::DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color ) {
+        debugLineVerts.push_back( { a, color } );
+        debugLineVerts.push_back( { b, color } );
+    }
+
+    void Renderer::DebugSphere( const Sphere & sphere, const Vec3 & color ) {
+        constexpr i32 SEGMENTS = 24;
+        constexpr f32 STEP = 2.0f * PI * (1.0f / (f32)SEGMENTS);
+
+        for ( i32 i = 0; i < SEGMENTS; i++ ) {
+            f32 a0 = i * STEP;
+            f32 a1 = (i + 1) * STEP;
+            f32 c0 = cosf( a0 ), s0 = sinf( a0 );
+            f32 c1 = cosf( a1 ), s1 = sinf( a1 );
+
+            Vec3 center = sphere.center;
+            f32 r = sphere.radius;
+
+            DebugLine( center + Vec3( c0 * r, s0 * r, 0.0f ), center + Vec3( c1 * r, s1 * r, 0.0f ), color );
+            DebugLine( center + Vec3( c0 * r, 0.0f, s0 * r ), center + Vec3( c1 * r, 0.0f, s1 * r ), color );
+            DebugLine( center + Vec3( 0.0f, c0 * r, s0 * r ), center + Vec3( 0.0f, c1 * r, s1 * r ), color );
+        }
+    }
+
+    void Renderer::DebugAlignedBox( const AlignedBox & box, const Vec3 & color ) {
+        Vec3 mn = box.min;
+        Vec3 mx = box.max;
+
+        Vec3 corners[8] = {
+            { mn.x, mn.y, mn.z },
+            { mx.x, mn.y, mn.z },
+            { mx.x, mx.y, mn.z },
+            { mn.x, mx.y, mn.z },
+            { mn.x, mn.y, mx.z },
+            { mx.x, mn.y, mx.z },
+            { mx.x, mx.y, mx.z },
+            { mn.x, mx.y, mx.z },
+        };
+
+        // Bottom face
+        DebugLine( corners[0], corners[1], color );
+        DebugLine( corners[1], corners[2], color );
+        DebugLine( corners[2], corners[3], color );
+        DebugLine( corners[3], corners[0], color );
+
+        // Top face
+        DebugLine( corners[4], corners[5], color );
+        DebugLine( corners[5], corners[6], color );
+        DebugLine( corners[6], corners[7], color );
+        DebugLine( corners[7], corners[4], color );
+
+        // Vertical edges
+        DebugLine( corners[0], corners[4], color );
+        DebugLine( corners[1], corners[5], color );
+        DebugLine( corners[2], corners[6], color );
+        DebugLine( corners[3], corners[7], color );
+    }
+
+    void Renderer::FlushDebugLines() {
+        if ( debugLineVerts.empty() ) {
+            return;
+        }
+
+        glDisable( GL_DEPTH_TEST );
+
+        glBindVertexArray( debugLineVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, debugLineVBO );
+        glBufferData( GL_ARRAY_BUFFER, debugLineVerts.size() * sizeof( DebugLineVert ), debugLineVerts.data(), GL_DYNAMIC_DRAW );
+
+        flatColorShader.Bind();
+        flatColorShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+
+        glDrawArrays( GL_LINES, 0, (i32)debugLineVerts.size() );
+
+        glBindVertexArray( 0 );
+        flatColorShader.Unbind();
+
+        glEnable( GL_DEPTH_TEST );
+
+        debugLineVerts.clear();
     }
 
 } // namespace atto
