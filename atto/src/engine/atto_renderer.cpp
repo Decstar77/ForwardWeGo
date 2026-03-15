@@ -629,7 +629,48 @@ namespace atto {
     }
 
     void Renderer::DebugCapsule( const Capsule & cap, const Vec3 & color ) {
- 
+        constexpr i32 SEGMENTS = 24;
+        constexpr f32 STEP = TWO_PI / (f32)SEGMENTS;
+        constexpr i32 HALF_SEGMENTS = SEGMENTS / 2;
+        constexpr f32 HALF_STEP = PI / (f32)HALF_SEGMENTS;
+
+        Vec3 bottom = cap.base;
+        Vec3 top = cap.base + Vec3( 0.0f, cap.height, 0.0f );
+        f32 r = cap.radius;
+
+        for ( i32 i = 0; i < SEGMENTS; i++ ) {
+            f32 a0 = i * STEP;
+            f32 a1 = (i + 1) * STEP;
+            f32 c0 = cosf( a0 ), s0 = sinf( a0 );
+            f32 c1 = cosf( a1 ), s1 = sinf( a1 );
+
+            // Bottom ring (XZ plane)
+            DebugLine( bottom + Vec3( c0 * r, 0.0f, s0 * r ), bottom + Vec3( c1 * r, 0.0f, s1 * r ), color );
+            // Top ring (XZ plane)
+            DebugLine( top + Vec3( c0 * r, 0.0f, s0 * r ), top + Vec3( c1 * r, 0.0f, s1 * r ), color );
+        }
+
+        // Vertical lines connecting the two rings
+        DebugLine( bottom + Vec3( r, 0.0f, 0.0f ), top + Vec3( r, 0.0f, 0.0f ), color );
+        DebugLine( bottom + Vec3( -r, 0.0f, 0.0f ), top + Vec3( -r, 0.0f, 0.0f ), color );
+        DebugLine( bottom + Vec3( 0.0f, 0.0f, r ), top + Vec3( 0.0f, 0.0f, r ), color );
+        DebugLine( bottom + Vec3( 0.0f, 0.0f, -r ), top + Vec3( 0.0f, 0.0f, -r ), color );
+
+        // Hemisphere arcs (semicircles)
+        for ( i32 i = 0; i < HALF_SEGMENTS; i++ ) {
+            f32 a0 = i * HALF_STEP;
+            f32 a1 = (i + 1) * HALF_STEP;
+            f32 c0 = cosf( a0 ), s0 = sinf( a0 );
+            f32 c1 = cosf( a1 ), s1 = sinf( a1 );
+
+            // Top hemisphere arcs (XY and ZY planes, curving upward)
+            DebugLine( top + Vec3( c0 * r, s0 * r, 0.0f ), top + Vec3( c1 * r, s1 * r, 0.0f ), color );
+            DebugLine( top + Vec3( 0.0f, s0 * r, c0 * r ), top + Vec3( 0.0f, s1 * r, c1 * r ), color );
+
+            // Bottom hemisphere arcs (XY and ZY planes, curving downward)
+            DebugLine( bottom + Vec3( c0 * r, -s0 * r, 0.0f ), bottom + Vec3( c1 * r, -s1 * r, 0.0f ), color );
+            DebugLine( bottom + Vec3( 0.0f, -s0 * r, c0 * r ), bottom + Vec3( 0.0f, -s1 * r, c1 * r ), color );
+        }
     }
 
     void Renderer::FlushDebugLines() {

@@ -239,13 +239,7 @@ namespace atto {
         map.Render( renderer, 0.0, renderMode == EditorRenderMode::Lit, selectedBrushIndex );
 
         const PlayerStart & playerStart = map.GetPlayerStart();
-        for ( int i = 0; i < 4; i++ ) {
-            Sphere sphere = {};
-            sphere.radius = 0.5f;
-            sphere.center = playerStart.spawnPos;
-            sphere.center.y += sphere.radius * (i + 1);
-            renderer.DebugSphere( sphere );
-        }
+        renderer.DebugCapsule( playerStart.GetCapsule() );
 
         renderer.SetWireframe( false );
 

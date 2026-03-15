@@ -118,6 +118,7 @@ namespace atto {
         renderer.RenderAnimatedModel( playerHands, animator, armsMatrix );
         renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
+
         map.DebugDrawBrushCollision( renderer );
     }
 
