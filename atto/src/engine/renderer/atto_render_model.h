@@ -125,10 +125,11 @@ namespace atto {
         i32  GetBoneCount() const { return boneCounter; }
         i32  GetAnimationCount() const { return static_cast<i32>(animations.size()); }
 
-        const std::unordered_map<std::string, BoneInfo> &   GetBoneInfoMap() const { return boneInfoMap; }
-        const BoneNode &                                    GetRootNode() const { return rootNode; }
-        const Mat4 &                                        GetGlobalInverseTransform() const { return globalInverseTransform; }
-        const std::vector<AnimationClip> &                  GetAnimations() const { return animations; }
+        const std::unordered_map<std::string, BoneInfo> & GetBoneInfoMap() const { return boneInfoMap; }
+        const BoneNode & GetRootNode() const { return rootNode; }
+        const Mat4 & GetGlobalInverseTransform() const { return globalInverseTransform; }
+        const std::vector<AnimationClip> & GetAnimations() const { return animations; }
+        const i32                                           GetAnimationIndex( const char * name ) const;
 
     private:
         std::vector<AnimatedMesh>                   meshes;
@@ -143,13 +144,16 @@ namespace atto {
     public:
         Animator();
 
-        void PlayAnimation( const AnimatedModel & model, i32 animationIndex = 0, bool loop = true );
+        void PlayAnimation( const AnimatedModel & model, const char * animationName, bool loop );
+        void PlayAnimation( const AnimatedModel & model, i32 animationIndex, bool loop  );
         void Update( f32 dt );
 
         const Mat4 * GetFinalBoneMatrices() const { return finalBoneMatrices; }
         bool IsPlaying() const { return currentClip != nullptr; }
+        bool IsFinished() const { return currentClip ? currentTime >= currentClip->duration : true; }
         f32  GetCurrentTime() const { return currentTime; }
         f32  GetDuration() const { return currentClip ? currentClip->duration / currentClip->ticksPerSecond : 0.0f; }
+        const AnimationClip * GetCurrentAnimation() const { return currentClip; }
 
     private:
         void CalculateBoneTransform( const BoneNode & node, const Mat4 & parentTransform );
@@ -173,7 +177,7 @@ namespace atto {
         void Serialize( Serializer & serializer );
 
         bool IsPointInside( Vec3 point ) const;
-        bool IsPointInside( Vec3 point, i32 hAxis, i32 vAxis) const;
+        bool IsPointInside( Vec3 point, i32 hAxis, i32 vAxis ) const;
 
         Vec3 center = Vec3( 0.0f );
         Vec3 halfExtents = Vec3( 0.5f );

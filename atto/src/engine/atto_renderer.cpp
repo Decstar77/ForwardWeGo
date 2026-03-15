@@ -122,14 +122,16 @@ namespace atto {
 
         void main() {
             mat4 boneTransform = mat4(0.0);
-            bool hasBones = false;
+            float totalWeight = 0.0;
             for (int i = 0; i < 4; i++) {
                 if (aBoneIDs[i] >= 0) {
                     boneTransform += uBoneMatrices[aBoneIDs[i]] * aBoneWeights[i];
-                    hasBones = true;
+                    totalWeight += aBoneWeights[i];
                 }
             }
-            if (!hasBones) {
+            if (totalWeight > 0.0) {
+                boneTransform /= totalWeight;
+            } else {
                 boneTransform = mat4(1.0);
             }
 

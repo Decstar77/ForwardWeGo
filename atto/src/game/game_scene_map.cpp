@@ -12,9 +12,7 @@ namespace atto {
         camera.SetMoveSpeed( 5.0f );
         camera.SetLookSensitivity( 0.1f );
 
-        playerHands.LoadFromFile( "assets/player/Weapons/Arms_Combat_Knife.fbx" );
-        
-        playerHands.DebugPrint();
+        playerHands.LoadFromFile( "assets/player/arms/knife.glb" );
 
         JsonSerializer serializer( false );
         serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( "assets/maps/game.map" ) );
@@ -22,7 +20,7 @@ namespace atto {
 
         map.Initialize();
 
-        animator.PlayAnimation( playerHands, 5, true );
+        animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
@@ -41,6 +39,12 @@ namespace atto {
                 mouseDelta.x * camera.GetLookSensitivity() * DEG_TO_RAD,
                 -mouseDelta.y * camera.GetLookSensitivity() * DEG_TO_RAD
             );
+        }
+
+        ATTO_ASSERT( animator.GetCurrentAnimation(), "player hands are null ??" );
+
+        if ( input.IsMouseButtonDown( MouseButton::Left ) && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
+            animator.PlayAnimation( playerHands, "Armature|Knife_Attack_1_Anim", false );
         }
 
         animator.Update( deltaTime );
@@ -71,11 +75,12 @@ namespace atto {
         Mat4 cameraWorld = glm::inverse( camera.GetViewMatrix() );
 
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
-        localCorrection = glm::scale( localCorrection, Vec3( ArmsScale ) );
+        //localCorrection = glm::scale( localCorrection, Vec3( ArmsScale ) );
 
         Mat4 armsMatrix = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
 
         renderer.RenderAnimatedModel( playerHands, animator, armsMatrix );
+        //renderer.RenderAnimatedModel( playerHands, animator, glm::scale(glm::mat4(1), glm::vec3(10) ) );
     }
 
     void GameMapScene::OnShutdown() {

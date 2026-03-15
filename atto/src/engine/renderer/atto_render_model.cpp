@@ -183,13 +183,13 @@ namespace atto {
             const aiMaterial * material = scene->mMaterials[i];
             aiString name;
             material->Get( AI_MATKEY_NAME, name );
-            printf( "Material: %s\n", name.C_Str() );
+            LOG_INFO( "Material: %s", name.C_Str() );
 
             u32 numDiffuse = material->GetTextureCount( aiTextureType_DIFFUSE );
             for ( u32 t = 0; t < numDiffuse; ++t ) {
                 aiString texPath;
                 if ( material->GetTexture( aiTextureType_DIFFUSE, t, &texPath ) == AI_SUCCESS ) {
-                    printf( "  Diffuse Texture: %s\n", texPath.C_Str() );
+                    LOG_INFO( "  Diffuse Texture: %s", texPath.C_Str() );
                 }
             }
 
@@ -197,7 +197,7 @@ namespace atto {
             for ( u32 t = 0; t < numSpecular; ++t ) {
                 aiString texPath;
                 if ( material->GetTexture( aiTextureType_SPECULAR, t, &texPath ) == AI_SUCCESS ) {
-                    printf( "  Specular Texture: %s\n", texPath.C_Str() );
+                    LOG_INFO( "  Specular Texture: %s", texPath.C_Str() );
                 }
             }
 
@@ -205,14 +205,14 @@ namespace atto {
             for ( u32 t = 0; t < numNormals; ++t ) {
                 aiString texPath;
                 if ( material->GetTexture( aiTextureType_NORMALS, t, &texPath ) == AI_SUCCESS ) {
-                    printf( "  Normal Texture: %s\n", texPath.C_Str() );
+                    LOG_INFO( "  Normal Texture: %s", texPath.C_Str() );
                 }
             }
             u32 numBump = material->GetTextureCount( aiTextureType_HEIGHT );
             for ( u32 t = 0; t < numBump; ++t ) {
                 aiString texPath;
                 if ( material->GetTexture( aiTextureType_HEIGHT, t, &texPath ) == AI_SUCCESS ) {
-                    printf( "  Bump Map: %s\n", texPath.C_Str() );
+                    LOG_INFO( "  Bump Map: %s", texPath.C_Str() );
                 }
             }
         }
@@ -362,6 +362,21 @@ namespace atto {
 
         ExtractBoneData( mesh, vertices, boneInfoMap, boneCounter );
 
+        for ( AnimationVertex & v : vertices ) {
+            f32 totalWeight = 0.0f;
+            for ( i32 i = 0; i < MAX_BONES_PER_VERTEX; i++ ) {
+                if ( v.boneIDs[i] >= 0 ) {
+                    totalWeight += v.boneWeights[i];
+                }
+            }
+            if ( totalWeight > 0.0f && Abs( totalWeight - 1.0f ) > 1e-6f ) {
+                f32 invTotal = 1.0f / totalWeight;
+                for ( i32 i = 0; i < MAX_BONES_PER_VERTEX; i++ ) {
+                    v.boneWeights[i] *= invTotal;
+                }
+            }
+        }
+
         AnimatedMesh result;
         result.Create( vertices, indices );
         return result;
@@ -472,6 +487,8 @@ namespace atto {
         rootNode = BuildBoneHierarchy( scene->mRootNode );
         ExtractAnimations( scene, animations );
 
+        PrintMaterials( scene );
+
         LOG_INFO( "Loaded animated model '%s' (%d meshes, %d bones, %d animations)",
             filePath, GetMeshCount(), GetBoneCount(), GetAnimationCount() );
 
@@ -503,12 +520,12 @@ namespace atto {
 
     void AnimatedModel::DebugPrint() const {
         // Print bones
-        // LOG_INFO( "BoneCount: %d", GetBoneCount() );
-        // for ( const auto & bonePair : boneInfoMap ) {
-        //     const std::string & boneName = bonePair.first;
-        //     const BoneInfo & boneInfo = bonePair.second;
-        //     LOG_INFO( "  Bone: '%s' (id=%d)", boneName.c_str(), boneInfo.id );
-        // }
+        LOG_INFO( "BoneCount: %d", GetBoneCount() );
+        for ( const auto & bonePair : boneInfoMap ) {
+            const std::string & boneName = bonePair.first;
+            const BoneInfo & boneInfo = bonePair.second;
+            LOG_INFO( "  Bone: '%s' (id=%d)", boneName.c_str(), boneInfo.id );
+        }
 
         // Print animations
         LOG_INFO( "AnimationCount: %d", GetAnimationCount() );
@@ -517,15 +534,25 @@ namespace atto {
             LOG_INFO( "  Animation[%d]: '%s' (duration: %.2f, ticks/s: %.2f, channels: %d)",
                 i, clip.name.c_str(), clip.duration, clip.ticksPerSecond, (i32)clip.channels.size()
             );
-            // for ( const auto & channel : clip.channels ) {
-            //     LOG_INFO( "    Channel: '%s' (pos: %zu keys, rot: %zu keys, scale: %zu keys)",
-            //         channel.boneName.c_str(),
-            //         channel.positionKeys.size(),
-            //         channel.rotationKeys.size(),
-            //         channel.scaleKeys.size()
-            //     );
-            // }
+            for ( const auto & channel : clip.channels ) {
+                LOG_INFO( "    Channel: '%s' (pos: %zu keys, rot: %zu keys, scale: %zu keys)",
+                    channel.boneName.c_str(),
+                    channel.positionKeys.size(),
+                    channel.rotationKeys.size(),
+                    channel.scaleKeys.size()
+                );
+            }
         }
+    }
+
+    const i32 AnimatedModel::GetAnimationIndex( const char * name ) const {
+        ATTO_ASSERT( name != nullptr, "Name is null" );
+        for ( i32 i = 0; i < static_cast<i32>( animations.size() ); i++ ) {
+            if ( animations[i].name == name ) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     // =========================================================================
@@ -536,6 +563,12 @@ namespace atto {
         for ( i32 i = 0; i < MAX_BONES; i++ ) {
             finalBoneMatrices[i] = Mat4( 1.0f );
         }
+    }
+
+    void Animator::PlayAnimation( const AnimatedModel & model, const char * animationName, bool loop ) {
+        const i32 index = model.GetAnimationIndex( animationName );
+        ATTO_ASSERT( index >= 0, "Invalid animation index" );
+        PlayAnimation( model, index, loop );
     }
 
     void Animator::PlayAnimation( const AnimatedModel & animModel, i32 animationIndex, bool loop ) {
@@ -768,13 +801,13 @@ namespace atto {
 
     bool Brush::IsPointInside( Vec3 point ) const {
         return  point.x >= center.x - halfExtents.x && point.x <= center.x + halfExtents.x &&
-                point.y >= center.y - halfExtents.y && point.y <= center.y + halfExtents.y &&
-                point.z >= center.z - halfExtents.z && point.z <= center.z + halfExtents.z;
+            point.y >= center.y - halfExtents.y && point.y <= center.y + halfExtents.y &&
+            point.z >= center.z - halfExtents.z && point.z <= center.z + halfExtents.z;
     }
 
     bool Brush::IsPointInside( Vec3 point, i32 hAxis, i32 vAxis ) const {
         return  point[hAxis] >= center[hAxis] - halfExtents[hAxis] && point[hAxis] <= center[hAxis] + halfExtents[hAxis] &&
-                point[vAxis] >= center[vAxis] - halfExtents[vAxis] && point[vAxis] <= center[vAxis] + halfExtents[vAxis];
+            point[vAxis] >= center[vAxis] - halfExtents[vAxis] && point[vAxis] <= center[vAxis] + halfExtents[vAxis];
     }
 
 } // namespace atto
