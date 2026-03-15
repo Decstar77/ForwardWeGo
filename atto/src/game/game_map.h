@@ -36,6 +36,7 @@ namespace atto {
         bool IsPlayerStartColliding() const;
 
         // =========== Entities ===========
+        std::unique_ptr<Entity> MakeEntity( EntityType type );
         Entity *        CreateEntity( EntityType type );
         void            DestroyEntity( Entity * entity );
 

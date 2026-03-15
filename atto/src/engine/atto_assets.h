@@ -98,6 +98,36 @@ namespace atto {
             }
         }
 
+        // Polymorphic vector (std::vector<std::unique_ptr<T>>) with factory for loading.
+        // Saving: calls T::Serialize on each element directly (no slicing).
+        // Loading: factory receives a Serializer& and must return a fully deserialized std::unique_ptr<T>.
+        template<typename T, typename Factory>
+        void operator()( const char * key, std::vector<std::unique_ptr<T>> & list, Factory && factory ) {
+            if ( IsSaving() ) {
+                i32 count = static_cast<i32>(list.size());
+                BeginArray( key, count );
+                for ( i32 i = 0; i < count; ++i ) {
+                    std::unique_ptr<Serializer> sub = CreateSubSerializer();
+                    list[i]->Serialize( *sub );
+                    AppendArrayElement( key, sub.get() );
+                }
+            }
+            else {
+                i32 count = 0;
+                BeginArray( key, count );
+                list.clear();
+                for ( i32 i = 0; i < count; ++i ) {
+                    std::unique_ptr<Serializer> sub = GetArrayElement( key, i );
+                    if ( sub ) {
+                        std::unique_ptr<T> obj = factory( *sub );
+                        if ( obj ) {
+                            list.push_back( std::move( obj ) );
+                        }
+                    }
+                }
+            }
+        }
+
     protected:
         // Object serialization
         virtual std::unique_ptr<Serializer> CreateSubSerializer() = 0;

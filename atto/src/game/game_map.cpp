@@ -23,7 +23,7 @@ namespace atto {
         model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
         texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
 
-       // CreateEntity( EntityType::Barrel );
+        // CreateEntity( EntityType::Barrel );
 
         brushModels.resize( brushes.size() );
         brushCollsion.resize( brushes.size() );
@@ -72,16 +72,19 @@ namespace atto {
         }
     }
 
-    Entity * GameMap::CreateEntity( EntityType type ) {
-        std::unique_ptr<Entity> entity = nullptr;
+    std::unique_ptr<Entity> GameMap::MakeEntity( EntityType type ) {
         switch ( type ) {
         case EntityType::Barrel:
-            entity = std::make_unique<Entity_Barrel>();
-            break;
+            return std::make_unique<Entity_Barrel>();
         default:
+            ATTO_ASSERT( false, "Unknown EntityType provided to GameMap::MakeEntity" );
             return nullptr;
         }
+    }
 
+    Entity * GameMap::CreateEntity( EntityType type ) {
+        auto entity = MakeEntity( type );
+        if ( !entity ) return nullptr;
         entity->SetMap( this );
         return entities.emplace_back( std::move( entity ) ).get();
     }
@@ -182,23 +185,18 @@ namespace atto {
         serializer( "playerStart", playerStart );
         serializer( "brushes", brushes );
 
-        if ( serializer.IsSaving() ) {
-            std::vector<Entity> entityData;
-            for ( auto & entity : entities ) {
-                entityData.emplace_back( *entity );
-            }
+        serializer( "entities", entities, [this]( Serializer & sub ) -> std::unique_ptr<Entity>
+            {
+                std::string typeStr;
+                sub( "Type", typeStr );
+                EntityType entityType = StringToEntityType( typeStr.c_str() );
 
-            serializer( "entities", entityData );
-        }
-        else {
-            entities.clear();
-            std::vector<Entity> entityData;
-            serializer( "entities", entityData );
-            for ( auto & entity : entityData ) {
-                Entity * newEntity = CreateEntity( entity.GetType() );
-                *newEntity = entity;
-                newEntity->SetMap( this );
-            }
-        }
+                auto entity = MakeEntity( entityType );
+                if ( entity ) {
+                    entity->SetMap( this );
+                    entity->Serialize( sub );
+                }
+                return entity;
+            } );
     }
 }
