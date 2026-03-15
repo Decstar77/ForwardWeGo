@@ -56,7 +56,75 @@ namespace atto {
     }
 
     bool IntersectionTest::CapsuleAlignedBox( const Capsule & capsule, const AlignedBox & box ) {
-     
+        // Capsule axis is vertical (Y-up): from base to base + (0, height, 0).
+        // X and Z are constant along the segment, so only Y affects distance.
+        f32 segMinY = capsule.base.y;
+        f32 segMaxY = capsule.base.y + capsule.height;
+
+        // Find the Y on the segment that minimizes squared distance to the box.
+        f32 bestY = Clamp( Clamp( segMinY, box.min.y, box.max.y ), segMinY, segMaxY );
+
+        Sphere s = { Vec3( capsule.base.x, bestY, capsule.base.z ), capsule.radius };
+        return SphereAlignedBox( s, box );
+    }
+
+    bool CollisionSweep::CapsuleAlignedBox( const Capsule & capsule, const AlignedBox & box, SweepResult & result ) {
+        f32 segMinY = capsule.base.y;
+        f32 segMaxY = capsule.base.y + capsule.height;
+        f32 bestY = Clamp( Clamp( segMinY, box.min.y, box.max.y ), segMinY, segMaxY );
+        Vec3 axisPoint = Vec3( capsule.base.x, bestY, capsule.base.z );
+
+        Vec3 boxPoint = Vec3(
+            Clamp( axisPoint.x, box.min.x, box.max.x ),
+            Clamp( axisPoint.y, box.min.y, box.max.y ),
+            Clamp( axisPoint.z, box.min.z, box.max.z )
+        );
+
+        Vec3 delta = axisPoint - boxPoint;
+        f32 distSq = Dot( delta, delta );
+        f32 r = capsule.radius;
+
+        if ( distSq > r * r ) {
+            return false;
+        }
+
+        f32 dist = Sqrt( distSq );
+        result.toi = 0.0f;
+
+        if ( dist > 0.0001f ) {
+            // Axis point is outside the box but sphere shell overlaps
+            result.normal = delta / dist;
+            result.pen = r - dist;
+        }
+        else {
+            // Axis point is inside the box -- find the nearest face for minimum push-out
+            f32 faces[6] = {
+                axisPoint.x - box.min.x,
+                box.max.x - axisPoint.x,
+                axisPoint.y - box.min.y,
+                box.max.y - axisPoint.y,
+                axisPoint.z - box.min.z,
+                box.max.z - axisPoint.z,
+            };
+
+            Vec3 normals[6] = {
+                Vec3( -1, 0, 0 ), Vec3( 1, 0, 0 ),
+                Vec3( 0, -1, 0 ), Vec3( 0, 1, 0 ),
+                Vec3( 0, 0, -1 ), Vec3( 0, 0, 1 ),
+            };
+
+            i32 minIdx = 0;
+            for ( i32 i = 1; i < 6; i++ ) {
+                if ( faces[i] < faces[minIdx] ) {
+                    minIdx = i;
+                }
+            }
+
+            result.normal = normals[minIdx];
+            result.pen = faces[minIdx] + r;
+        }
+
+        return true;
     }
 
 }

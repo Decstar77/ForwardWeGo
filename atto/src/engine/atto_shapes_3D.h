@@ -33,6 +33,7 @@ namespace atto {
     };
 
     class IntersectionTest {
+    public:
         static bool Sphere2( const Sphere & sphereA, const Sphere & sphereB );
         static bool AlignedBox2( const AlignedBox & boxA, const AlignedBox & boxB );
         static bool SphereAlignedBox( const Sphere & sphere, const AlignedBox & box );
@@ -46,6 +47,7 @@ namespace atto {
     };
 
     class CollisionSweep {
+    public:
         static bool CapsuleAlignedBox( const Capsule & capsule, const AlignedBox & box, SweepResult & result );
     };
 }
