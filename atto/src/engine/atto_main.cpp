@@ -27,14 +27,16 @@ int main() {
 
 /*
 TODO:
- - Fix materials and colors
- - Add textures to brushes
- - Entity id's
- - Entities should be marked for removed/destroyed and them cleaned up at the end of the frame
 
- - Need an undo
+Gameplay:
+- Entity id's
+- Entities should be marked for removed/destroyed and them cleaned up at the end of the frame
 
- - Shadows
+Editor:
+- Need an undo
+
+- Add textures on brushes and materials
+- Shadows
  - MSAA
  - SSAO
  - Image based lighting
