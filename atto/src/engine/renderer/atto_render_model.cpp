@@ -41,6 +41,15 @@ namespace atto {
     void Mesh::Create( const std::vector<Vertex> & vertices, const std::vector<u32> & indices ) {
         indexCount = static_cast<i32>(indices.size());
 
+        if ( !vertices.empty() ) {
+            bounds.min = vertices[0].position;
+            bounds.max = vertices[0].position;
+            for ( const Vertex & v : vertices ) {
+                bounds.min = glm::min( bounds.min, v.position );
+                bounds.max = glm::max( bounds.max, v.position );
+            }
+        }
+
         glGenVertexArrays( 1, &vao );
         glGenBuffers( 1, &vbo );
         glGenBuffers( 1, &ebo );
@@ -73,6 +82,7 @@ namespace atto {
         if ( vbo != 0 ) { glDeleteBuffers( 1, &vbo ); vbo = 0; }
         if ( vao != 0 ) { glDeleteVertexArrays( 1, &vao ); vao = 0; }
         indexCount = 0;
+        bounds = {};
     }
 
     void Mesh::Draw() const {
@@ -229,6 +239,17 @@ namespace atto {
         }
     }
 
+    void StaticModel::ComputeBounds() {
+        if ( !meshes.empty() ) {
+            bounds = meshes[0].GetBounds();
+            for ( i32 i = 1; i < GetMeshCount(); i++ ) {
+                const AlignedBox & mb = meshes[i].GetBounds();
+                bounds.min = glm::min( bounds.min, mb.min );
+                bounds.max = glm::max( bounds.max, mb.max );
+            }
+        }
+    }
+
     void StaticModel::LoadFromFile( const char * filePath, f32 scale ) {
         Assimp::Importer importer;
 
@@ -246,6 +267,7 @@ namespace atto {
 
         PrintMaterials( scene );
         ProcessNode( scene->mRootNode, scene, meshes, scale );
+        ComputeBounds();
 
         LOG_INFO( "Loaded model '%s' (%d meshes)", filePath, GetMeshCount() );
     }
@@ -255,6 +277,7 @@ namespace atto {
         Mesh mesh;
         mesh.Create( vertices, indices );
         meshes.push_back( std::move( mesh ) );
+        ComputeBounds();
     }
 
     void StaticModel::Destroy() {
@@ -262,6 +285,7 @@ namespace atto {
             mesh.Destroy();
         }
         meshes.clear();
+        bounds = {};
     }
 
     void StaticModel::Draw() const {

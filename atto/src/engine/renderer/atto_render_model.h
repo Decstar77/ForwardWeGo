@@ -3,6 +3,7 @@
 #include "../atto_core.h"
 #include "../atto_math.h"
 #include "../atto_assets.h"
+#include "../atto_shapes_3D.h"
 
 #include <unordered_map>
 
@@ -75,12 +76,14 @@ namespace atto {
         void Draw() const;
 
         i32 GetIndexCount() const { return indexCount; }
+        const AlignedBox & GetBounds() const { return bounds; }
 
     private:
         u32 vao = 0;
         u32 vbo = 0;
         u32 ebo = 0;
         i32 indexCount = 0;
+        AlignedBox bounds = {};
     };
 
     class AnimatedMesh {
@@ -107,9 +110,14 @@ namespace atto {
 
         bool IsLoaded() const { return !meshes.empty(); }
         i32 GetMeshCount() const { return static_cast<i32>(meshes.size()); }
+        const AlignedBox & GetBounds() const { return bounds; }
+        const AlignedBox & GetMeshBounds( i32 index ) const { return meshes[index].GetBounds(); }
 
     private:
+        void ComputeBounds();
+
         std::vector<Mesh> meshes;
+        AlignedBox bounds = {};
     };
 
     class AnimatedModel {

@@ -27,8 +27,8 @@ namespace atto {
     class Entity {
     public:
         EntityType GetType() const { return type; }
-        void SetPosition(const Vec3& pos) { position = pos; }
-        void SetOrientation(const Mat3& orient) { orientation = orient; }
+        void SetPosition( const Vec3 & pos ) { position = pos; }
+        void SetOrientation( const Mat3 & orient ) { orientation = orient; }
         const Vec3 & GetPosition() const { return position; }
         const Mat3 & GetOrientation() const { return orientation; }
 
@@ -39,10 +39,13 @@ namespace atto {
         virtual void OnUpdate( f32 dt ) {}
         virtual void OnRender( Renderer & renderer ) {}
         virtual void OnDespawn() {}
-        
-        virtual bool RayTest( const Vec3 & start, const Vec3 & dir ) { return false ;}
+
+        virtual AlignedBox GetBounds() const { return {}; }
+        virtual bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const { return false; }
 
         virtual void Serialize( Serializer & serializer );
+        
+        virtual void DebugDrawBounds( Renderer & renderer ) {}
 
     protected:
         EntityType type = EntityType::None;
@@ -59,6 +62,10 @@ namespace atto {
         void OnUpdate( f32 dt ) override;
         void OnRender( Renderer & renderer ) override;
         void OnDespawn() override;
+
+        AlignedBox GetBounds() const override;
+        bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
+        void DebugDrawBounds( Renderer & renderer ) override;
 
     private:
         StaticModel model;

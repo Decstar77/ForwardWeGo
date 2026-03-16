@@ -16,12 +16,11 @@ namespace atto {
         for ( auto & bm : brushModels ) {
             bm.Destroy();
         }
-        model.Destroy();
     }
 
     void GameMap::Initialize() {
-        model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
-        texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
+        // model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
+        // texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
 
         // CreateEntity( EntityType::Barrel );
 
@@ -46,13 +45,6 @@ namespace atto {
     }
 
     void GameMap::Render( Renderer & renderer, f32 dt, bool lit, i32 selectedBrush ) {
-        if ( lit ) {
-            renderer.RenderStaticModel( model, Mat4( 1.0f ) );
-        }
-        else {
-            renderer.RenderStaticModelUnlit( model, Mat4( 1.0f ) );
-        }
-
         Mat4 identity( 1.0f );
         for ( i32 i = 0; i < static_cast<i32>( brushModels.size() ); i++ ) {
             if ( !brushModels[i].IsLoaded() ) {
@@ -69,6 +61,7 @@ namespace atto {
 
         for ( auto & entity : entities ) {
             entity->OnRender( renderer );
+            entity->DebugDrawBounds( renderer );
         }
     }
 

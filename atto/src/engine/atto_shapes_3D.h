@@ -11,6 +11,9 @@ namespace atto {
         inline static AlignedBox FromCenterSize( Vec3 center, Vec3 size ) { return { center - size * 0.5f, center + size * 0.5f }; }
         inline Vec3 GetCenter() const { return (min + max) * 0.5f; }
         inline Vec3 GetSize() const { return max - min; }
+
+        void Translate( const Vec3 & delta );
+        void Rotate( const Mat3 & rotation );
     };
 
     struct Sphere {
@@ -41,6 +44,13 @@ namespace atto {
             f32 height = axisLen - 2.0f * radius;
             return { base, height, radius };
         }
+    };
+
+    class Raycast {
+    public:
+        static bool TestSphere( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Sphere & sphere, f32 & dist );
+        static bool TestAlignedBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const AlignedBox & alignedBox, f32 & dist );
+        static bool TestCapsule( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Capsule & capsule, f32 & dist );
     };
 
     class IntersectionTest {

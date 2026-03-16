@@ -60,9 +60,6 @@ namespace atto {
     private:
         PlayerStart playerStart;
 
-        StaticModel model;
-        Texture texture;
-
         std::vector<std::unique_ptr<Entity>>    entities;
         std::vector<Brush>                      brushes;
         std::vector<StaticModel>                brushModels;

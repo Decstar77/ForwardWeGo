@@ -18,8 +18,6 @@ namespace atto {
         serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( "assets/maps/game.map" ) );
         map.Serialize( serializer );
 
-        //map.CreateEntity( EntityType::Barrel );
-
         map.Initialize();
 
         animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
@@ -131,8 +129,7 @@ namespace atto {
         renderer.RenderAnimatedModel( playerHands, animator, armsMatrix );
         renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
-
-        map.DebugDrawBrushCollision( renderer );
+        //map.DebugDrawBrushCollision( renderer );
     }
 
     void GameMapScene::OnShutdown() {

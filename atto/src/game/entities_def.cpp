@@ -23,7 +23,7 @@ namespace atto {
 
     void Entity_Barrel::OnSpawn() {
         model.LoadFromFile( "assets/player/props/barrel.fbx", 4.0f );
-        orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( 90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
+        orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( -90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
     }
 
     void Entity_Barrel::OnUpdate( f32 dt ) {
@@ -37,5 +37,22 @@ namespace atto {
 
     void Entity_Barrel::OnDespawn() {
         model.Destroy();
+    }
+
+    AlignedBox Entity_Barrel::GetBounds() const {
+        AlignedBox bounds = model.GetBounds();
+        bounds.Translate( position );
+        bounds.Rotate( orientation );
+        return bounds;
+    }
+
+    bool Entity_Barrel::RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const {
+        AlignedBox bounds = GetBounds();
+        return Raycast::TestAlignedBox( start, dir, bounds, dist );
+    }
+
+    void Entity_Barrel::DebugDrawBounds( Renderer & renderer ) {
+        AlignedBox bounds = GetBounds();
+        renderer.DebugAlignedBox( bounds );
     }
 }

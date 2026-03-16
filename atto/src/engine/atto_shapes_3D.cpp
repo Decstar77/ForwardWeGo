@@ -3,13 +3,73 @@
 
 
 namespace atto {
-    bool  IntersectionTest::Sphere2( const Sphere & sphereA, const Sphere & sphereB ) {
+
+    void AlignedBox::Translate( const Vec3 & delta ) {
+        min += delta;
+        max += delta;
+    }
+
+    void AlignedBox::Rotate( const Mat3 & rotation ) {
+        Vec3 center = GetCenter();
+        Vec3 extents[] = {
+            min - center,
+            Vec3( min.x - center.x, min.y - center.y, max.z - center.z ),
+            Vec3( min.x - center.x, max.y - center.y, min.z - center.z ),
+            Vec3( max.x - center.x, min.y - center.y, min.z - center.z ),
+            Vec3( max.x - center.x, max.y - center.y, min.z - center.z ),
+            Vec3( min.x - center.x, max.y - center.y, max.z - center.z ),
+            Vec3( max.x - center.x, min.y - center.y, max.z - center.z ),
+            max - center
+        };
+        Vec3 newMin( FLT_MAX );
+        Vec3 newMax( -FLT_MAX );
+        for ( int i = 0; i < 8; ++i ) {
+            Vec3 pt = center + rotation * extents[i];
+            newMin = glm::min( newMin, pt );
+            newMax = glm::max( newMax, pt );
+        }
+        min = newMin;
+        max = newMax;
+    }
+
+    bool Raycast::TestSphere( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Sphere & sphere, f32 & dist ) {
+        Vec3 rayToSphere = sphere.center - rayOrigin;
+        f32 t = Dot( rayToSphere, rayDirection );
+        if ( t < 0.0f ) {
+            dist = 0.0f;
+            return false;
+        }
+        Vec3 closestPoint = rayOrigin + rayDirection * t;
+        f32 distSq = DistanceSquared( closestPoint, sphere.center );
+        dist = Sqrt( distSq );
+        return true;
+    }
+
+    bool Raycast::TestAlignedBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const AlignedBox & alignedBox, f32 & dist ) {
+        f32 tMin = (alignedBox.min.x - rayOrigin.x) / rayDirection.x;
+        f32 tMax = (alignedBox.max.x - rayOrigin.x) / rayDirection.x;
+        if ( tMin > tMax ) {
+            std::swap( tMin, tMax );
+        }
+        f32 tMinY = (alignedBox.min.y - rayOrigin.y) / rayDirection.y;
+        f32 tMaxY = (alignedBox.max.y - rayOrigin.y) / rayDirection.y;
+        if ( tMinY > tMaxY ) {
+            std::swap( tMinY, tMaxY );
+        }
+        f32 tMinZ = (alignedBox.min.z - rayOrigin.z) / rayDirection.z;
+        f32 tMaxZ = (alignedBox.max.z - rayOrigin.z) / rayDirection.z;
+        if ( tMinZ > tMaxZ ) {
+            std::swap( tMinZ, tMaxZ );
+        }
+        return true;
+    }
+
+    bool IntersectionTest::Sphere2( const Sphere & sphereA, const Sphere & sphereB ) {
         // Check if the distance between centers is less than sum of radii
         Vec3 delta = sphereB.center - sphereA.center;
         f32 distSq = Dot( delta, delta );
         f32 r = sphereA.radius + sphereB.radius;
         return distSq <= r * r;
-
     }
 
     bool IntersectionTest::AlignedBox2( const AlignedBox & boxA, const AlignedBox & boxB ) {
