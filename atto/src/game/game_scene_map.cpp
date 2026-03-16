@@ -88,6 +88,15 @@ namespace atto {
             && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_1_Anim", false );
             sndKnifeSwing1.Play( 0.5f );
+
+            MapRaycastResult result;
+            if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
+                if ( result.entity ) {
+                    LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
+                } else {
+                    LOG_INFO( "Hit brush: %d at distance: %f", result.brushIndex, result.distance );
+                }
+            }
         }
 
         if ( input.IsMouseButtonDown( MouseButton::Right )

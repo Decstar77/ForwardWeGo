@@ -187,6 +187,43 @@ namespace atto {
         return correction;
     }
 
+    bool GameMap::Raycast( const Vec3 & start, const Vec3 & direction, MapRaycastResult & result ) {
+        f32 minDistance = FLT_MAX;
+
+        result.entity = nullptr;
+        result.brushIndex = -1;
+        result.distance = FLT_MAX;
+
+        for ( i32 i = 0; i < static_cast<i32>( brushCollsion.size() ); i++ ) {
+            f32 distance = FLT_MAX;
+            if ( Raycast::TestAlignedBox( start, direction, brushCollsion[i], distance ) ) {
+                if ( distance < minDistance ) {
+                    minDistance = distance;
+                    result.entity = nullptr;
+                    result.brushIndex = i;
+                }
+            }
+        }
+
+        for ( i32 i = 0; i < static_cast<i32>( entities.size() ); i++ ) {
+            Entity * entity = entities[i].get();
+            if ( entity ) {
+                AlignedBox bounds = entity->GetBounds();
+                f32 distance = FLT_MAX;
+                if ( Raycast::TestAlignedBox( start, direction, bounds, distance ) ) {
+                    if ( distance < minDistance ) {
+                        minDistance = distance;
+                        result.entity = entity;
+                        result.brushIndex = -1;
+                    }
+                }
+            }
+        }
+
+        result.distance = minDistance;
+        return minDistance != FLT_MAX;
+    }
+
     bool GameMap::IsPlayerStartColliding() const {
         Capsule cap = playerStart.GetCapsule();
         for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {

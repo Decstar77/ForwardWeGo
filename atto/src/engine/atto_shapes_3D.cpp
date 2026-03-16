@@ -42,57 +42,37 @@ namespace atto {
         // Find all 8 corners of the box, offset from the pivot
         Vec3 corners[8];
         corners[0] = minOffset;
-        corners[1] = Vec3(min.x - pivot.x, min.y - pivot.y, max.z - pivot.z);
-        corners[2] = Vec3(min.x - pivot.x, max.y - pivot.y, min.z - pivot.z);
-        corners[3] = Vec3(max.x - pivot.x, min.y - pivot.y, min.z - pivot.z);
-        corners[4] = Vec3(max.x - pivot.x, max.y - pivot.y, min.z - pivot.z);
-        corners[5] = Vec3(min.x - pivot.x, max.y - pivot.y, max.z - pivot.z);
-        corners[6] = Vec3(max.x - pivot.x, min.y - pivot.y, max.z - pivot.z);
+        corners[1] = Vec3( min.x - pivot.x, min.y - pivot.y, max.z - pivot.z );
+        corners[2] = Vec3( min.x - pivot.x, max.y - pivot.y, min.z - pivot.z );
+        corners[3] = Vec3( max.x - pivot.x, min.y - pivot.y, min.z - pivot.z );
+        corners[4] = Vec3( max.x - pivot.x, max.y - pivot.y, min.z - pivot.z );
+        corners[5] = Vec3( min.x - pivot.x, max.y - pivot.y, max.z - pivot.z );
+        corners[6] = Vec3( max.x - pivot.x, min.y - pivot.y, max.z - pivot.z );
         corners[7] = maxOffset;
 
-        Vec3 newMin(FLT_MAX);
-        Vec3 newMax(-FLT_MAX);
+        Vec3 newMin( FLT_MAX );
+        Vec3 newMax( -FLT_MAX );
 
         // Rotate all corners around the pivot and find new bounds
-        for (int i = 0; i < 8; ++i) {
+        for ( int i = 0; i < 8; ++i ) {
             Vec3 rotated = pivot + rotation * corners[i];
-            newMin = glm::min(newMin, rotated);
-            newMax = glm::max(newMax, rotated);
+            newMin = glm::min( newMin, rotated );
+            newMax = glm::max( newMax, rotated );
         }
         min = newMin;
         max = newMax;
     }
 
     bool Raycast::TestSphere( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Sphere & sphere, f32 & dist ) {
-        Vec3 rayToSphere = sphere.center - rayOrigin;
-        f32 t = Dot( rayToSphere, rayDirection );
-        if ( t < 0.0f ) {
-            dist = 0.0f;
-            return false;
-        }
-        Vec3 closestPoint = rayOrigin + rayDirection * t;
-        f32 distSq = DistanceSquared( closestPoint, sphere.center );
-        dist = Sqrt( distSq );
-        return true;
+
     }
 
     bool Raycast::TestAlignedBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const AlignedBox & alignedBox, f32 & dist ) {
-        f32 tMin = (alignedBox.min.x - rayOrigin.x) / rayDirection.x;
-        f32 tMax = (alignedBox.max.x - rayOrigin.x) / rayDirection.x;
-        if ( tMin > tMax ) {
-            std::swap( tMin, tMax );
-        }
-        f32 tMinY = (alignedBox.min.y - rayOrigin.y) / rayDirection.y;
-        f32 tMaxY = (alignedBox.max.y - rayOrigin.y) / rayDirection.y;
-        if ( tMinY > tMaxY ) {
-            std::swap( tMinY, tMaxY );
-        }
-        f32 tMinZ = (alignedBox.min.z - rayOrigin.z) / rayDirection.z;
-        f32 tMaxZ = (alignedBox.max.z - rayOrigin.z) / rayDirection.z;
-        if ( tMinZ > tMaxZ ) {
-            std::swap( tMinZ, tMaxZ );
-        }
-        return true;
+
+    }
+
+    bool Raycast::TestCapsule( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Capsule & capsule, f32 & dist ) {
+
     }
 
     bool IntersectionTest::Sphere2( const Sphere & sphereA, const Sphere & sphereB ) {

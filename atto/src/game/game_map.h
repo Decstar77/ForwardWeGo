@@ -17,6 +17,12 @@ namespace atto {
         inline Capsule GetCapsule() const { return Capsule::FromTips( spawnPos, Vec3( spawnPos.x, spawnPos.y + PlayerHeight, spawnPos.z ), 0.4f ); }
     };
 
+    struct MapRaycastResult {
+        Entity *    entity;
+        i32         brushIndex;
+        f32         distance;
+    };
+
     class GameMap {
     public:
         GameMap();
@@ -31,9 +37,13 @@ namespace atto {
 
         void Serialize( Serializer & serializer );
 
-        PlayerStart & GetPlayerStart() { return playerStart; }
-        const PlayerStart & GetPlayerStart() const { return playerStart; }
-        bool IsPlayerStartColliding() const;
+        // =========== Not sure ===========
+        bool Raycast( const Vec3 & start, const Vec3 & direction, MapRaycastResult & result );
+
+        // =========== Player ===========
+        PlayerStart &        GetPlayerStart() { return playerStart; }
+        const PlayerStart &  GetPlayerStart() const { return playerStart; }
+        bool                 IsPlayerStartColliding() const;
 
         // =========== Entities ===========
         std::unique_ptr<Entity> MakeEntity( EntityType type );
