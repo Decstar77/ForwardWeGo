@@ -23,15 +23,18 @@ namespace atto {
 
     private:
         GameMap         map;
+        
+        FPSCamera       camera;
         Animator        animator;
         AnimatedModel   playerHands;
-        FPSCamera       camera;
-
         Capsule         playerCapsule;
+        bool            playerIsAttacking = false;
 
         SoundCollection sndFootsteps;
         SoundCollection sndKnifeSwing1;
         SoundCollection sndKnifeSwing2;
+        SoundCollection sndKnifeHitMetal1;
+        SoundCollection sndKnifeHitMetal2;
         f32             footstepTimer    = 0.0f;
         f32             footstepInterval = 0.6f;
     };

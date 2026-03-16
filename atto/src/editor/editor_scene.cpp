@@ -26,6 +26,8 @@ namespace atto {
 
         Renderer & renderer = Engine::Get().GetRenderer();
         renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
+
+        Engine::Get().GetInput().SetCursorCaptured( false );
     }
 
     void EditorScene::StartImgui() {

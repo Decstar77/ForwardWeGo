@@ -153,7 +153,7 @@ namespace atto {
         Animator();
 
         void PlayAnimation( const AnimatedModel & model, const char * animationName, bool loop );
-        void PlayAnimation( const AnimatedModel & model, i32 animationIndex, bool loop  );
+        void PlayAnimation( const AnimatedModel & model, i32 animationIndex, bool loop );
         void Update( f32 dt );
 
         const Mat4 * GetFinalBoneMatrices() const { return finalBoneMatrices; }
@@ -161,6 +161,7 @@ namespace atto {
         bool IsFinished() const { return currentClip ? currentTime >= currentClip->duration : true; }
         f32  GetCurrentTime() const { return currentTime; }
         f32  GetDuration() const { return currentClip ? currentClip->duration / currentClip->ticksPerSecond : 0.0f; }
+        f32  GetPercentComplete() const { return currentClip ? currentTime / currentClip->duration : 0.0f; }
         const AnimationClip * GetCurrentAnimation() const { return currentClip; }
 
     private:
@@ -173,8 +174,8 @@ namespace atto {
         const BoneAnimationChannel * FindChannel( const std::string & nodeName ) const;
 
         Mat4                    finalBoneMatrices[MAX_BONES];
-        const AnimatedModel *   model = nullptr;
-        const AnimationClip *   currentClip = nullptr;
+        const AnimatedModel * model = nullptr;
+        const AnimationClip * currentClip = nullptr;
         f32                     currentTime = 0.0f;
         bool                    looping = true;
     };

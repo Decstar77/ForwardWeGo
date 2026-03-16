@@ -57,7 +57,25 @@ namespace atto {
             "knife/swing-3_5.wav",
             } );
 
-        Engine::Get().GetAudioSystem().SetMuted( true );
+        sndKnifeHitMetal1.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndKnifeHitMetal1.LoadSounds( {
+            "knife/hit-metal-1_1.wav",
+            "knife/hit-metal-1_2.wav",
+            "knife/hit-metal-1_3.wav",
+            "knife/hit-metal-1_4.wav",
+            "knife/hit-metal-1_5.wav",
+            } );
+
+        sndKnifeHitMetal2.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndKnifeHitMetal2.LoadSounds( {
+            "knife/hit-metal-3_1.wav",
+            "knife/hit-metal-3_2.wav",
+            "knife/hit-metal-3_3.wav",
+            "knife/hit-metal-3_4.wav",
+            "knife/hit-metal-3_5.wav",
+            } );
+
+        Engine::Get().GetAudioSystem().SetMuted( false );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
@@ -88,32 +106,47 @@ namespace atto {
             && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_1_Anim", false );
             sndKnifeSwing1.Play( 0.5f );
-
-            MapRaycastResult result;
-            if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
-                if ( result.entity && result.distance <= 1.25f ) {
-                    LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    result.entity->TakeDamage( 34 );
-                }
-            }
+            playerIsAttacking = true;
         }
 
         if ( input.IsMouseButtonDown( MouseButton::Right )
             && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_3_Anim", false );
             sndKnifeSwing2.Play( 0.5f );
+            playerIsAttacking = true;
+        }
 
+        if ( animator.GetCurrentAnimation()->name == "Armature|Knife_Attack_1_Anim"
+            && animator.GetPercentComplete() > 0.5f
+            && playerIsAttacking == true ) {
+            playerIsAttacking = false;
+            MapRaycastResult result;
+            if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
+                if ( result.entity && result.distance <= 1.25f ) {
+                    LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
+                    result.entity->TakeDamage( 34 );
+                    sndKnifeHitMetal1.Play( 0.5f );
+                }
+            }
+        }
+
+        if ( animator.GetCurrentAnimation()->name == "Armature|Knife_Attack_3_Anim"
+            && animator.GetPercentComplete() > 0.5f
+            && playerIsAttacking == true ) {
+            playerIsAttacking = false;
             MapRaycastResult result;
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 1.25f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
                     result.entity->TakeDamage( 55 );
+                    sndKnifeHitMetal2.Play( 0.5f );
                 }
             }
         }
 
         if ( animator.IsFinished() && animator.GetCurrentAnimation()->name != "Armature|Knife_Idle_Anim" ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
+            playerIsAttacking = false;
         }
 
         animator.Update( deltaTime );
