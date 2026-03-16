@@ -27,7 +27,6 @@ int main() {
 
 /*
 TODO:
- - Make arms draw on top everything else 
  - Fix materials and colors
  - Add textures to brushes
  - Entity id's

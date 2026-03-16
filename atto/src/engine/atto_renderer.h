@@ -21,6 +21,7 @@ namespace atto {
         void EndFrame();
 
         void SetClearColor( const Color & color );
+        void ClearDepthBuffer();
         void SetViewport( i32 x, i32 y, i32 width, i32 height );
 
         void SetViewProjectionMatrix( const Mat4 & vp );

@@ -202,13 +202,13 @@ namespace atto {
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
         map.Render( renderer, 0.0, 1, -1 );
 
-        Mat4 cameraWorld = glm::inverse( camera.GetViewMatrix() );
+        renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
+        renderer.ClearDepthBuffer();
+        Mat4 cameraWorld = glm::inverse( camera.GetViewMatrix() );
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
         Mat4 armsMatrix = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
-
         renderer.RenderAnimatedModel( playerHands, animator, armsMatrix );
-        renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
         //map.DebugDrawBrushCollision( renderer );
     }

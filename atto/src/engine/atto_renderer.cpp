@@ -350,6 +350,10 @@ namespace atto {
         clearColor = color;
     }
 
+    void Renderer::ClearDepthBuffer() {
+        glClear( GL_DEPTH_BUFFER_BIT );
+    }
+
     void Renderer::SetViewport( i32 x, i32 y, i32 width, i32 height ) {
         glViewport( x, y, width, height );
     }
