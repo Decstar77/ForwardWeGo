@@ -1,4 +1,5 @@
 #include "editor_scene.h"
+#include "editor_property_serializer.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -694,21 +695,10 @@ namespace atto {
                 ImGui::Text( "Brush %d Properties", selectedBrushIndex );
                 ImGui::Spacing();
 
-                bool changed = false;
+                ImguiPropertySerializer propSerializer;
+                brush.Serialize( propSerializer );
 
-                Vec3 pos = brush.center;
-                if ( ImGui::DragFloat3( "Position", &pos.x, 0.1f ) ) {
-                    brush.center = pos;
-                    changed = true;
-                }
-
-                Vec3 size = brush.halfExtents * 2.0f;
-                if ( ImGui::DragFloat3( "Size", &size.x, 0.1f, 0.01f, 1000.0f ) ) {
-                    brush.halfExtents = size * 0.5f;
-                    changed = true;
-                }
-
-                if ( changed ) {
+                if ( propSerializer.HasChanges() ) {
                     map.RebuildBrushModel( selectedBrushIndex );
                     map.RebuildBrushCollision( selectedBrushIndex );
                 }
@@ -768,10 +758,8 @@ namespace atto {
                 ImGui::Text( "%s %d Properties", EntityTypeToString( ent->GetType() ), selectedEntityIndex );
                 ImGui::Spacing();
 
-                Vec3 pos = ent->GetPosition();
-                if ( ImGui::DragFloat3( "Position", &pos.x, 0.1f ) ) {
-                    ent->SetPosition( pos );
-                }
+                ImguiPropertySerializer propSerializer;
+                ent->Serialize( propSerializer );
 
                 ImGui::Spacing();
 
@@ -794,7 +782,8 @@ namespace atto {
             ImGui::Text( "Player Start" );
             ImGui::Spacing();
 
-            ImGui::DragFloat3( "Spawn Position", &ps.spawnPos.x, 0.1f );
+            ImguiPropertySerializer propSerializer;
+            ps.Serialize( propSerializer );
 
             bool colliding = map.IsPlayerStartColliding();
             if ( colliding ) {
