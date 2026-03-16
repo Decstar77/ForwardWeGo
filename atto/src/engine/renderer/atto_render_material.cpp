@@ -1,5 +1,7 @@
 #include "atto_render_material.h"
 #include "../atto_log.h"
+#include "../atto_engine.h"
+#include "../atto_assets.h"
 
 #include <glad/glad.h>
 
@@ -81,6 +83,22 @@ namespace atto {
         }
 
         return shader;
+    }
+
+    bool Shader::CreateFromFiles( const char * vertexPath, const char * fragmentPath ) {
+        std::string vertSrc = Engine::Get().GetAssetManager().ReadTextFile( vertexPath );
+        if ( vertSrc.empty() ) {
+            LOG_ERROR( "Failed to read vertex shader file: %s", vertexPath );
+            return false;
+        }
+
+        std::string fragSrc = Engine::Get().GetAssetManager().ReadTextFile( fragmentPath );
+        if ( fragSrc.empty() ) {
+            LOG_ERROR( "Failed to read fragment shader file: %s", fragmentPath );
+            return false;
+        }
+
+        return CreateFromSource( vertSrc.c_str(), fragSrc.c_str() );
     }
 
     bool Shader::CreateFromSource( const char * vertexSrc, const char * fragmentSrc ) {

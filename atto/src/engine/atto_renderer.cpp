@@ -10,134 +10,6 @@
 
 namespace atto {
 
-    static const char * FLAT_COLOR_VERT = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aColor;
-
-        uniform mat4 uViewProjection;
-
-        out vec3 vColor;
-
-        void main() {
-            gl_Position = uViewProjection * vec4(aPos, 1.0);
-            vColor = aColor;
-        }
-    )";
-
-    static const char * FLAT_COLOR_FRAG = R"(
-        #version 330 core
-        in vec3 vColor;
-
-        out vec4 FragColor;
-
-        void main() {
-            FragColor = vec4(vColor, 1.0);
-        }
-    )";
-
-    static const char * MODEL_LIT_VERT = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aNormal;
-        layout (location = 2) in vec2 aTexCoords;
-
-        uniform mat4 uViewProjection;
-        uniform mat4 uModel;
-
-        out vec3 vNormal;
-        out vec3 vFragPos;
-
-        void main() {
-            vec4 worldPos = uModel * vec4(aPos, 1.0);
-            vFragPos = worldPos.xyz;
-            vNormal = mat3(transpose(inverse(uModel))) * aNormal;
-            gl_Position = uViewProjection * worldPos;
-        }
-    )";
-
-    static const char * MODEL_LIT_FRAG = R"(
-        #version 330 core
-        in vec3 vNormal;
-        in vec3 vFragPos;
-
-        uniform vec3 uLightDir;
-        uniform vec3 uLightColor;
-        uniform vec3 uObjectColor;
-
-        out vec4 FragColor;
-
-        void main() {
-            vec3 norm = normalize(vNormal);
-            vec3 lightDir = normalize(-uLightDir);
-
-            float ambient = 0.15;
-            float diff = max(dot(norm, lightDir), 0.0);
-            vec3 result = (ambient + diff) * uLightColor * uObjectColor;
-
-            FragColor = vec4(result, 1.0);
-        }
-    )";
-
-    static const char * MODEL_UNLIT_VERT = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aNormal;
-        layout (location = 2) in vec2 aTexCoords;
-
-        uniform mat4 uViewProjection;
-        uniform mat4 uModel;
-
-        void main() {
-            gl_Position = uViewProjection * uModel * vec4(aPos, 1.0);
-        }
-    )";
-
-    static const char * MODEL_UNLIT_FRAG = R"(
-        #version 330 core
-        uniform vec3 uObjectColor;
-
-        out vec4 FragColor;
-
-        void main() {
-            FragColor = vec4(uObjectColor, 1.0);
-        }
-    )";
-
-    static const char * SKYBOX_VERT = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-
-        uniform mat4 uProjection;
-        uniform mat4 uView;
-
-        out vec3 vWorldDir;
-
-        void main() {
-            vWorldDir = aPos;
-            vec4 pos = uProjection * uView * vec4(aPos, 1.0);
-            gl_Position = pos.xyww;
-        }
-    )";
-
-    static const char * SKYBOX_FRAG = R"(
-        #version 330 core
-        in vec3 vWorldDir;
-
-        uniform sampler2D uEquirectMap;
-
-        out vec4 FragColor;
-
-        const float PI = 3.14159265359;
-
-        void main() {
-            vec3 dir = normalize(vWorldDir);
-            float phi = atan(dir.z, dir.x);
-            float theta = asin(clamp(dir.y, -1.0, 1.0));
-            vec2 uv = vec2(phi / (2.0 * PI) + 0.5, theta / PI + 0.5);
-            FragColor = texture(uEquirectMap, uv);
-        }
-    )";
 
     static const f32 SKYBOX_CUBE_VERTICES[] = {
         -1.0f,  1.0f, -1.0f,   -1.0f, -1.0f, -1.0f,    1.0f, -1.0f, -1.0f,
@@ -159,51 +31,9 @@ namespace atto {
          1.0f, -1.0f, -1.0f,   -1.0f, -1.0f,  1.0f,    1.0f, -1.0f,  1.0f,
     };
 
-    static const char * SKINNED_LIT_VERT = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aNormal;
-        layout (location = 2) in vec2 aTexCoords;
-        layout (location = 3) in ivec4 aBoneIDs;
-        layout (location = 4) in vec4 aBoneWeights;
-
-        const int MAX_BONES = 128;
-
-        uniform mat4 uViewProjection;
-        uniform mat4 uModel;
-        uniform mat4 uBoneMatrices[MAX_BONES];
-
-        out vec3 vNormal;
-        out vec3 vFragPos;
-
-        void main() {
-            mat4 boneTransform = mat4(0.0);
-            float totalWeight = 0.0;
-            for (int i = 0; i < 4; i++) {
-                if (aBoneIDs[i] >= 0) {
-                    boneTransform += uBoneMatrices[aBoneIDs[i]] * aBoneWeights[i];
-                    totalWeight += aBoneWeights[i];
-                }
-            }
-            if (totalWeight > 0.0) {
-                boneTransform /= totalWeight;
-            } else {
-                boneTransform = mat4(1.0);
-            }
-
-            vec4 skinnedPos = boneTransform * vec4(aPos, 1.0);
-            vec4 worldPos = uModel * skinnedPos;
-            vFragPos = worldPos.xyz;
-
-            vec3 skinnedNormal = mat3(boneTransform) * aNormal;
-            vNormal = mat3(transpose(inverse(uModel))) * skinnedNormal;
-
-            gl_Position = uViewProjection * worldPos;
-        }
-    )";
 
     bool Renderer::Initialize() {
-        if ( !flatColorShader.CreateFromSource( FLAT_COLOR_VERT, FLAT_COLOR_FRAG ) ) {
+        if ( !flatColorShader.CreateFromFiles( "assets/shaders/flat_color.vert", "assets/shaders/flat_color.frag" ) ) {
             LOG_ERROR( "Failed to create flat color shader" );
             return false;
         }
@@ -230,17 +60,17 @@ namespace atto {
 
         glBindVertexArray( 0 );
 
-        if ( !modelLitShader.CreateFromSource( MODEL_LIT_VERT, MODEL_LIT_FRAG ) ) {
+        if ( !modelLitShader.CreateFromFiles( "assets/shaders/model_lit.vert", "assets/shaders/model_lit.frag" ) ) {
             LOG_ERROR( "Failed to create lit model shader" );
             return false;
         }
 
-        if ( !modelUnlitShader.CreateFromSource( MODEL_UNLIT_VERT, MODEL_UNLIT_FRAG ) ) {
+        if ( !modelUnlitShader.CreateFromFiles( "assets/shaders/model_unlit.vert", "assets/shaders/model_unlit.frag" ) ) {
             LOG_ERROR( "Failed to create unlit model shader" );
             return false;
         }
 
-        if ( !skinnedLitShader.CreateFromSource( SKINNED_LIT_VERT, MODEL_LIT_FRAG ) ) {
+        if ( !skinnedLitShader.CreateFromFiles( "assets/shaders/skinned_lit.vert", "assets/shaders/model_lit.frag" ) ) {
             LOG_ERROR( "Failed to create skinned lit shader" );
             return false;
         }
@@ -265,7 +95,7 @@ namespace atto {
         glEnableVertexAttribArray( 1 );
         glBindVertexArray( 0 );
 
-        if ( !skyboxShader.CreateFromSource( SKYBOX_VERT, SKYBOX_FRAG ) ) {
+        if ( !skyboxShader.CreateFromFiles( "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" ) ) {
             LOG_ERROR( "Failed to create skybox shader" );
             return false;
         }

@@ -26,6 +26,7 @@ namespace atto {
     class Shader {
     public:
         bool CreateFromSource( const char * vertexSrc, const char * fragmentSrc );
+        bool CreateFromFiles( const char * vertexPath, const char * fragmentPath );
         void Destroy();
 
         void Bind() const;
