@@ -245,7 +245,7 @@ namespace atto {
         skinnedLitShader.SetVec3( "uLightColor", Vec3( 1.0f ) );
         skinnedLitShader.SetVec3( "uObjectColor", color );
 
-        model.Draw();
+        model.Draw( &skinnedLitShader );
 
         skinnedLitShader.Unbind();
     }

@@ -78,7 +78,9 @@ namespace atto {
         void Draw( Shader * shader ) const;
 
         i32                 GetIndexCount() const { return indexCount; }
-        const AlignedBox &  GetBounds() const { return bounds; }
+        const AlignedBox & GetBounds() const { return bounds; }
+        const Material & GetMaterial() const { return material; }
+        void                SetMaterial( const Material & mat ) { material = mat; }
 
     private:
         u32 vao = 0;
@@ -93,15 +95,18 @@ namespace atto {
     public:
         void Create( const std::vector<AnimationVertex> & vertices, const std::vector<u32> & indices );
         void Destroy();
-        void Draw() const;
+        void Draw( Shader * shader ) const;
 
-        i32 GetIndexCount() const { return indexCount; }
+        i32                 GetIndexCount() const { return indexCount; }
+        const Material &    GetMaterial() const { return material; }
+        void                SetMaterial( const Material & mat ) { material = mat; }
 
     private:
         u32 vao = 0;
         u32 vbo = 0;
         u32 ebo = 0;
         i32 indexCount = 0;
+        Material material = {};
     };
 
     class StaticModel {
@@ -127,7 +132,7 @@ namespace atto {
     public:
         void LoadFromFile( const char * filePath, f32 scale = 1.0f );
         void Destroy();
-        void Draw() const;
+        void Draw( Shader * shader ) const;
 
         void DebugPrint() const;
 

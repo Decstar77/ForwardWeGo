@@ -63,8 +63,8 @@ namespace atto {
 
     class Material {
     public:
-        Vec3    albedo;
-        f32     metalic;
-        f32     roughness;
+        Vec3    albedo = Vec3(1,1,1);
+        f32     metalic = 0;
+        f32     roughness = 1;
     };
 }

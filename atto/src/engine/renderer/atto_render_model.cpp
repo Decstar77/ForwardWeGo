@@ -86,6 +86,8 @@ namespace atto {
     }
 
     void Mesh::Draw( Shader * shader ) const {
+        shader->SetVec3( "uObjectColor", material.albedo );
+
         glBindVertexArray( vao );
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0 );
         glBindVertexArray( 0 );
@@ -140,7 +142,9 @@ namespace atto {
         indexCount = 0;
     }
 
-    void AnimatedMesh::Draw() const {
+    void AnimatedMesh::Draw( Shader * shader ) const {
+        shader->SetVec3( "uObjectColor", material.albedo );
+
         glBindVertexArray( vao );
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0 );
         glBindVertexArray( 0 );
@@ -149,6 +153,42 @@ namespace atto {
     // =========================================================================
     // StaticModel loading helpers
     // =========================================================================
+
+    static Material ExtractMaterial( aiMesh * mesh, const aiScene * scene ) {
+        Material mat = {};
+        mat.albedo = Vec3( 0.8f );
+        mat.metalic = 0.0f;
+        mat.roughness = 0.5f;
+
+        if ( mesh->mMaterialIndex >= scene->mNumMaterials ) {
+            return mat;
+        }
+
+        const aiMaterial * aiMat = scene->mMaterials[mesh->mMaterialIndex];
+
+        aiColor4D baseColor;
+        if ( aiMat->Get( AI_MATKEY_BASE_COLOR, baseColor ) == AI_SUCCESS ) {
+            mat.albedo = Vec3( baseColor.r, baseColor.g, baseColor.b );
+        }
+        else {
+            aiColor4D diffuse;
+            if ( aiMat->Get( AI_MATKEY_COLOR_DIFFUSE, diffuse ) == AI_SUCCESS ) {
+                mat.albedo = Vec3( diffuse.r, diffuse.g, diffuse.b );
+            }
+        }
+
+        ai_real metallic = 0.0f;
+        if ( aiMat->Get( AI_MATKEY_METALLIC_FACTOR, metallic ) == AI_SUCCESS ) {
+            mat.metalic = static_cast<f32>(metallic);
+        }
+
+        ai_real roughness = 0.5f;
+        if ( aiMat->Get( AI_MATKEY_ROUGHNESS_FACTOR, roughness ) == AI_SUCCESS ) {
+            mat.roughness = static_cast<f32>(roughness);
+        }
+
+        return mat;
+    }
 
     static Mesh ProcessMesh( aiMesh * mesh, const aiScene * scene, f32 scale ) {
         std::vector<Vertex> vertices;
@@ -185,6 +225,7 @@ namespace atto {
 
         Mesh result;
         result.Create( vertices, indices );
+        result.SetMaterial( ExtractMaterial( mesh, scene ) );
         return result;
     }
 
@@ -403,6 +444,7 @@ namespace atto {
 
         AnimatedMesh result;
         result.Create( vertices, indices );
+        result.SetMaterial( ExtractMaterial( mesh, scene ) );
         return result;
     }
 
@@ -536,9 +578,9 @@ namespace atto {
         animations.clear();
     }
 
-    void AnimatedModel::Draw() const {
+    void AnimatedModel::Draw( Shader * shader ) const {
         for ( const auto & mesh : meshes ) {
-            mesh.Draw();
+            mesh.Draw( shader );
         }
     }
 
