@@ -5,6 +5,8 @@
 #include "../atto_assets.h"
 #include "../atto_shapes_3D.h"
 
+#include "atto_render_material.h"
+
 #include <unordered_map>
 
 namespace atto {
@@ -73,10 +75,10 @@ namespace atto {
     public:
         void Create( const std::vector<Vertex> & vertices, const std::vector<u32> & indices );
         void Destroy();
-        void Draw() const;
+        void Draw( Shader * shader ) const;
 
-        i32 GetIndexCount() const { return indexCount; }
-        const AlignedBox & GetBounds() const { return bounds; }
+        i32                 GetIndexCount() const { return indexCount; }
+        const AlignedBox &  GetBounds() const { return bounds; }
 
     private:
         u32 vao = 0;
@@ -84,6 +86,7 @@ namespace atto {
         u32 ebo = 0;
         i32 indexCount = 0;
         AlignedBox bounds = {};
+        Material material = {};
     };
 
     class AnimatedMesh {
@@ -106,7 +109,7 @@ namespace atto {
         void LoadFromFile( const char * filePath, f32 scale = 1.0f );
         void CreateFromMesh( const std::vector<Vertex> & vertices, const std::vector<u32> & indices );
         void Destroy();
-        void Draw() const;
+        void Draw( Shader * shader ) const;
 
         bool IsLoaded() const { return !meshes.empty(); }
         i32 GetMeshCount() const { return static_cast<i32>(meshes.size()); }

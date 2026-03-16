@@ -200,7 +200,7 @@ namespace atto {
     void GameMapScene::OnRender( Renderer & renderer ) {
         renderer.SetViewport( 0, 0, camera.GetViewportWidth(), camera.GetViewportHeight() );
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
-        map.Render( renderer, 0.0, 1, -1 );
+        map.Render( renderer, 0.0, -1 );
 
         renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 

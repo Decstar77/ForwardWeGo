@@ -211,26 +211,22 @@ namespace atto {
         modelLitShader.SetVec3( "uLightColor", Vec3( 1.0f ) );
         modelLitShader.SetVec3( "uObjectColor", color );
 
-        model.Draw();
+        model.Draw( &modelLitShader );
 
         modelLitShader.Unbind();
     }
 
-    void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix ) {
-        RenderStaticModelUnlit( model, modelMatrix, Vec3( 0.8f ) );
-    }
+    // void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
+    //     modelUnlitShader.Bind();
 
-    void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
-        modelUnlitShader.Bind();
+    //     modelUnlitShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+    //     modelUnlitShader.SetMat4( "uModel", modelMatrix );
+    //     modelUnlitShader.SetVec3( "uObjectColor", color );
 
-        modelUnlitShader.SetMat4( "uViewProjection", viewProjectionMatrix );
-        modelUnlitShader.SetMat4( "uModel", modelMatrix );
-        modelUnlitShader.SetVec3( "uObjectColor", color );
+    //     model.Draw();
 
-        model.Draw();
-
-        modelUnlitShader.Unbind();
-    }
+    //     modelUnlitShader.Unbind();
+    // }
 
     void Renderer::RenderAnimatedModel( const AnimatedModel & model, const Animator & animator, const Mat4 & modelMatrix ) {
         RenderAnimatedModel( model, animator, modelMatrix, Vec3( 0.8f ) );

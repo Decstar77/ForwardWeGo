@@ -85,7 +85,7 @@ namespace atto {
         bounds = {};
     }
 
-    void Mesh::Draw() const {
+    void Mesh::Draw( Shader * shader ) const {
         glBindVertexArray( vao );
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0 );
         glBindVertexArray( 0 );
@@ -288,9 +288,9 @@ namespace atto {
         bounds = {};
     }
 
-    void StaticModel::Draw() const {
+    void StaticModel::Draw( Shader * shader ) const {
         for ( const auto & mesh : meshes ) {
-            mesh.Draw();
+            mesh.Draw( shader );
         }
     }
 

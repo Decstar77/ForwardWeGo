@@ -61,4 +61,10 @@ namespace atto {
         u32 programHandle = 0;
     };
 
+    class Material {
+    public:
+        Vec3    albedo;
+        f32     metalic;
+        f32     roughness;
+    };
 }

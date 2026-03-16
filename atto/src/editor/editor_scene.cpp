@@ -251,7 +251,7 @@ namespace atto {
             renderer.SetWireframe( true );
         }
 
-        map.Render( renderer, 0.0, renderMode == EditorRenderMode::Lit, selectedBrushIndex );
+        map.Render( renderer, 0.0, selectedBrushIndex );
 
         const PlayerStart & playerStart = map.GetPlayerStart();
         Vec3 capsuleColor = map.IsPlayerStartColliding() ? Vec3( 1.0f, 0.0f, 0.0f ) : Vec3( 0.0f, 1.0f, 0.0f );

@@ -33,7 +33,7 @@ namespace atto {
         void StartMap();
 
         void Update( f32 dt );
-        void Render( Renderer & renderer, f32 dt, bool lit, i32 selectedBrush = -1 );
+        void Render( Renderer & renderer, f32 dt, i32 selectedBrush = -1 );
 
         void Serialize( Serializer & serializer );
 

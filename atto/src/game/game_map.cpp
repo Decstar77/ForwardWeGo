@@ -44,19 +44,14 @@ namespace atto {
         }
     }
 
-    void GameMap::Render( Renderer & renderer, f32 dt, bool lit, i32 selectedBrush ) {
+    void GameMap::Render( Renderer & renderer, f32 dt, i32 selectedBrush ) {
         Mat4 identity( 1.0f );
         for ( i32 i = 0; i < static_cast<i32>( brushModels.size() ); i++ ) {
             if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
             Vec3 color = (i == selectedBrush) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 0.8f, 0.8f, 0.8f );
-            if ( lit ) {
-                renderer.RenderStaticModel( brushModels[i], identity, color );
-            }
-            else {
-                renderer.RenderStaticModelUnlit( brushModels[i], identity, color );
-            }
+            renderer.RenderStaticModel( brushModels[i], identity, color );
         }
 
         for ( auto & entity : entities ) {
