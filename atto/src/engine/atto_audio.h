@@ -84,6 +84,7 @@ namespace atto {
         bool                IsInitialized() const { return initialized; }
         bool                IsMuted() const { return mute; }
         void                SetMuted( bool muted ) { mute = muted; }
+        void                ToggleMuted() { mute = !mute; }
 
         // Buffer management - load sound data
         AudioBuffer *       LoadWAV( const char * path );

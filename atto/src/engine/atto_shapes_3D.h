@@ -14,6 +14,7 @@ namespace atto {
 
         void Translate( const Vec3 & delta );
         void Rotate( const Mat3 & rotation );
+        void RotateAround( const Vec3 & pivot, const Mat3 & rotation );
     };
 
     struct Sphere {

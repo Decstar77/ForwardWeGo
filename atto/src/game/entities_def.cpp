@@ -42,7 +42,7 @@ namespace atto {
     AlignedBox Entity_Barrel::GetBounds() const {
         AlignedBox bounds = model.GetBounds();
         bounds.Translate( position );
-        bounds.Rotate( orientation );
+        bounds.RotateAround( position, orientation );
         return bounds;
     }
 

@@ -158,6 +158,21 @@ namespace atto {
         Vec3 correction( 0.0f );
         Capsule cap = playerCapsule;
 
+        for ( i32 iter = 0; iter < 2; iter++ ) {
+            for ( i32 i = 0; i < static_cast<i32>( entities.size() ); i++ ) {
+                Entity * entity = entities[i].get();
+                if ( entity ) {
+                    AlignedBox bounds = entity->GetBounds();
+                    SweepResult result;
+                    if ( CollisionSweep::CapsuleAlignedBox( cap, bounds, result ) ) {
+                        Vec3 push = result.normal * result.pen;
+                        cap.base += push;
+                        correction += push;
+                    }
+                }
+            }
+        }
+
         for ( i32 iter = 0; iter < 4; iter++ ) {
             for ( i32 i = 0; i < static_cast<i32>( brushCollsion.size() ); i++ ) {
                 SweepResult result;

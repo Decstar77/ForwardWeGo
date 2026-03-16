@@ -32,6 +32,37 @@ namespace atto {
         max = newMax;
     }
 
+    void AlignedBox::RotateAround( const Vec3 & pivot, const Mat3 & rotation ) {
+        // Rotates the box around a pivot point by a given rotation matrix
+        Vec3 center = GetCenter();
+        // Translate box so that pivot becomes the origin
+        Vec3 minOffset = min - pivot;
+        Vec3 maxOffset = max - pivot;
+
+        // Find all 8 corners of the box, offset from the pivot
+        Vec3 corners[8];
+        corners[0] = minOffset;
+        corners[1] = Vec3(min.x - pivot.x, min.y - pivot.y, max.z - pivot.z);
+        corners[2] = Vec3(min.x - pivot.x, max.y - pivot.y, min.z - pivot.z);
+        corners[3] = Vec3(max.x - pivot.x, min.y - pivot.y, min.z - pivot.z);
+        corners[4] = Vec3(max.x - pivot.x, max.y - pivot.y, min.z - pivot.z);
+        corners[5] = Vec3(min.x - pivot.x, max.y - pivot.y, max.z - pivot.z);
+        corners[6] = Vec3(max.x - pivot.x, min.y - pivot.y, max.z - pivot.z);
+        corners[7] = maxOffset;
+
+        Vec3 newMin(FLT_MAX);
+        Vec3 newMax(-FLT_MAX);
+
+        // Rotate all corners around the pivot and find new bounds
+        for (int i = 0; i < 8; ++i) {
+            Vec3 rotated = pivot + rotation * corners[i];
+            newMin = glm::min(newMin, rotated);
+            newMax = glm::max(newMax, rotated);
+        }
+        min = newMin;
+        max = newMax;
+    }
+
     bool Raycast::TestSphere( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Sphere & sphere, f32 & dist ) {
         Vec3 rayToSphere = sphere.center - rayOrigin;
         f32 t = Dot( rayToSphere, rayDirection );

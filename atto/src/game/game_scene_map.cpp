@@ -38,6 +38,26 @@ namespace atto {
             "footsteps/Light-Armor-Concrete-Walking-9.wav",
             "footsteps/Light-Armor-Concrete-Walking-10.wav",
             } );
+
+        sndKnifeSwing1.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndKnifeSwing1.LoadSounds( { 
+            "knife/swing-1_1.wav",
+            "knife/swing-1_2.wav",
+            "knife/swing-1_3.wav",
+            "knife/swing-1_4.wav",
+            "knife/swing-1_5.wav",
+        } );
+
+        sndKnifeSwing2.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndKnifeSwing2.LoadSounds( { 
+            "knife/swing-3_1.wav",
+            "knife/swing-3_2.wav",
+            "knife/swing-3_3.wav",
+            "knife/swing-3_4.wav",
+            "knife/swing-3_5.wav",
+        } );
+
+        Engine::Get().GetAudioSystem().SetMuted( true );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
@@ -45,6 +65,10 @@ namespace atto {
 
         if ( input.IsKeyPressed( Key::Escape ) ) {
             Engine::Get().TransitionToScene( "Editor" );
+        }
+
+        if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
+            Engine::Get().GetAudioSystem().ToggleMuted();
         }
 
         if ( input.IsCursorCaptured() == false ) {
@@ -60,8 +84,16 @@ namespace atto {
 
         ATTO_ASSERT( animator.GetCurrentAnimation(), "player hands are null ??" );
 
-        if ( input.IsMouseButtonDown( MouseButton::Left ) && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
+        if ( input.IsMouseButtonDown( MouseButton::Left )
+            && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_1_Anim", false );
+            sndKnifeSwing1.Play( 0.5f );
+        }
+
+        if ( input.IsMouseButtonDown( MouseButton::Right )
+            && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
+            animator.PlayAnimation( playerHands, "Armature|Knife_Attack_3_Anim", false );
+            sndKnifeSwing2.Play( 0.5f );
         }
 
         if ( animator.IsFinished() && animator.GetCurrentAnimation()->name != "Armature|Knife_Idle_Anim" ) {
@@ -108,7 +140,7 @@ namespace atto {
             footstepTimer += deltaTime;
             if ( footstepTimer >= footstepInterval ) {
                 footstepTimer -= footstepInterval;
-                sndFootsteps.Play();
+                sndFootsteps.Play( 0.5f );
             }
         }
         else {

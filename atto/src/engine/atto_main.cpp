@@ -23,3 +23,14 @@ int main() {
 
     return 0;
 }
+
+
+
+
+/*
+TODO:
+ - Collision with entities
+ - Raycasting and selecting entities 
+ - Make draw on top everything else 
+
+*/

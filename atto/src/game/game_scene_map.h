@@ -30,6 +30,8 @@ namespace atto {
         Capsule         playerCapsule;
 
         SoundCollection sndFootsteps;
+        SoundCollection sndKnifeSwing1;
+        SoundCollection sndKnifeSwing2;
         f32             footstepTimer    = 0.0f;
         f32             footstepInterval = 0.6f;
     };
