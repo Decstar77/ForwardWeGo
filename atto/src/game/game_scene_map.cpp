@@ -40,22 +40,22 @@ namespace atto {
             } );
 
         sndKnifeSwing1.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
-        sndKnifeSwing1.LoadSounds( { 
+        sndKnifeSwing1.LoadSounds( {
             "knife/swing-1_1.wav",
             "knife/swing-1_2.wav",
             "knife/swing-1_3.wav",
             "knife/swing-1_4.wav",
             "knife/swing-1_5.wav",
-        } );
+            } );
 
         sndKnifeSwing2.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
-        sndKnifeSwing2.LoadSounds( { 
+        sndKnifeSwing2.LoadSounds( {
             "knife/swing-3_1.wav",
             "knife/swing-3_2.wav",
             "knife/swing-3_3.wav",
             "knife/swing-3_4.wav",
             "knife/swing-3_5.wav",
-        } );
+            } );
 
         Engine::Get().GetAudioSystem().SetMuted( true );
     }
@@ -91,10 +91,9 @@ namespace atto {
 
             MapRaycastResult result;
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
-                if ( result.entity ) {
+                if ( result.entity && result.distance <= 1.25f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                } else {
-                    LOG_INFO( "Hit brush: %d at distance: %f", result.brushIndex, result.distance );
+                    result.entity->TakeDamage( 34 );
                 }
             }
         }
@@ -103,6 +102,14 @@ namespace atto {
             && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_3_Anim", false );
             sndKnifeSwing2.Play( 0.5f );
+
+            MapRaycastResult result;
+            if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
+                if ( result.entity && result.distance <= 1.25f ) {
+                    LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
+                    result.entity->TakeDamage( 55 );
+                }
+            }
         }
 
         if ( animator.IsFinished() && animator.GetCurrentAnimation()->name != "Armature|Knife_Idle_Anim" ) {

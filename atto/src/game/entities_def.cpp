@@ -1,5 +1,7 @@
 #include "entities_def.h"
 
+#include "game_map.h"
+
 namespace atto {
     void Entity::Serialize( Serializer & serializer ) {
         // @SPEED: We should use a SmallString for this but the serializer doesn't support it yet
@@ -55,4 +57,11 @@ namespace atto {
         AlignedBox bounds = GetBounds();
         renderer.DebugAlignedBox( bounds );
     }
+
+    void Entity_Barrel::TakeDamage( i32 damage ) {
+        health -= damage;
+        if ( health <= 0 ) {
+            map->DestroyEntity( this );
+        }
+    };
 }

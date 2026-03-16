@@ -26,25 +26,32 @@ namespace atto {
 
     class Entity {
     public:
-        EntityType GetType() const { return type; }
-        void SetPosition( const Vec3 & pos ) { position = pos; }
-        void SetOrientation( const Mat3 & orient ) { orientation = orient; }
-        const Vec3 & GetPosition() const { return position; }
-        const Mat3 & GetOrientation() const { return orientation; }
+        // ================ Getters =============== //
+        EntityType      GetType() const { return type; }
+        void            SetPosition( const Vec3 & pos ) { position = pos; }
+        void            SetOrientation( const Mat3 & orient ) { orientation = orient; }
+        const Vec3 &    GetPosition() const { return position; }
+        const Mat3 &    GetOrientation() const { return orientation; }
+        void            SetMap( GameMap * map ) { this->map = map; }
+        GameMap *       GetMap() const { return map; }
 
-        void SetMap( GameMap * map ) { this->map = map; }
-        GameMap * GetMap() const { return map; }
-
+        // ================ Standard =============== //
         virtual void OnSpawn() {}
         virtual void OnUpdate( f32 dt ) {}
         virtual void OnRender( Renderer & renderer ) {}
         virtual void OnDespawn() {}
 
-        virtual AlignedBox GetBounds() const { return {}; }
-        virtual bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const { return false; }
+        // ================ Physics =============== // 
+        virtual AlignedBox  GetBounds() const { return {}; }
+        virtual bool        RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const { return false; }
 
-        virtual void Serialize( Serializer & serializer );
-        
+        // ================ Serialization =============== // 
+        virtual void        Serialize( Serializer & serializer );
+
+        // ================ Gameplay =============== // 
+        virtual void        TakeDamage( i32 damage ) {}
+
+        // ================ Debug =============== //
         virtual void DebugDrawBounds( Renderer & renderer ) {}
 
     protected:
@@ -66,8 +73,10 @@ namespace atto {
         AlignedBox GetBounds() const override;
         bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
         void DebugDrawBounds( Renderer & renderer ) override;
+        void TakeDamage( i32 damage ) override;
 
     private:
         StaticModel model;
+        i32 health = 100;
     };
 }

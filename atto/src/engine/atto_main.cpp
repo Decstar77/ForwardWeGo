@@ -27,10 +27,17 @@ int main() {
 
 /*
 TODO:
- - Collision with entities
- - Raycasting and selecting entities 
- - Make draw on top everything else 
+ - Make arms draw on top everything else 
  - Fix materials and colors
  - Add textures to brushes
  - Entity id's
+ - Entities should be marked for removed/destroyed and them cleaned up at the end of the frame
+
+ - Shadows
+ - MSAA
+ - SSAO
+ - Image based lighting
+ - Light maps
+ - Light probes
+ - ? PBR ?
 */
