@@ -64,15 +64,133 @@ namespace atto {
     }
 
     bool Raycast::TestSphere( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Sphere & sphere, f32 & dist ) {
+        Vec3 oc = rayOrigin - sphere.center;
+        f32 a = Dot( rayDirection, rayDirection );
+        f32 b = 2.0f * Dot( oc, rayDirection );
+        f32 c = Dot( oc, oc ) - sphere.radius * sphere.radius;
+        f32 discriminant = b * b - 4.0f * a * c;
 
+        if ( discriminant < 0.0f ) {
+            return false;
+        }
+
+        f32 sqrtD = Sqrt( discriminant );
+        f32 invA2 = 1.0f / (2.0f * a);
+
+        f32 t0 = (-b - sqrtD) * invA2;
+        f32 t1 = (-b + sqrtD) * invA2;
+
+        if ( t0 >= 0.0f ) {
+            dist = t0;
+            return true;
+        }
+
+        if ( t1 >= 0.0f ) {
+            dist = t1;
+            return true;
+        }
+
+        return false;
     }
 
     bool Raycast::TestAlignedBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const AlignedBox & alignedBox, f32 & dist ) {
+        f32 tMin = -FLT_MAX;
+        f32 tMax = FLT_MAX;
 
+        for ( i32 i = 0; i < 3; i++ ) {
+            if ( Abs( rayDirection[i] ) < 0.000001f ) {
+                if ( rayOrigin[i] < alignedBox.min[i] || rayOrigin[i] > alignedBox.max[i] ) {
+                    return false;
+                }
+            }
+            else {
+                f32 invD = 1.0f / rayDirection[i];
+                f32 t1 = (alignedBox.min[i] - rayOrigin[i]) * invD;
+                f32 t2 = (alignedBox.max[i] - rayOrigin[i]) * invD;
+
+                if ( t1 > t2 ) {
+                    f32 tmp = t1;
+                    t1 = t2;
+                    t2 = tmp;
+                }
+
+                tMin = Max( tMin, t1 );
+                tMax = Min( tMax, t2 );
+
+                if ( tMin > tMax ) {
+                    return false;
+                }
+            }
+        }
+
+        if ( tMin >= 0.0f ) {
+            dist = tMin;
+            return true;
+        }
+
+        if ( tMax >= 0.0f ) {
+            dist = tMax;
+            return true;
+        }
+
+        return false;
     }
 
     bool Raycast::TestCapsule( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Capsule & capsule, f32 & dist ) {
+        Vec3 top = capsule.base + Vec3( 0.0f, capsule.height, 0.0f );
+        f32 r = capsule.radius;
+        f32 bestT = FLT_MAX;
+        bool hit = false;
 
+        // Test the infinite cylinder in XZ (Y-aligned axis through capsule.base)
+        f32 ocX = rayOrigin.x - capsule.base.x;
+        f32 ocZ = rayOrigin.z - capsule.base.z;
+        f32 a = rayDirection.x * rayDirection.x + rayDirection.z * rayDirection.z;
+        f32 b = 2.0f * (ocX * rayDirection.x + ocZ * rayDirection.z);
+        f32 c = ocX * ocX + ocZ * ocZ - r * r;
+
+        f32 discriminant = b * b - 4.0f * a * c;
+        if ( a > 0.000001f && discriminant >= 0.0f ) {
+            f32 sqrtD = Sqrt( discriminant );
+            f32 invA2 = 1.0f / (2.0f * a);
+            f32 roots[2] = { (-b - sqrtD) * invA2, (-b + sqrtD) * invA2 };
+
+            for ( i32 i = 0; i < 2; i++ ) {
+                f32 t = roots[i];
+                if ( t < 0.0f ) continue;
+                f32 y = rayOrigin.y + t * rayDirection.y;
+                if ( y >= capsule.base.y && y <= top.y ) {
+                    if ( t < bestT ) {
+                        bestT = t;
+                        hit = true;
+                    }
+                }
+            }
+        }
+
+        // Test both hemisphere caps
+        Sphere caps[2] = {
+            { capsule.base, r },
+            { top, r },
+        };
+
+        for ( i32 i = 0; i < 2; i++ ) {
+            f32 t = 0.0f;
+            if ( TestSphere( rayOrigin, rayDirection, caps[i], t ) ) {
+                Vec3 hitPt = rayOrigin + rayDirection * t;
+                bool inHemisphere = (i == 0) ? (hitPt.y <= capsule.base.y) : (hitPt.y >= top.y);
+                if ( inHemisphere && t < bestT ) {
+                    bestT = t;
+                    hit = true;
+                }
+            }
+        }
+
+        if ( hit ) {
+            dist = bestT;
+        }
+
+        return hit;
     }
 
     bool IntersectionTest::Sphere2( const Sphere & sphereA, const Sphere & sphereB ) {
