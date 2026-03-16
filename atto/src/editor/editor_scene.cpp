@@ -51,7 +51,12 @@ namespace atto {
         Input & input = Engine::Get().GetInput();
 
         if ( input.IsKeyPressed( Key::Escape ) ) {
-            selectedBrushIndex = -1;
+            if ( selectionMode == EditorSelectionMode::Brush ) {
+                selectedBrushIndex = -1;
+            }
+            else if ( selectionMode == EditorSelectionMode::Entity ) {
+                selectedEntityIndex = -1;
+            }
         }
 
         if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
@@ -65,6 +70,12 @@ namespace atto {
         if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
         if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
         if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Lit;}
+
+        if ( !input.IsCursorCaptured() ) {
+            if ( input.IsKeyPressed( Key::B ) ) { selectionMode = EditorSelectionMode::Brush; }
+            if ( input.IsKeyPressed( Key::E ) ) { selectionMode = EditorSelectionMode::Entity; }
+            if ( input.IsKeyPressed( Key::P ) ) { selectionMode = EditorSelectionMode::PlayerStart; }
+        }
 
         if ( brushDrag.mode != BrushDragMode::None ) {
             if ( input.IsMouseButtonDown( MouseButton::Left ) ) {
@@ -90,7 +101,7 @@ namespace atto {
         }
 
         bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver() || ImGuizmo::IsUsing();
-        if ( !imguiWantsMouse && brushDrag.mode == BrushDragMode::None && input.IsMouseButtonPressed( MouseButton::Left ) ) {
+        if ( selectionMode == EditorSelectionMode::Brush && !imguiWantsMouse && brushDrag.mode == BrushDragMode::None && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             Vec2 mousePos = input.GetMousePosition();
 
             if ( viewMode != EditorViewMode::Cam3D ) {
@@ -288,20 +299,38 @@ namespace atto {
                 }
             }
 
-            PlayerStart & ps = map.GetPlayerStart();
-            Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), ps.spawnPos );
-
             f32 snap3[3] = { snapSize, snapSize, snapSize };
 
-            if ( ImGuizmo::Manipulate(
-                glm::value_ptr( view ),
-                glm::value_ptr( proj ),
-                ImGuizmo::TRANSLATE,
-                ImGuizmo::WORLD,
-                glm::value_ptr( gizmoMatrix ),
-                nullptr,
-                snapEnabled ? snap3 : nullptr ) ) {
-                ps.spawnPos = Vec3( gizmoMatrix[3] );
+            if ( selectionMode == EditorSelectionMode::PlayerStart ) {
+                PlayerStart & ps = map.GetPlayerStart();
+                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), ps.spawnPos );
+
+                if ( ImGuizmo::Manipulate(
+                    glm::value_ptr( view ),
+                    glm::value_ptr( proj ),
+                    ImGuizmo::TRANSLATE,
+                    ImGuizmo::WORLD,
+                    glm::value_ptr( gizmoMatrix ),
+                    nullptr,
+                    snapEnabled ? snap3 : nullptr ) ) {
+                    ps.spawnPos = Vec3( gizmoMatrix[3] );
+                }
+            }
+            else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
+                Entity * ent = map.GetEntity( selectedEntityIndex );
+                Vec3 entPos = ent->GetPosition();
+                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), entPos );
+
+                if ( ImGuizmo::Manipulate(
+                    glm::value_ptr( view ),
+                    glm::value_ptr( proj ),
+                    ImGuizmo::TRANSLATE,
+                    ImGuizmo::WORLD,
+                    glm::value_ptr( gizmoMatrix ),
+                    nullptr,
+                    snapEnabled ? snap3 : nullptr ) ) {
+                    ent->SetPosition( Vec3( gizmoMatrix[3] ) );
+                }
             }
         }
 
@@ -327,7 +356,7 @@ namespace atto {
         renderMode = static_cast<EditorRenderMode>(rm);
         ImGui::End();
 
-        DrawBrushPanel();
+        DrawEditorPanel();
 
         //ImGui::ShowDemoWindow();
         ImGui::Render();
@@ -617,9 +646,17 @@ namespace atto {
         brushDrag.mode = BrushDragMode::None;
     }
 
-    void EditorScene::DrawBrushPanel() {
-        ImGui::SetNextWindowSize( ImVec2( 300, 400 ), ImGuiCond_FirstUseEver );
-        ImGui::Begin( "Brushes" );
+    void EditorScene::DrawEditorPanel() {
+        ImGui::SetNextWindowSize( ImVec2( 300, 500 ), ImGuiCond_FirstUseEver );
+        ImGui::Begin( "Editor" );
+
+        i32 sm = static_cast<i32>( selectionMode );
+        ImGui::RadioButton( "Brush (B)", &sm, static_cast<i32>( EditorSelectionMode::Brush ) ); ImGui::SameLine();
+        ImGui::RadioButton( "Entity (E)", &sm, static_cast<i32>( EditorSelectionMode::Entity ) ); ImGui::SameLine();
+        ImGui::RadioButton( "Player (P)", &sm, static_cast<i32>( EditorSelectionMode::PlayerStart ) );
+        selectionMode = static_cast<EditorSelectionMode>( sm );
+
+        ImGui::Separator();
 
         ImGui::Checkbox( "Snap", &snapEnabled );
         ImGui::SameLine();
@@ -628,63 +665,139 @@ namespace atto {
 
         ImGui::Separator();
 
-        if ( ImGui::Button( "+ Add Brush" ) ) {
-            selectedBrushIndex = map.AddBrush();
-        }
-
-        ImGui::Separator();
-
-        i32 brushCount = map.GetBrushCount();
-
-        for ( i32 i = 0; i < brushCount; i++ ) {
-            char label[64];
-            snprintf( label, sizeof( label ), "Brush %d", i );
-
-            bool isSelected = (selectedBrushIndex == i);
-            if ( ImGui::Selectable( label, isSelected ) ) {
-                selectedBrushIndex = i;
-            }
-        }
-
-        ImGui::Separator();
-
-        if ( selectedBrushIndex >= 0 && selectedBrushIndex < brushCount ) {
-            Brush & brush = map.GetBrush( selectedBrushIndex );
-
-            ImGui::Text( "Brush %d Properties", selectedBrushIndex );
-            ImGui::Spacing();
-
-            bool changed = false;
-
-            Vec3 pos = brush.center;
-            if ( ImGui::DragFloat3( "Position", &pos.x, 0.1f ) ) {
-                brush.center = pos;
-                changed = true;
+        if ( selectionMode == EditorSelectionMode::Brush ) {
+            if ( ImGui::Button( "+ Add Brush" ) ) {
+                selectedBrushIndex = map.AddBrush();
             }
 
-            Vec3 size = brush.halfExtents * 2.0f;
-            if ( ImGui::DragFloat3( "Size", &size.x, 0.1f, 0.01f, 1000.0f ) ) {
-                brush.halfExtents = size * 0.5f;
-                changed = true;
-            }
+            ImGui::Separator();
 
-            if ( changed ) {
-                map.RebuildBrushModel( selectedBrushIndex );
-            }
+            i32 brushCount = map.GetBrushCount();
 
-            ImGui::Spacing();
+            for ( i32 i = 0; i < brushCount; i++ ) {
+                char label[64];
+                snprintf( label, sizeof( label ), "Brush %d", i );
 
-            if ( ImGui::Button( "Delete Selected" ) ) {
-                map.RemoveBrush( selectedBrushIndex );
-                brushCount = map.GetBrushCount();
-                if ( selectedBrushIndex >= brushCount ) {
-                    selectedBrushIndex = brushCount - 1;
+                bool isSelected = ( selectedBrushIndex == i );
+                if ( ImGui::Selectable( label, isSelected ) ) {
+                    selectedBrushIndex = i;
                 }
             }
+
+            ImGui::Separator();
+
+            if ( selectedBrushIndex >= 0 && selectedBrushIndex < brushCount ) {
+                Brush & brush = map.GetBrush( selectedBrushIndex );
+
+                ImGui::Text( "Brush %d Properties", selectedBrushIndex );
+                ImGui::Spacing();
+
+                bool changed = false;
+
+                Vec3 pos = brush.center;
+                if ( ImGui::DragFloat3( "Position", &pos.x, 0.1f ) ) {
+                    brush.center = pos;
+                    changed = true;
+                }
+
+                Vec3 size = brush.halfExtents * 2.0f;
+                if ( ImGui::DragFloat3( "Size", &size.x, 0.1f, 0.01f, 1000.0f ) ) {
+                    brush.halfExtents = size * 0.5f;
+                    changed = true;
+                }
+
+                if ( changed ) {
+                    map.RebuildBrushModel( selectedBrushIndex );
+                    map.RebuildBrushCollision( selectedBrushIndex );
+                }
+
+                ImGui::Spacing();
+
+                if ( ImGui::Button( "Delete Selected" ) ) {
+                    map.RemoveBrush( selectedBrushIndex );
+                    brushCount = map.GetBrushCount();
+                    if ( selectedBrushIndex >= brushCount ) {
+                        selectedBrushIndex = brushCount - 1;
+                    }
+                }
+            }
+            else {
+                selectedBrushIndex = -1;
+                ImGui::TextDisabled( "No brush selected" );
+            }
         }
-        else {
-            selectedBrushIndex = -1;
-            ImGui::TextDisabled( "No brush selected" );
+        else if ( selectionMode == EditorSelectionMode::Entity ) {
+            static i32 newEntityTypeIndex = 0;
+            const char * entityTypeNames[] = { "Barrel" };
+            const EntityType entityTypes[] = { EntityType::Barrel };
+            constexpr i32 entityTypeCount = sizeof( entityTypes ) / sizeof( entityTypes[0] );
+
+            ImGui::SetNextItemWidth( 150.0f );
+            ImGui::Combo( "##EntityType", &newEntityTypeIndex, entityTypeNames, entityTypeCount );
+            ImGui::SameLine();
+            if ( ImGui::Button( "+ Add Entity" ) ) {
+                Entity * ent = map.CreateEntity( entityTypes[newEntityTypeIndex] );
+                if ( ent ) {
+                    ent->OnSpawn();
+                    selectedEntityIndex = map.GetEntityCount() - 1;
+                }
+            }
+
+            ImGui::Separator();
+
+            i32 entityCount = map.GetEntityCount();
+
+            for ( i32 i = 0; i < entityCount; i++ ) {
+                const Entity * ent = map.GetEntity( i );
+                char label[64];
+                snprintf( label, sizeof( label ), "%s %d", EntityTypeToString( ent->GetType() ), i );
+
+                bool isSelected = ( selectedEntityIndex == i );
+                if ( ImGui::Selectable( label, isSelected ) ) {
+                    selectedEntityIndex = i;
+                }
+            }
+
+            ImGui::Separator();
+
+            if ( selectedEntityIndex >= 0 && selectedEntityIndex < entityCount ) {
+                Entity * ent = map.GetEntity( selectedEntityIndex );
+
+                ImGui::Text( "%s %d Properties", EntityTypeToString( ent->GetType() ), selectedEntityIndex );
+                ImGui::Spacing();
+
+                Vec3 pos = ent->GetPosition();
+                if ( ImGui::DragFloat3( "Position", &pos.x, 0.1f ) ) {
+                    ent->SetPosition( pos );
+                }
+
+                ImGui::Spacing();
+
+                if ( ImGui::Button( "Delete Selected" ) ) {
+                    map.DestroyEntityByIndex( selectedEntityIndex );
+                    entityCount = map.GetEntityCount();
+                    if ( selectedEntityIndex >= entityCount ) {
+                        selectedEntityIndex = entityCount - 1;
+                    }
+                }
+            }
+            else {
+                selectedEntityIndex = -1;
+                ImGui::TextDisabled( "No entity selected" );
+            }
+        }
+        else if ( selectionMode == EditorSelectionMode::PlayerStart ) {
+            PlayerStart & ps = map.GetPlayerStart();
+
+            ImGui::Text( "Player Start" );
+            ImGui::Spacing();
+
+            ImGui::DragFloat3( "Spawn Position", &ps.spawnPos.x, 0.1f );
+
+            bool colliding = map.IsPlayerStartColliding();
+            if ( colliding ) {
+                ImGui::TextColored( ImVec4( 1, 0, 0, 1 ), "WARNING: Colliding with brush!" );
+            }
         }
 
         ImGui::End();

@@ -17,9 +17,11 @@ namespace atto {
         Wireframe
     };
 
-    enum class EditorEditMode {
+    enum class EditorSelectionMode {
         None,
-        Brush
+        Brush,
+        Entity,
+        PlayerStart
     };
 
     enum class BrushDragMode {
@@ -54,7 +56,7 @@ namespace atto {
 
     private:
         void StartImgui();
-        void DrawBrushPanel();
+        void DrawEditorPanel();
         Mat4 GetOrthoViewProjectionMatrix() const;
 
         Vec3 ScreenToWorldOrtho( Vec2 screenPos ) const;
@@ -75,7 +77,7 @@ namespace atto {
 
         EditorViewMode   viewMode = EditorViewMode::Cam3D;
         EditorRenderMode renderMode = EditorRenderMode::Lit;
-        EditorEditMode editMode = EditorEditMode::None;
+        EditorSelectionMode selectionMode = EditorSelectionMode::Brush;
 
         FlyCamera  flyCamera;
 
@@ -85,6 +87,7 @@ namespace atto {
         GameMap map;
 
         i32 selectedBrushIndex = -1;
+        i32 selectedEntityIndex = -1;
         BrushDragState brushDrag;
 
         bool snapEnabled = true;

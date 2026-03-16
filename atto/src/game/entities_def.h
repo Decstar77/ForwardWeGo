@@ -39,6 +39,8 @@ namespace atto {
         virtual void OnUpdate( f32 dt ) {}
         virtual void OnRender( Renderer & renderer ) {}
         virtual void OnDespawn() {}
+        
+        virtual bool RayTest( const Vec3 & start, const Vec3 & dir ) { return false ;}
 
         virtual void Serialize( Serializer & serializer );
 

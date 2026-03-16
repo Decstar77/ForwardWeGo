@@ -92,10 +92,19 @@ namespace atto {
     void GameMap::DestroyEntity( Entity * entity ) {
         for ( i32 i = 0; i < static_cast<i32>( entities.size() ); i++ ) {
             if ( entities[i].get() == entity ) {
+                entities[i]->OnDespawn();
                 entities.erase( entities.begin() + i );
                 return;
             }
         }
+    }
+
+    void GameMap::DestroyEntityByIndex( i32 index ) {
+        if ( index < 0 || index >= static_cast<i32>( entities.size() ) ) {
+            return;
+        }
+        entities[index]->OnDespawn();
+        entities.erase( entities.begin() + index );
     }
 
     i32 GameMap::AddBrush() {
