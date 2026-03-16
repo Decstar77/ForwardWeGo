@@ -24,7 +24,6 @@ namespace atto {
     void Entity_Barrel::OnSpawn() {
         model.LoadFromFile( "assets/player/props/barrel.fbx", 4.0f );
         orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( 90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
-        position = Vec3( 0.0f, 1.25f, 0.0f );
     }
 
     void Entity_Barrel::OnUpdate( f32 dt ) {
