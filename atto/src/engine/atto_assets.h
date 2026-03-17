@@ -51,6 +51,16 @@ namespace atto {
         inline void operator() ( const char * key, Mat3 & value ) { Op( key, value ); }
         inline void operator() ( const char * key, Mat4 & value ) { Op( key, value ); }
 
+        // Primitive vector types
+        inline void operator() ( const char * key, std::vector<i32> & value ) { OpArrayPrimitive( key, value ); }
+        inline void operator() ( const char * key, std::vector<u64> & value ) { OpArrayPrimitive( key, value ); }
+        inline void operator() ( const char * key, std::vector<f32> & value ) { OpArrayPrimitive( key, value ); }
+        inline void operator() ( const char * key, std::vector<bool> & value ) { OpArrayPrimitive( key, value ); }
+        inline void operator() ( const char * key, std::vector<std::string> & value ) { OpArrayPrimitive( key, value ); }
+        inline void operator() ( const char * key, std::vector<Vec2> & value ) { OpArrayPrimitive( key, value ); }
+        inline void operator() ( const char * key, std::vector<Vec3> & value ) { OpArrayPrimitive( key, value ); }
+        inline void operator() ( const char * key, std::vector<Vec4> & value ) { OpArrayPrimitive( key, value ); }
+
         // Complex types with Serialize() method
         template<typename T>
         inline typename std::enable_if<HasSerializeMethod<T>::value, void>::type
@@ -141,6 +151,7 @@ namespace atto {
 
         // Primitive array operations
         virtual void OpArrayPrimitive( const char * key, std::vector<i32> & value ) = 0;
+        virtual void OpArrayPrimitive( const char * key, std::vector<u64> & value ) = 0;
         virtual void OpArrayPrimitive( const char * key, std::vector<f32> & value ) = 0;
         virtual void OpArrayPrimitive( const char * key, std::vector<bool> & value ) = 0;
         virtual void OpArrayPrimitive( const char * key, std::vector<std::string> & value ) = 0;
@@ -196,6 +207,7 @@ namespace atto {
 
         // Primitive array operations
         virtual void OpArrayPrimitive( const char * key, std::vector<i32> & value ) override;
+        virtual void OpArrayPrimitive( const char * key, std::vector<u64> & value ) override;
         virtual void OpArrayPrimitive( const char * key, std::vector<f32> & value ) override;
         virtual void OpArrayPrimitive( const char * key, std::vector<bool> & value ) override;
         virtual void OpArrayPrimitive( const char * key, std::vector<std::string> & value ) override;

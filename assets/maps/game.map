@@ -191,7 +191,11 @@
                 1.0,
                 -2.0
             ],
-            "RemainingEntities": [1, 2],
+            "RemainingEntities": [
+                1,
+                2,
+                3
+            ],
             "SpawnId": 6352910061307122861,
             "Type": "GameMode_KillAllEntities"
         }

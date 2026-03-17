@@ -347,6 +347,20 @@ namespace atto {
         }
     }
 
+    void JsonSerializer::OpArrayPrimitive( const char * key, std::vector<u64> & value ) {
+        if ( isSaving ) {
+            jsonContainer->json[key] = value;
+        }
+        else {
+            if ( jsonContainer->json.contains( key ) && jsonContainer->json[key].is_array() ) {
+                value.clear();
+                for ( const auto & elem : jsonContainer->json[key] ) {
+                    value.push_back( elem.get<u64>() );
+                }
+            }
+        }
+    }
+
     void JsonSerializer::OpArrayPrimitive( const char * key, std::vector<f32> & value ) {
         if ( isSaving ) {
             jsonContainer->json[key] = value;

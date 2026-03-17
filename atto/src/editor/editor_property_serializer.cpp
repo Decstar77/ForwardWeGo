@@ -184,35 +184,90 @@ namespace atto {
     // ============================================================
 
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<i32> & value ) {
-        if ( ImGui::TreeNode( key ) ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( 0 );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
             for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
                 ImGui::PushID( i );
-                if ( ImGui::DragInt( "##v", &value[i] ) ) {
-                    changed = true;
-                }
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
+                if ( ImGui::DragInt( "##v", &value[i] ) ) { changed = true; }
                 ImGui::PopID();
+            }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
+            }
+            ImGui::TreePop();
+        }
+    }
+
+    void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<u64> & value ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( 0 );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
+            for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
+                ImGui::PushID( i );
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
+                if ( ImGui::DragScalar( "##v", ImGuiDataType_U64, &value[i] ) ) { changed = true; }
+                ImGui::PopID();
+            }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
             }
             ImGui::TreePop();
         }
     }
 
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<f32> & value ) {
-        if ( ImGui::TreeNode( key ) ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( 0.0f );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
             for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
                 ImGui::PushID( i );
-                if ( ImGui::DragFloat( "##v", &value[i], 0.1f ) ) {
-                    changed = true;
-                }
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
+                if ( ImGui::DragFloat( "##v", &value[i], 0.1f ) ) { changed = true; }
                 ImGui::PopID();
+            }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
             }
             ImGui::TreePop();
         }
     }
 
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<bool> & value ) {
-        if ( ImGui::TreeNode( key ) ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( false );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
             for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
                 ImGui::PushID( i );
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
                 bool v = value[i];
                 if ( ImGui::Checkbox( "##v", &v ) ) {
                     value[i] = v;
@@ -220,14 +275,27 @@ namespace atto {
                 }
                 ImGui::PopID();
             }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
+            }
             ImGui::TreePop();
         }
     }
 
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<std::string> & value ) {
-        if ( ImGui::TreeNode( key ) ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( "" );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
             for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
                 ImGui::PushID( i );
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
                 char buffer[256];
                 snprintf( buffer, sizeof( buffer ), "%s", value[i].c_str() );
                 if ( ImGui::InputText( "##v", buffer, sizeof( buffer ) ) ) {
@@ -236,44 +304,81 @@ namespace atto {
                 }
                 ImGui::PopID();
             }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
+            }
             ImGui::TreePop();
         }
     }
 
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<Vec2> & value ) {
-        if ( ImGui::TreeNode( key ) ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( Vec2( 0.0f ) );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
             for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
                 ImGui::PushID( i );
-                if ( ImGui::DragFloat2( "##v", &value[i].x, 0.1f ) ) {
-                    changed = true;
-                }
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
+                if ( ImGui::DragFloat2( "##v", &value[i].x, 0.1f ) ) { changed = true; }
                 ImGui::PopID();
+            }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
             }
             ImGui::TreePop();
         }
     }
 
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<Vec3> & value ) {
-        if ( ImGui::TreeNode( key ) ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( Vec3( 0.0f ) );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
             for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
                 ImGui::PushID( i );
-                if ( ImGui::DragFloat3( "##v", &value[i].x, 0.1f ) ) {
-                    changed = true;
-                }
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
+                if ( ImGui::DragFloat3( "##v", &value[i].x, 0.1f ) ) { changed = true; }
                 ImGui::PopID();
+            }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
             }
             ImGui::TreePop();
         }
     }
 
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<Vec4> & value ) {
-        if ( ImGui::TreeNode( key ) ) {
+        bool open = ImGui::TreeNode( key );
+        ImGui::SameLine();
+        if ( ImGui::SmallButton( "+" ) ) {
+            value.push_back( Vec4( 0.0f ) );
+            changed = true;
+        }
+        if ( open ) {
+            i32 removeIndex = -1;
             for ( i32 i = 0; i < static_cast<i32>( value.size() ); i++ ) {
                 ImGui::PushID( i );
-                if ( ImGui::DragFloat4( "##v", &value[i].x, 0.1f ) ) {
-                    changed = true;
-                }
+                if ( ImGui::SmallButton( "X" ) ) { removeIndex = i; }
+                ImGui::SameLine();
+                if ( ImGui::DragFloat4( "##v", &value[i].x, 0.1f ) ) { changed = true; }
                 ImGui::PopID();
+            }
+            if ( removeIndex >= 0 ) {
+                value.erase( value.begin() + removeIndex );
+                changed = true;
             }
             ImGui::TreePop();
         }
