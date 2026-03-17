@@ -196,24 +196,36 @@ namespace atto {
         glPolygonMode( GL_FRONT_AND_BACK, enabled ? GL_LINE : GL_FILL );
     }
 
+    void Renderer::UseUnlitShader() {
+        staticModelShader = &modelUnlitShader;
+    }
+
+    void Renderer::UseLitShader() {
+        staticModelShader = &modelLitShader;
+    }
+
     void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix ) {
         RenderStaticModel( model, modelMatrix, Vec3( 0.8f ) );
     }
 
     void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
-        modelLitShader.Bind();
+        if ( staticModelShader == nullptr ) {
+            staticModelShader = &modelLitShader;
+        }
 
-        modelLitShader.SetMat4( "uViewProjection", viewProjectionMatrix );
-        modelLitShader.SetMat4( "uModel", modelMatrix );
+        staticModelShader->Bind();
+
+        staticModelShader->SetMat4( "uViewProjection", viewProjectionMatrix );
+        staticModelShader->SetMat4( "uModel", modelMatrix );
 
         Vec3 lightDir = Normalize( Vec3( -0.3f, -1.0f, -0.5f ) );
-        modelLitShader.SetVec3( "uLightDir", lightDir );
-        modelLitShader.SetVec3( "uLightColor", Vec3( 1.0f ) );
-        modelLitShader.SetVec3( "uObjectColor", color );
+        staticModelShader->SetVec3( "uLightDir", lightDir );
+        staticModelShader->SetVec3( "uLightColor", Vec3( 1.0f ) );
+        staticModelShader->SetVec3( "uObjectColor", color );
 
-        model.Draw( &modelLitShader );
+        model.Draw( staticModelShader );
 
-        modelLitShader.Unbind();
+        staticModelShader->Unbind();
     }
 
     // void Renderer::RenderStaticModelUnlit( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {

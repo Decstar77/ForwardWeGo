@@ -12,6 +12,9 @@ namespace atto {
         camera.SetMoveSpeed( 5.0f );
         camera.SetLookSensitivity( 0.1f );
 
+        //Armature|Knife_Walk_Anim
+        //Armature|Knife_Run_Anim
+
         playerHands.LoadFromFile( "assets/player/arms/knife.glb" );
         animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
 

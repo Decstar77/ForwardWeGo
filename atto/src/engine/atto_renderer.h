@@ -26,6 +26,8 @@ namespace atto {
 
         void SetViewProjectionMatrix( const Mat4 & vp );
         void SetWireframe( bool enabled );
+        void UseUnlitShader();
+        void UseLitShader();
         void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix );
         void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color );
         void RenderAnimatedModel( const AnimatedModel & model, const Animator & animator, const Mat4 & modelMatrix );
@@ -57,6 +59,7 @@ namespace atto {
         Shader modelLitShader;
         Shader modelUnlitShader;
         Shader skinnedLitShader;
+        Shader * staticModelShader = nullptr;
 
         // Skybox resources
         Shader skyboxShader;

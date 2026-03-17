@@ -258,6 +258,7 @@ namespace atto {
 
         if ( renderMode == EditorRenderMode::Wireframe ) {
             renderer.SetWireframe( true );
+            renderer.UseUnlitShader();
         }
 
         map.Render( renderer, 0.0, selectedBrushIndex );
@@ -267,6 +268,7 @@ namespace atto {
         renderer.DebugCapsule( playerStart.GetCapsule(), capsuleColor );
 
         renderer.SetWireframe( false );
+        renderer.UseLitShader();
 
         if ( viewMode == EditorViewMode::Cam3D ) {
             renderer.RenderSkybox( flyCamera.GetViewMatrix(), flyCamera.GetProjectionMatrix() );

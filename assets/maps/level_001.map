@@ -175,7 +175,7 @@
             "Type": "Barrel"
         },
         {
-            "MapName": "",
+            "MapName": "assets/maps/level_002.map",
             "Orientation": [
                 1.0,
                 0.0,
