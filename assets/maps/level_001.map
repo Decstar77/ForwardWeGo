@@ -175,6 +175,7 @@
             "Type": "Barrel"
         },
         {
+            "MapName": "",
             "Orientation": [
                 1.0,
                 0.0,

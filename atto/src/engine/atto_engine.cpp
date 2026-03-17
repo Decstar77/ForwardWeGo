@@ -205,7 +205,7 @@ namespace atto {
 
         // Call game start
         if ( currentScene ) {
-            currentScene->OnStart( "" );
+            currentScene->OnStart( nullptr );
         }
 
         // Main loop

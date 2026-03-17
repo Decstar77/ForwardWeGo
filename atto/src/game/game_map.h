@@ -39,6 +39,8 @@ namespace atto {
         void Serialize( Serializer & serializer );
 
         // =========== Not sure ===========
+        const char * GetPath() const { return path.GetCStr(); }
+        void SetPath( const char * path ) { this->path = SmallString::FromLiteral( path ); }
         bool Raycast( const Vec3 & start, const Vec3 & direction, MapRaycastResult & result );
 
         // =========== Player ===========
@@ -69,6 +71,7 @@ namespace atto {
         i32             GetBrushCount() const { return static_cast<i32>(brushes.size()); }
 
     private:
+        SmallString path;
         PlayerStart playerStart;
 
         std::vector<std::unique_ptr<Entity>>    entities;

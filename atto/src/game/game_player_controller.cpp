@@ -3,11 +3,11 @@
 
 namespace atto {
 
-    void PlayerController::OnStart() {
+    void PlayerController::OnStart( const Vec3 & position ) {
         Vec2i windowSize = Engine::Get().GetWindowSize();
 
         camera.SetViewportSize( windowSize.x, windowSize.y );
-        camera.SetPosition( Vec3( 0.0f, PlayerEyeHeight, 3.0f ) );
+        camera.SetPosition( Vec3( position.x, position.y + PlayerEyeHeight, position.z ) );
         camera.SetFOV( 60.0f );
         camera.SetMoveSpeed( 5.0f );
         camera.SetLookSensitivity( 0.1f );

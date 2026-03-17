@@ -151,6 +151,7 @@ namespace atto {
 
     void Entity_GameMode_KillAllEntities::Serialize( Serializer & serializer ) {
         Entity::Serialize( serializer );
+        serializer( "MapName", mapName );
         serializer( "RemainingEntities", remainingEntities );
     }
 }

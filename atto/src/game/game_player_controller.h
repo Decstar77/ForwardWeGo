@@ -12,7 +12,7 @@ namespace atto {
 
     class PlayerController {
     public:
-        void OnStart();
+        void OnStart( const Vec3 & position );
         void OnUpdate( f32 deltaTime, GameMap & map );
         void OnRender( Renderer & renderer );
         void OnResize( i32 width, i32 height );

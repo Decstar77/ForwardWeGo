@@ -139,6 +139,7 @@ namespace atto {
         void Serialize( Serializer & serializer ) override;
 
     private:
+        std::string mapName = "";
         std::vector<SpawnId> remainingEntities;
     };
 }

@@ -6,13 +6,14 @@ namespace atto {
     void GameMapScene::OnStart( const char * args ) {
         JsonSerializer serializer( false );
         serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( args ) );
+        map.SetPath( args );
         map.Serialize( serializer );
         map.Initialize();
 
         Renderer & renderer = Engine::Get().GetRenderer();
         renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
 
-        player.OnStart();
+        player.OnStart( map.GetPlayerStart().spawnPos );
 
         Engine::Get().GetAudioSystem().SetMuted( false );
     }
@@ -21,7 +22,7 @@ namespace atto {
         Input & input = Engine::Get().GetInput();
 
         if ( input.IsKeyPressed( Key::Escape ) ) {
-            Engine::Get().TransitionToScene( "Editor", "" );
+            Engine::Get().TransitionToScene( "Editor", map.GetPath() );
         }
 
         if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
