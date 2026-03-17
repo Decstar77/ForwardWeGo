@@ -170,6 +170,25 @@
                 -3.0
             ],
             "Type": "Barrel"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                2.0,
+                -8.0
+            ],
+            "Type": "Drone_QUAD"
         }
     ],
     "playerStart": {

@@ -1,4 +1,4 @@
-#include "entities_def.h"
+#include "game_entities.h"
 
 #include "game_map.h"
 
@@ -64,4 +64,49 @@ namespace atto {
             map->DestroyEntity( this );
         }
     };
+
+    Entity_DroneQuad::Entity_DroneQuad() {
+        type = EntityType::Drone_QUAD;
+    }
+
+    void Entity_DroneQuad::OnSpawn() {
+        model.LoadFromFile( "assets/sm/SM_Prop_Drone_Quad_01.fbx", 0.01f );
+        // orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( -90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
+    }
+
+    void Entity_DroneQuad::OnUpdate( f32 dt ) {
+
+    }
+
+    void Entity_DroneQuad::OnRender( Renderer & renderer ) {
+        renderer.RenderStaticModel( model, Mat4( 1.0f ) * Mat4( orientation ) * Mat4( glm::translate( glm::mat4( 1 ), position ) ) );
+    }
+
+    void Entity_DroneQuad::OnDespawn() {
+        model.Destroy();
+    }
+
+    AlignedBox Entity_DroneQuad::GetBounds() const {
+        AlignedBox bounds = model.GetBounds();
+        bounds.Translate( position );
+        bounds.RotateAround( position, orientation );
+        return bounds;
+    }
+
+    bool Entity_DroneQuad::RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const {
+        AlignedBox bounds = GetBounds();
+        return Raycast::TestAlignedBox( start, dir, bounds, dist );
+    }
+
+    void Entity_DroneQuad::DebugDrawBounds( Renderer & renderer ) {
+        AlignedBox bounds = GetBounds();
+        renderer.DebugAlignedBox( bounds );
+    }
+
+    void Entity_DroneQuad::TakeDamage( i32 damage ) {
+        health -= damage;
+        if ( health <= 0 ) {
+            map->DestroyEntity( this );
+        }
+    }
 }

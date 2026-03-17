@@ -7,20 +7,24 @@ namespace atto {
 
     enum class EntityType {
         None = 0,
-        Barrel = 1
+        Barrel = 1,
+        Drone_QUAD = 2
     };
 
+    constexpr EntityType EntityTypes[] = { EntityType::None, EntityType::Barrel, EntityType::Drone_QUAD };
+    constexpr const char * EntityTypeNames[] = { "None", "Barrel", "Drone_QUAD" };
+    constexpr i32 EntityTypeCount = static_cast<i32>( sizeof( EntityTypes ) / sizeof( EntityTypes[0] ) );
+
     inline const char * EntityTypeToString( EntityType type ) {
-        switch ( type ) {
-        case EntityType::None:    return "None";
-        case EntityType::Barrel:  return "Barrel";
-        default:                  return "Unknown";
-        }
+        return EntityTypeNames[static_cast<i32>(type)];
     }
 
     inline EntityType StringToEntityType( const char * str ) {
-        if ( strcmp( str, "None" ) == 0 ) return EntityType::None;
-        if ( strcmp( str, "Barrel" ) == 0 ) return EntityType::Barrel;
+        for ( i32 i = 0; i < EntityTypeCount; i++ ) {
+            if ( strcmp( str, EntityTypeNames[i] ) == 0 ) {
+                return EntityTypes[i];
+            }
+        }
         return EntityType::None;
     }
 
@@ -30,10 +34,10 @@ namespace atto {
         EntityType      GetType() const { return type; }
         void            SetPosition( const Vec3 & pos ) { position = pos; }
         void            SetOrientation( const Mat3 & orient ) { orientation = orient; }
-        const Vec3 &    GetPosition() const { return position; }
-        const Mat3 &    GetOrientation() const { return orientation; }
+        const Vec3 & GetPosition() const { return position; }
+        const Mat3 & GetOrientation() const { return orientation; }
         void            SetMap( GameMap * map ) { this->map = map; }
-        GameMap *       GetMap() const { return map; }
+        GameMap * GetMap() const { return map; }
 
         // ================ Standard =============== //
         virtual void OnSpawn() {}
@@ -76,6 +80,25 @@ namespace atto {
         void TakeDamage( i32 damage ) override;
 
     private:
+        StaticModel model;
+        i32 health = 100;
+    };
+
+    class Entity_DroneQuad : public Entity {
+    public:
+        Entity_DroneQuad();
+
+        void OnSpawn() override;
+        void OnUpdate( f32 dt ) override;
+        void OnRender( Renderer & renderer ) override;
+        void OnDespawn() override;
+
+        AlignedBox GetBounds() const override;
+        bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
+        void DebugDrawBounds( Renderer & renderer ) override;
+        void TakeDamage( i32 damage ) override;
+
+    public:
         StaticModel model;
         i32 health = 100;
     };

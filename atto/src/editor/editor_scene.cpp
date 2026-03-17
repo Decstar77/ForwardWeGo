@@ -720,15 +720,12 @@ namespace atto {
         }
         else if ( selectionMode == EditorSelectionMode::Entity ) {
             static i32 newEntityTypeIndex = 0;
-            const char * entityTypeNames[] = { "Barrel" };
-            const EntityType entityTypes[] = { EntityType::Barrel };
-            constexpr i32 entityTypeCount = sizeof( entityTypes ) / sizeof( entityTypes[0] );
 
             ImGui::SetNextItemWidth( 150.0f );
-            ImGui::Combo( "##EntityType", &newEntityTypeIndex, entityTypeNames, entityTypeCount );
+            ImGui::Combo( "##EntityType", &newEntityTypeIndex, EntityTypeNames, EntityTypeCount );
             ImGui::SameLine();
             if ( ImGui::Button( "+ Add Entity" ) ) {
-                Entity * ent = map.CreateEntity( entityTypes[newEntityTypeIndex] );
+                Entity * ent = map.CreateEntity( EntityTypes[newEntityTypeIndex] );
                 if ( ent ) {
                     ent->OnSpawn();
                     selectedEntityIndex = map.GetEntityCount() - 1;

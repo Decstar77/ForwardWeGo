@@ -37,10 +37,11 @@ Editor:
 
 - Add textures on brushes and materials
 - Shadows
- - MSAA
- - SSAO
- - Image based lighting
- - Light maps
- - Light probes
- - ? PBR ?
+- particles
+- MSAA
+- SSAO
+- Image based lighting
+- Light maps
+- Light probes
+- ? PBR ?
 */

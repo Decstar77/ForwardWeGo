@@ -64,6 +64,8 @@ namespace atto {
         switch ( type ) {
         case EntityType::Barrel:
             return std::make_unique<Entity_Barrel>();
+        case EntityType::Drone_QUAD:
+            return std::make_unique<Entity_DroneQuad>();
         default:
             ATTO_ASSERT( false, "Unknown EntityType provided to GameMap::MakeEntity" );
             return nullptr;

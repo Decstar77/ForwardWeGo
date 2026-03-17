@@ -1,7 +1,7 @@
 #include "engine/atto_engine.h"
 #include "engine/atto_assets.h"
 
-#include "entities_def.h"
+#include "game_entities.h"
 
 namespace atto {
 
