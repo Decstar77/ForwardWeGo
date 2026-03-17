@@ -29,6 +29,8 @@ namespace atto {
         }
 
         player.OnUpdate( deltaTime, map );
+
+        map.Update( deltaTime );
     }
 
     void GameMapScene::OnRender( Renderer & renderer ) {

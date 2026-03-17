@@ -18,6 +18,23 @@ namespace atto {
         }
     }
 
+    void GameMap::Clear() {
+        for ( auto & bm : brushModels ) {
+            bm.Destroy();
+        }
+        brushModels.clear();
+        brushCollsion.clear();
+        brushes.clear();
+
+        for ( auto & entity : entities ) {
+            entity->OnDespawn();
+        }
+        entities.clear();
+
+        playerStart.spawnPos = Vec3( 0.0f, 0.0f, 3.0f );
+        playerStart.spawnOri = Mat3( 1 );
+    }
+
     void GameMap::Initialize() {
         // model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
         // texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
@@ -51,6 +68,9 @@ namespace atto {
                 continue;
             }
             Vec3 color = (i == selectedBrush) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 0.8f, 0.8f, 0.8f );
+            for ( i32 j = 0; j < brushModels[i].GetMeshCount(); j++ ) {
+                brushModels[i].GetMesh( j ).GetMaterial().albedo = color;
+            }
             renderer.RenderStaticModel( brushModels[i], identity, color );
         }
 

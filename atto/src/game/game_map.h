@@ -28,6 +28,7 @@ namespace atto {
         GameMap();
         ~GameMap();
 
+        void Clear();
         void Initialize();
 
         void StartMap();

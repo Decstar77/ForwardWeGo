@@ -58,11 +58,27 @@ namespace atto {
 
     private:
         void StartImgui();
-        void DrawEditorPanel();
-        Mat4 GetOrthoViewProjectionMatrix() const;
 
+        // UI
+        void DrawMainMenuBar();
+        void DrawToolbar();
+        void DrawInspectorPanel();
+        void DrawViewOverlay();
+
+        // File operations
+        void NewMap();
+        void OpenMap();
+        void SaveMap();
+        void SaveMapAs();
+        void LoadMapFromFile( const std::string & path );
+        void SaveMapToFile( const std::string & path );
+
+        void DeleteSelected();
+
+        Mat4 GetOrthoViewProjectionMatrix() const;
         Vec3 ScreenToWorldOrtho( Vec2 screenPos ) const;
 
+        // Brush operations
         void BrushGetOrthoAxes( i32 & hAxis, i32 & vAxis ) const;
         i32  BrushPickOrtho( Vec3 worldPos ) const;
         i32  BrushPick3D( Vec2 screenPos ) const;
@@ -70,31 +86,33 @@ namespace atto {
         void BrushUpdateEdgeDrag( Vec3 worldMousePos );
         void BrushStartMoveDrag( Vec3 worldClickPos );
         void BrushUpdateMoveDrag( Vec3 worldMousePos );
-
         void BrushStartCreateDrag( Vec3 worldClickPos );
         void BrushUpdateCreateDrag( Vec3 worldMousePos );
         void BrushFinishCreateDrag();
-
         f32  SnapValue( f32 value ) const;
 
-        EditorViewMode   viewMode = EditorViewMode::Cam3D;
-        EditorRenderMode renderMode = EditorRenderMode::Lit;
+        // View state
+        EditorViewMode      viewMode = EditorViewMode::Cam3D;
+        EditorRenderMode    renderMode = EditorRenderMode::Lit;
         EditorSelectionMode selectionMode = EditorSelectionMode::Brush;
 
         FlyCamera  flyCamera;
-
         Vec3 orthoTarget = Vec3( 0.0f );
         f32  orthoSize = 10.0f;
 
-        GameMap map;
+        // Map state
+        GameMap      map;
+        std::string  currentMapPath;
+        bool         unsavedChanges = false;
 
+        // Selection state
         i32 selectedBrushIndex = -1;
         i32 selectedEntityIndex = -1;
         BrushDragState brushDrag;
 
+        // Snap
         bool snapEnabled = true;
         f32  snapSize = 1.0f;
-
     };
 
 } // namespace atto

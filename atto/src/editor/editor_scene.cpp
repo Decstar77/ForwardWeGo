@@ -19,11 +19,7 @@ namespace atto {
         flyCamera.SetMoveSpeed( 5.0f );
         flyCamera.SetLookSensitivity( 0.1f );
 
-        JsonSerializer serializer( false );
-        serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( "assets/maps/game.map" ) );
-        map.Serialize( serializer );
-
-        map.Initialize();
+        LoadMapFromFile( "assets/maps/game.map" );
 
         Renderer & renderer = Engine::Get().GetRenderer();
         renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
@@ -51,6 +47,13 @@ namespace atto {
     }
 
     void EditorScene::OnUpdate( f32 deltaTime ) {
+        {
+            char title[256];
+            const char * mapName = currentMapPath.empty() ? "Untitled" : currentMapPath.c_str();
+            snprintf( title, sizeof( title ), "ATTO Editor - %s%s", mapName, unsavedChanges ? " *" : "" );
+            Engine::Get().SetWindowTitle( title );
+        }
+
         Input & input = Engine::Get().GetInput();
 
         if ( input.IsKeyPressed( Key::Escape ) ) {
@@ -62,17 +65,20 @@ namespace atto {
             }
         }
 
-        if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
-            JsonSerializer serializer( true );
-            map.Serialize( serializer );
-            Engine::Get().GetAssetManager().WriteTextFile( "assets/maps/game.map", serializer.ToString() );
-        }
+        bool ctrl = input.IsKeyDown( Key::LeftControl ) || input.IsKeyDown( Key::RightControl );
+        bool shift = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
+
+        if ( ctrl && shift && input.IsKeyPressed( Key::S ) ) { SaveMapAs(); }
+        else if ( ctrl && input.IsKeyPressed( Key::S ) ) { SaveMap(); }
+        if ( ctrl && input.IsKeyPressed( Key::N ) ) { NewMap(); }
+        if ( ctrl && input.IsKeyPressed( Key::O ) ) { OpenMap(); }
+        if ( input.IsKeyPressed( Key::Delete ) ) { DeleteSelected(); }
 
         bool alt = input.IsKeyDown( Key::LeftAlt ) || input.IsKeyDown( Key::RightAlt );
         if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
         if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
         if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
-        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Lit;}
+        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Lit; }
 
         if ( !input.IsCursorCaptured() ) {
             if ( input.IsKeyPressed( Key::B ) ) { selectionMode = EditorSelectionMode::Brush; }
@@ -317,6 +323,7 @@ namespace atto {
                     nullptr,
                     snapEnabled ? snap3 : nullptr ) ) {
                     ps.spawnPos = Vec3( gizmoMatrix[3] );
+                    unsavedChanges = true;
                 }
             }
             else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
@@ -333,35 +340,16 @@ namespace atto {
                     nullptr,
                     snapEnabled ? snap3 : nullptr ) ) {
                     ent->SetPosition( Vec3( gizmoMatrix[3] ) );
+                    unsavedChanges = true;
                 }
             }
         }
 
-        static const char * modeLabels[] = { "XY (Front)", "ZY (Side)", "XZ (Top)", "3D Camera" };
-        ImGui::SetNextWindowPos( ImVec2( 10, 10 ), ImGuiCond_Always );
-        ImGui::SetNextWindowBgAlpha( 0.5f );
-        ImGui::Begin( "##ViewMode", nullptr,
-            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
-        ImGui::Text( "View: %s", modeLabels[static_cast<i32>(viewMode)] );
-        ImGui::End();
+        DrawMainMenuBar();
+        DrawToolbar();
+        DrawInspectorPanel();
+        DrawViewOverlay();
 
-        Vec2i windowSize = Engine::Get().GetWindowSize();
-        ImGui::SetNextWindowPos( ImVec2( static_cast<f32>(windowSize.x) - 10.0f, 10.0f ), ImGuiCond_Always, ImVec2( 1.0f, 0.0f ) );
-        ImGui::SetNextWindowBgAlpha( 0.5f );
-        ImGui::Begin( "##RenderMode", nullptr,
-            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
-        i32 rm = static_cast<i32>(renderMode);
-        ImGui::RadioButton( "Lit", &rm, 0 ); ImGui::SameLine();
-        ImGui::RadioButton( "Unlit", &rm, 1 ); ImGui::SameLine();
-        ImGui::RadioButton( "Wireframe", &rm, 2 );
-        renderMode = static_cast<EditorRenderMode>(rm);
-        ImGui::End();
-
-        DrawEditorPanel();
-
-        //ImGui::ShowDemoWindow();
         ImGui::Render();
 
         ImGui_ImplOpenGL3_RenderDrawData( ImGui::GetDrawData() );
@@ -540,6 +528,7 @@ namespace atto {
 
         map.RebuildBrushModel( brushDrag.brushIndex );
         map.RebuildBrushCollision( brushDrag.brushIndex );
+        unsavedChanges = true;
     }
 
     void EditorScene::BrushStartMoveDrag( Vec3 worldClickPos ) {
@@ -570,6 +559,7 @@ namespace atto {
 
         map.RebuildBrushModel( brushDrag.brushIndex );
         map.RebuildBrushCollision( brushDrag.brushIndex );
+        unsavedChanges = true;
     }
 
     f32 EditorScene::SnapValue( f32 value ) const {
@@ -630,6 +620,7 @@ namespace atto {
 
         map.RebuildBrushModel( brushDrag.brushIndex );
         map.RebuildBrushCollision( brushDrag.brushIndex );
+        unsavedChanges = true;
     }
 
     void EditorScene::BrushFinishCreateDrag() {
@@ -649,28 +640,108 @@ namespace atto {
         brushDrag.mode = BrushDragMode::None;
     }
 
-    void EditorScene::DrawEditorPanel() {
+    void EditorScene::DrawMainMenuBar() {
+        if ( ImGui::BeginMainMenuBar() ) {
+            if ( ImGui::BeginMenu( "File" ) ) {
+                if ( ImGui::MenuItem( "New Map", "Ctrl+N" ) ) { NewMap(); }
+                if ( ImGui::MenuItem( "Open Map...", "Ctrl+O" ) ) { OpenMap(); }
+                ImGui::Separator();
+                if ( ImGui::MenuItem( "Save", "Ctrl+S" ) ) { SaveMap(); }
+                if ( ImGui::MenuItem( "Save As...", "Ctrl+Shift+S" ) ) { SaveMapAs(); }
+                ImGui::Separator();
+                if ( ImGui::MenuItem( "Play", "F5" ) ) {
+                    Engine::Get().TransitionToScene( "GameMapScene" );
+                }
+                ImGui::Separator();
+                if ( ImGui::MenuItem( "Exit" ) ) {
+                    Engine::Get().RequestQuit();
+                }
+                ImGui::EndMenu();
+            }
+
+            if ( ImGui::BeginMenu( "Edit" ) ) {
+                if ( ImGui::MenuItem( "Delete Selected", "Del" ) ) { DeleteSelected(); }
+                ImGui::Separator();
+                ImGui::Checkbox( "Snap", &snapEnabled );
+                ImGui::SetNextItemWidth( 80.0f );
+                ImGui::DragFloat( "Snap Size", &snapSize, 0.05f, 0.01f, 100.0f, "%.2f m" );
+                ImGui::EndMenu();
+            }
+
+            if ( ImGui::BeginMenu( "View" ) ) {
+                if ( ImGui::MenuItem( "Top (XZ)", "Alt+1", viewMode == EditorViewMode::XZ ) ) {
+                    viewMode = EditorViewMode::XZ;
+                    Engine::Get().GetInput().SetCursorCaptured( false );
+                    brushDrag.mode = BrushDragMode::None;
+                    renderMode = EditorRenderMode::Wireframe;
+                }
+                if ( ImGui::MenuItem( "Front (XY)", "Alt+2", viewMode == EditorViewMode::XY ) ) {
+                    viewMode = EditorViewMode::XY;
+                    Engine::Get().GetInput().SetCursorCaptured( false );
+                    brushDrag.mode = BrushDragMode::None;
+                    renderMode = EditorRenderMode::Wireframe;
+                }
+                if ( ImGui::MenuItem( "Side (ZY)", "Alt+3", viewMode == EditorViewMode::ZY ) ) {
+                    viewMode = EditorViewMode::ZY;
+                    Engine::Get().GetInput().SetCursorCaptured( false );
+                    brushDrag.mode = BrushDragMode::None;
+                    renderMode = EditorRenderMode::Wireframe;
+                }
+                if ( ImGui::MenuItem( "3D Camera", "Alt+4", viewMode == EditorViewMode::Cam3D ) ) {
+                    viewMode = EditorViewMode::Cam3D;
+                    brushDrag.mode = BrushDragMode::None;
+                    renderMode = EditorRenderMode::Lit;
+                }
+                ImGui::Separator();
+
+                i32 rm = static_cast<i32>(renderMode);
+                if ( ImGui::RadioButton( "Lit", &rm, 0 ) ) { renderMode = EditorRenderMode::Lit; }
+                if ( ImGui::RadioButton( "Unlit", &rm, 1 ) ) { renderMode = EditorRenderMode::Unlit; }
+                if ( ImGui::RadioButton( "Wireframe", &rm, 2 ) ) { renderMode = EditorRenderMode::Wireframe; }
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMainMenuBar();
+        }
+    }
+
+    void EditorScene::DrawToolbar() {
+        ImGui::SetNextWindowPos( ImVec2( 10, 30 ), ImGuiCond_Always );
+        ImGui::SetNextWindowBgAlpha( 0.75f );
+        ImGui::Begin( "##Toolbar", nullptr,
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
+
+        i32 sm = static_cast<i32>(selectionMode);
+        ImGui::RadioButton( "Brush (B)", &sm, static_cast<i32>(EditorSelectionMode::Brush) ); ImGui::SameLine();
+        ImGui::RadioButton( "Entity (E)", &sm, static_cast<i32>(EditorSelectionMode::Entity) ); ImGui::SameLine();
+        ImGui::RadioButton( "Player (P)", &sm, static_cast<i32>(EditorSelectionMode::PlayerStart) );
+        selectionMode = static_cast<EditorSelectionMode>(sm);
+
+        ImGui::End();
+    }
+
+    void EditorScene::DrawViewOverlay() {
+        static const char * modeLabels[] = { "XY (Front)", "ZY (Side)", "XZ (Top)", "3D Camera" };
+        Vec2i windowSize = Engine::Get().GetWindowSize();
+        ImGui::SetNextWindowPos( ImVec2( static_cast<f32>(windowSize.x) - 10.0f, 30.0f ), ImGuiCond_Always, ImVec2( 1.0f, 0.0f ) );
+        ImGui::SetNextWindowBgAlpha( 0.5f );
+        ImGui::Begin( "##ViewOverlay", nullptr,
+            ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
+        ImGui::Text( "View: %s", modeLabels[static_cast<i32>(viewMode)] );
+        ImGui::End();
+    }
+
+    void EditorScene::DrawInspectorPanel() {
         ImGui::SetNextWindowSize( ImVec2( 300, 500 ), ImGuiCond_FirstUseEver );
-        ImGui::Begin( "Editor" );
-
-        i32 sm = static_cast<i32>( selectionMode );
-        ImGui::RadioButton( "Brush (B)", &sm, static_cast<i32>( EditorSelectionMode::Brush ) ); ImGui::SameLine();
-        ImGui::RadioButton( "Entity (E)", &sm, static_cast<i32>( EditorSelectionMode::Entity ) ); ImGui::SameLine();
-        ImGui::RadioButton( "Player (P)", &sm, static_cast<i32>( EditorSelectionMode::PlayerStart ) );
-        selectionMode = static_cast<EditorSelectionMode>( sm );
-
-        ImGui::Separator();
-
-        ImGui::Checkbox( "Snap", &snapEnabled );
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth( 80.0f );
-        ImGui::DragFloat( "##SnapSize", &snapSize, 0.05f, 0.01f, 100.0f, "%.2f m" );
-
-        ImGui::Separator();
+        ImGui::Begin( "Inspector" );
 
         if ( selectionMode == EditorSelectionMode::Brush ) {
             if ( ImGui::Button( "+ Add Brush" ) ) {
                 selectedBrushIndex = map.AddBrush();
+                unsavedChanges = true;
             }
 
             ImGui::Separator();
@@ -681,7 +752,7 @@ namespace atto {
                 char label[64];
                 snprintf( label, sizeof( label ), "Brush %d", i );
 
-                bool isSelected = ( selectedBrushIndex == i );
+                bool isSelected = (selectedBrushIndex == i);
                 if ( ImGui::Selectable( label, isSelected ) ) {
                     selectedBrushIndex = i;
                 }
@@ -701,6 +772,7 @@ namespace atto {
                 if ( propSerializer.HasChanges() ) {
                     map.RebuildBrushModel( selectedBrushIndex );
                     map.RebuildBrushCollision( selectedBrushIndex );
+                    unsavedChanges = true;
                 }
 
                 ImGui::Spacing();
@@ -711,6 +783,7 @@ namespace atto {
                     if ( selectedBrushIndex >= brushCount ) {
                         selectedBrushIndex = brushCount - 1;
                     }
+                    unsavedChanges = true;
                 }
             }
             else {
@@ -732,6 +805,7 @@ namespace atto {
                 if ( ent ) {
                     ent->OnSpawn();
                     selectedEntityIndex = map.GetEntityCount() - 1;
+                    unsavedChanges = true;
                 }
             }
 
@@ -744,7 +818,7 @@ namespace atto {
                 char label[64];
                 snprintf( label, sizeof( label ), "%s %d", EntityTypeToString( ent->GetType() ), i );
 
-                bool isSelected = ( selectedEntityIndex == i );
+                bool isSelected = (selectedEntityIndex == i);
                 if ( ImGui::Selectable( label, isSelected ) ) {
                     selectedEntityIndex = i;
                 }
@@ -769,6 +843,7 @@ namespace atto {
                     if ( selectedEntityIndex >= entityCount ) {
                         selectedEntityIndex = entityCount - 1;
                     }
+                    unsavedChanges = true;
                 }
             }
             else {
@@ -785,6 +860,10 @@ namespace atto {
             ImguiPropertySerializer propSerializer;
             ps.Serialize( propSerializer );
 
+            if ( propSerializer.HasChanges() ) {
+                unsavedChanges = true;
+            }
+
             bool colliding = map.IsPlayerStartColliding();
             if ( colliding ) {
                 ImGui::TextColored( ImVec4( 1, 0, 0, 1 ), "WARNING: Colliding with brush!" );
@@ -792,6 +871,85 @@ namespace atto {
         }
 
         ImGui::End();
+    }
+
+    void EditorScene::NewMap() {
+        map.Clear();
+        map.Initialize();
+        currentMapPath.clear();
+        selectedBrushIndex = -1;
+        selectedEntityIndex = -1;
+        brushDrag.mode = BrushDragMode::None;
+        unsavedChanges = false;
+    }
+
+    void EditorScene::OpenMap() {
+        std::string path = Engine::Get().GetAssetManager().OpenFilePicker( "assets/maps" );
+        if ( !path.empty() ) {
+            LoadMapFromFile( path );
+        }
+    }
+
+    void EditorScene::SaveMap() {
+        if ( currentMapPath.empty() ) {
+            SaveMapAs();
+            return;
+        }
+        SaveMapToFile( currentMapPath );
+    }
+
+    void EditorScene::SaveMapAs() {
+        std::string path = Engine::Get().GetAssetManager().SaveFilePicker( "assets/maps", "map" );
+        if ( !path.empty() ) {
+            currentMapPath = path;
+            SaveMapToFile( currentMapPath );
+        }
+    }
+
+    void EditorScene::LoadMapFromFile( const std::string & path ) {
+        std::string content = Engine::Get().GetAssetManager().ReadTextFile( path );
+        if ( content.empty() ) {
+            return;
+        }
+
+        map.Clear();
+
+        JsonSerializer serializer( false );
+        serializer.FromString( content );
+        map.Serialize( serializer );
+        map.Initialize();
+
+        currentMapPath = path;
+        selectedBrushIndex = -1;
+        selectedEntityIndex = -1;
+        brushDrag.mode = BrushDragMode::None;
+        unsavedChanges = false;
+    }
+
+    void EditorScene::SaveMapToFile( const std::string & path ) {
+        JsonSerializer serializer( true );
+        map.Serialize( serializer );
+        Engine::Get().GetAssetManager().WriteTextFile( path, serializer.ToString() );
+        unsavedChanges = false;
+    }
+
+    void EditorScene::DeleteSelected() {
+        if ( selectionMode == EditorSelectionMode::Brush && selectedBrushIndex >= 0 && selectedBrushIndex < map.GetBrushCount() ) {
+            map.RemoveBrush( selectedBrushIndex );
+            i32 brushCount = map.GetBrushCount();
+            if ( selectedBrushIndex >= brushCount ) {
+                selectedBrushIndex = brushCount - 1;
+            }
+            unsavedChanges = true;
+        }
+        else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
+            map.DestroyEntityByIndex( selectedEntityIndex );
+            i32 entityCount = map.GetEntityCount();
+            if ( selectedEntityIndex >= entityCount ) {
+                selectedEntityIndex = entityCount - 1;
+            }
+            unsavedChanges = true;
+        }
     }
 
     void EditorScene::OnShutdown() {

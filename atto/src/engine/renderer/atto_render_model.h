@@ -78,8 +78,9 @@ namespace atto {
         void Draw( Shader * shader ) const;
 
         i32                 GetIndexCount() const { return indexCount; }
-        const AlignedBox & GetBounds() const { return bounds; }
-        const Material & GetMaterial() const { return material; }
+        const AlignedBox &  GetBounds() const { return bounds; }
+        const Material &    GetMaterial() const { return material; }
+        Material &          GetMaterial() { return material; }
         void                SetMaterial( const Material & mat ) { material = mat; }
 
     private:
@@ -118,6 +119,8 @@ namespace atto {
 
         bool IsLoaded() const { return !meshes.empty(); }
         i32 GetMeshCount() const { return static_cast<i32>(meshes.size()); }
+        Mesh & GetMesh( i32 index ) { return meshes[index]; }
+        const Mesh & GetMesh( i32 index ) const { return meshes[index]; }
         const AlignedBox & GetBounds() const { return bounds; }
         const AlignedBox & GetMeshBounds( i32 index ) const { return meshes[index].GetBounds(); }
 
