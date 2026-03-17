@@ -31,10 +31,17 @@ TODO:
 Gameplay:
 - Entity id's
 - Entities should be marked for removed/destroyed and them cleaned up at the end of the frame
+- Sprinting
+- Arms walk + run animatioons
+- HUD
 
 Editor:
+- Warning if unsaved map
+- Entity ray selection in 3D view
+- Entity rotation
 - Need an undo
 
+Renderering:
 - Add textures on brushes and materials
 - Shadows
 - particles
@@ -44,4 +51,5 @@ Editor:
 - Light maps
 - Light probes
 - ? PBR ?
+- Animation blends ?
 */
