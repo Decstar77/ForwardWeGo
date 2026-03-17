@@ -3,9 +3,9 @@
 
 namespace atto {
 
-    void GameMapScene::OnStart() {
+    void GameMapScene::OnStart( const char * args ) {
         JsonSerializer serializer( false );
-        serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( "assets/maps/game.map" ) );
+        serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( args ) );
         map.Serialize( serializer );
         map.Initialize();
 
@@ -21,7 +21,7 @@ namespace atto {
         Input & input = Engine::Get().GetInput();
 
         if ( input.IsKeyPressed( Key::Escape ) ) {
-            Engine::Get().TransitionToScene( "Editor" );
+            Engine::Get().TransitionToScene( "Editor", "" );
         }
 
         if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {

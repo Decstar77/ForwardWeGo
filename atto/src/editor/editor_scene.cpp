@@ -8,7 +8,7 @@
 
 namespace atto {
 
-    void EditorScene::OnStart() {
+    void EditorScene::OnStart( const char * args ) {
         StartImgui();
 
         Vec2i windowSize = Engine::Get().GetWindowSize();
@@ -193,7 +193,7 @@ namespace atto {
         }
 
         if ( input.IsKeyPressed( Key::F5 ) ) {
-            Engine::Get().TransitionToScene( "GameMapScene" );
+            Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
         }
     }
 
@@ -650,7 +650,7 @@ namespace atto {
                 if ( ImGui::MenuItem( "Save As...", "Ctrl+Shift+S" ) ) { SaveMapAs(); }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Play", "F5" ) ) {
-                    Engine::Get().TransitionToScene( "GameMapScene" );
+                    Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
                 }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Exit" ) ) {

@@ -42,7 +42,7 @@ namespace atto {
         void Shutdown();
 
         // Scenes
-        void TransitionToScene( const char * sceneName );
+        void TransitionToScene( const char * sceneName, const char * args );
 
         // Window
         void SetWindowTitle( const char * title );
@@ -115,5 +115,6 @@ namespace atto {
         // Current game
         std::unique_ptr<SceneInterface> currentScene = nullptr;
         std::string                     transitionSceneName;
+        std::string                     transitionSceneArgs = "";
     };
 } // namespace atto

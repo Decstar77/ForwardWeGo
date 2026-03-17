@@ -188,8 +188,9 @@ namespace atto {
         if ( transitionSceneName.empty() == false ) {
             currentScene->OnShutdown();
             currentScene = SceneRegistry::CreateNew( transitionSceneName.c_str() );
+            currentScene->OnStart( transitionSceneArgs.c_str() );
             transitionSceneName = "";
-            currentScene->OnStart();
+            transitionSceneArgs = "";
         }
     }
 
@@ -204,7 +205,7 @@ namespace atto {
 
         // Call game start
         if ( currentScene ) {
-            currentScene->OnStart();
+            currentScene->OnStart( "" );
         }
 
         // Main loop
@@ -268,8 +269,9 @@ namespace atto {
         Logger::Get().Shutdown();
     }
 
-    void Engine::TransitionToScene( const char * sceneName ) {
+    void Engine::TransitionToScene( const char * sceneName, const char * args ) {
         transitionSceneName = sceneName;
+        transitionSceneArgs = args;
     }
 
     void Engine::SetWindowTitle( const char * title ) {

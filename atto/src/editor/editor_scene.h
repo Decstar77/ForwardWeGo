@@ -50,7 +50,7 @@ namespace atto {
         static const char * GetSceneNameStatic() { return "Editor"; }
         const char * GetSceneName() override { return GetSceneNameStatic(); }
 
-        void OnStart() override;
+        void OnStart( const char * args ) override;
         void OnUpdate( f32 deltaTime ) override;
         void OnRender( Renderer & renderer ) override;
         void OnShutdown() override;

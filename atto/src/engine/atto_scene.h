@@ -42,7 +42,7 @@ namespace atto {
     public:
         virtual ~SceneInterface() = default;
 
-        virtual void OnStart() {}
+        virtual void OnStart( const char * args ) {}
         virtual void OnUpdate( f32 deltaTime ) {}
         virtual void OnRender( Renderer & renderer ) {}
         virtual void OnShutdown() {}
