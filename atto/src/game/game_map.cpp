@@ -66,6 +66,8 @@ namespace atto {
             return std::make_unique<Entity_Barrel>();
         case EntityType::Drone_QUAD:
             return std::make_unique<Entity_DroneQuad>();
+        case EntityType::GameMode_KillAllEntities:
+            return std::make_unique<Entity_GameMode_KillAllEntities>();
         default:
             ATTO_ASSERT( false, "Unknown EntityType provided to GameMap::MakeEntity" );
             return nullptr;
@@ -76,6 +78,7 @@ namespace atto {
         auto entity = MakeEntity( type );
         if ( !entity ) return nullptr;
         entity->SetMap( this );
+        entity->SetSpawnId( Engine::Get().GetRNG().Unsigned64() );
         return entities.emplace_back( std::move( entity ) ).get();
     }
 

@@ -131,6 +131,7 @@
                 0.03134673833847046,
                 -8.0
             ],
+            "SpawnId": 1,
             "Type": "Barrel"
         },
         {
@@ -150,6 +151,7 @@
                 0.0,
                 -3.0
             ],
+            "SpawnId": 2,
             "Type": "Barrel"
         },
         {
@@ -169,6 +171,7 @@
                 0.0,
                 -3.0
             ],
+            "SpawnId": 3,
             "Type": "Barrel"
         },
         {
@@ -184,11 +187,13 @@
                 1.0
             ],
             "Position": [
-                0.0,
-                2.0,
-                -8.0
+                -1.0,
+                1.0,
+                -2.0
             ],
-            "Type": "Drone_QUAD"
+            "RemainingEntities": [1, 2],
+            "SpawnId": 6352910061307122861,
+            "Type": "GameMode_KillAllEntities"
         }
     ],
     "playerStart": {

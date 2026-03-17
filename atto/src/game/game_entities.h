@@ -7,13 +7,34 @@ namespace atto {
 
     enum class EntityType {
         None = 0,
-        Barrel = 1,
-        Drone_QUAD = 2
+        Barrel,
+        Drone_QUAD,
+
+        GameMode_KillAllEntities,
+
+        EntityTypeCount
     };
 
-    constexpr EntityType EntityTypes[] = { EntityType::None, EntityType::Barrel, EntityType::Drone_QUAD };
-    constexpr const char * EntityTypeNames[] = { "None", "Barrel", "Drone_QUAD" };
-    constexpr i32 EntityTypeCount = static_cast<i32>( sizeof( EntityTypes ) / sizeof( EntityTypes[0] ) );
+    typedef u64 SpawnId;
+
+    inline static const i32 EntityTypeCount = static_cast<i32>(EntityType::EntityTypeCount);
+
+    inline static const EntityType EntityTypes[] = {
+        EntityType::None,
+        EntityType::Barrel,
+        EntityType::Drone_QUAD,
+        EntityType::GameMode_KillAllEntities
+    };
+
+    inline static const char * EntityTypeNames[] = {
+        "None",
+        "Barrel",
+        "Drone_QUAD",
+        "GameMode_KillAllEntities"
+    };
+
+    static_assert( EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch" );
+    static_assert( EntityTypeCount == sizeof( EntityTypeNames ) / sizeof( EntityTypeNames[0] ), "EntityTypeNames array size mismatch" );
 
     inline const char * EntityTypeToString( EntityType type ) {
         return EntityTypeNames[static_cast<i32>(type)];
@@ -38,12 +59,14 @@ namespace atto {
         const Mat3 & GetOrientation() const { return orientation; }
         void            SetMap( GameMap * map ) { this->map = map; }
         GameMap * GetMap() const { return map; }
+        SpawnId         GetSpawnId() const { return spawnId; }
+        void            SetSpawnId( SpawnId id ) { spawnId = id; }
 
         // ================ Standard =============== //
-        virtual void OnSpawn() {}
-        virtual void OnUpdate( f32 dt ) {}
-        virtual void OnRender( Renderer & renderer ) {}
-        virtual void OnDespawn() {}
+        virtual void        OnSpawn() {}
+        virtual void        OnUpdate( f32 dt ) {}
+        virtual void        OnRender( Renderer & renderer ) {}
+        virtual void        OnDespawn() {}
 
         // ================ Physics =============== // 
         virtual AlignedBox  GetBounds() const { return {}; }
@@ -56,10 +79,11 @@ namespace atto {
         virtual void        TakeDamage( i32 damage ) {}
 
         // ================ Debug =============== //
-        virtual void DebugDrawBounds( Renderer & renderer ) {}
+        virtual void        DebugDrawBounds( Renderer & renderer ) {}
 
     protected:
         EntityType type = EntityType::None;
+        SpawnId spawnId = 0;
         GameMap * map = nullptr;
         Vec3 position = Vec3( 0.0f, 0.0f, 0.0f );
         Mat3 orientation = Mat3( 1 );
@@ -101,5 +125,20 @@ namespace atto {
     public:
         StaticModel model;
         i32 health = 100;
+    };
+
+    class Entity_GameMode_KillAllEntities : public Entity {
+    public:
+        Entity_GameMode_KillAllEntities();
+
+        void OnSpawn() override;
+        void OnUpdate( f32 dt ) override;
+        void OnRender( Renderer & renderer ) override;
+        void OnDespawn() override;
+
+        void Serialize( Serializer & serializer ) override;
+
+    private:
+        std::vector<SpawnId> remainingEntities;
     };
 }
