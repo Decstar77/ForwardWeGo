@@ -71,8 +71,7 @@ namespace atto {
     }
 
     void Entity_DroneQuad::OnSpawn() {
-        model.LoadFromFile( "assets/sm/SM_Prop_Drone_Quad_01.fbx", 0.01f );
-        // orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( -90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
+         model.LoadFromFile( "assets/sm/SM_Prop_Drone_Quad_01.fbx", 0.01f );
     }
 
     void Entity_DroneQuad::OnUpdate( f32 dt ) {
@@ -80,7 +79,9 @@ namespace atto {
     }
 
     void Entity_DroneQuad::OnRender( Renderer & renderer ) {
-        renderer.RenderStaticModel( model, Mat4( 1.0f ) * Mat4( orientation ) * Mat4( glm::translate( glm::mat4( 1 ), position ) ) );
+        Mat4 modelMatrix = Mat4( 1.0f );
+        modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
+        renderer.RenderStaticModel( model, modelMatrix );
     }
 
     void Entity_DroneQuad::OnDespawn() {

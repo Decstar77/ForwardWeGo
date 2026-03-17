@@ -26,6 +26,11 @@ namespace atto {
         PlayerStart
     };
 
+    enum class EditorGizmoMode {
+        Translate,
+        Rotate
+    };
+
     enum class BrushDragMode {
         None,
         Edge,
@@ -95,6 +100,7 @@ namespace atto {
         EditorViewMode      viewMode = EditorViewMode::Cam3D;
         EditorRenderMode    renderMode = EditorRenderMode::Lit;
         EditorSelectionMode selectionMode = EditorSelectionMode::Brush;
+        EditorGizmoMode     gizmoMode = EditorGizmoMode::Translate;
 
         FlyCamera  flyCamera;
         Vec3 orthoTarget = Vec3( 0.0f );

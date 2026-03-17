@@ -20,7 +20,8 @@ namespace atto {
         flyCamera.SetLookSensitivity( 0.1f );
         if ( args == nullptr ) {
             LoadMapFromFile( "assets/maps/level_001.map" );
-        } else {
+        }
+        else {
             LoadMapFromFile( args );
         }
 
@@ -84,9 +85,12 @@ namespace atto {
         if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Lit; }
 
         if ( !input.IsCursorCaptured() ) {
-            if ( input.IsKeyPressed( Key::B ) ) { selectionMode = EditorSelectionMode::Brush; }
-            if ( input.IsKeyPressed( Key::E ) ) { selectionMode = EditorSelectionMode::Entity; }
-            if ( input.IsKeyPressed( Key::P ) ) { selectionMode = EditorSelectionMode::PlayerStart; }
+            if ( input.IsKeyPressed( Key::Num1 ) && !alt ) { selectionMode = EditorSelectionMode::Brush; }
+            if ( input.IsKeyPressed( Key::Num2 ) && !alt ) { selectionMode = EditorSelectionMode::Entity; }
+            if ( input.IsKeyPressed( Key::Num3 ) && !alt ) { selectionMode = EditorSelectionMode::PlayerStart; }
+
+            if ( input.IsKeyPressed( Key::W ) ) { gizmoMode = EditorGizmoMode::Translate; }
+            if ( input.IsKeyPressed( Key::E ) ) { gizmoMode = EditorGizmoMode::Rotate; }
         }
 
         if ( brushDrag.mode != BrushDragMode::None ) {
@@ -313,7 +317,17 @@ namespace atto {
                 }
             }
 
-            f32 snap3[3] = { snapSize, snapSize, snapSize };
+            f32 translateSnap[3] = { snapSize, snapSize, snapSize };
+            f32 rotateSnap[3] = { 15.0f, 15.0f, 15.0f };
+            f32 * currentSnap = nullptr;
+
+            ImGuizmo::OPERATION gizmoOp = (gizmoMode == EditorGizmoMode::Rotate)
+                ? ImGuizmo::ROTATE
+                : ImGuizmo::TRANSLATE;
+
+            if ( snapEnabled ) {
+                currentSnap = (gizmoMode == EditorGizmoMode::Rotate) ? rotateSnap : translateSnap;
+            }
 
             if ( selectionMode == EditorSelectionMode::PlayerStart ) {
                 PlayerStart & ps = map.GetPlayerStart();
@@ -326,25 +340,25 @@ namespace atto {
                     ImGuizmo::WORLD,
                     glm::value_ptr( gizmoMatrix ),
                     nullptr,
-                    snapEnabled ? snap3 : nullptr ) ) {
+                    snapEnabled ? translateSnap : nullptr ) ) {
                     ps.spawnPos = Vec3( gizmoMatrix[3] );
                     unsavedChanges = true;
                 }
             }
             else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
                 Entity * ent = map.GetEntity( selectedEntityIndex );
-                Vec3 entPos = ent->GetPosition();
-                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), entPos );
+                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), ent->GetPosition() ) * Mat4( ent->GetOrientation() );
 
                 if ( ImGuizmo::Manipulate(
                     glm::value_ptr( view ),
                     glm::value_ptr( proj ),
-                    ImGuizmo::TRANSLATE,
+                    gizmoOp,
                     ImGuizmo::WORLD,
                     glm::value_ptr( gizmoMatrix ),
                     nullptr,
-                    snapEnabled ? snap3 : nullptr ) ) {
+                    currentSnap ) ) {
                     ent->SetPosition( Vec3( gizmoMatrix[3] ) );
+                    ent->SetOrientation( Mat3( gizmoMatrix ) );
                     unsavedChanges = true;
                 }
             }
@@ -719,10 +733,17 @@ namespace atto {
             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
 
         i32 sm = static_cast<i32>(selectionMode);
-        ImGui::RadioButton( "Brush (B)", &sm, static_cast<i32>(EditorSelectionMode::Brush) ); ImGui::SameLine();
-        ImGui::RadioButton( "Entity (E)", &sm, static_cast<i32>(EditorSelectionMode::Entity) ); ImGui::SameLine();
-        ImGui::RadioButton( "Player (P)", &sm, static_cast<i32>(EditorSelectionMode::PlayerStart) );
+        ImGui::RadioButton( "Brush (1)", &sm, static_cast<i32>(EditorSelectionMode::Brush) ); ImGui::SameLine();
+        ImGui::RadioButton( "Entity (2)", &sm, static_cast<i32>(EditorSelectionMode::Entity) ); ImGui::SameLine();
+        ImGui::RadioButton( "Player (3)", &sm, static_cast<i32>(EditorSelectionMode::PlayerStart) );
         selectionMode = static_cast<EditorSelectionMode>(sm);
+
+        ImGui::Separator();
+
+        i32 gm = static_cast<i32>(gizmoMode);
+        ImGui::RadioButton( "Translate (W)", &gm, static_cast<i32>(EditorGizmoMode::Translate) ); ImGui::SameLine();
+        ImGui::RadioButton( "Rotate (E)", &gm, static_cast<i32>(EditorGizmoMode::Rotate) );
+        gizmoMode = static_cast<EditorGizmoMode>(gm);
 
         ImGui::End();
     }

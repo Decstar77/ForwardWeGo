@@ -185,8 +185,8 @@ namespace atto {
         const BoneAnimationChannel * FindChannel( const std::string & nodeName ) const;
 
         Mat4                    finalBoneMatrices[MAX_BONES];
-        const AnimatedModel * model = nullptr;
-        const AnimationClip * currentClip = nullptr;
+        const AnimatedModel *   model = nullptr;
+        const AnimationClip *   currentClip = nullptr;
         f32                     currentTime = 0.0f;
         bool                    looping = true;
     };
