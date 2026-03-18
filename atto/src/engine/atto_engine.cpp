@@ -14,10 +14,10 @@
 namespace atto {
 
     void Color::Serialize( Serializer & serializer ) {
-        serializer("r", r);
-        serializer("g", g);
-        serializer("b", b);
-        serializer("a", a);
+        serializer( "r", r );
+        serializer( "g", g );
+        serializer( "b", b );
+        serializer( "a", a );
     }
 
     f32 RandomFloat() {

@@ -99,6 +99,7 @@ namespace atto {
         void BrushGetOrthoAxes( i32 & hAxis, i32 & vAxis ) const;
         i32  BrushPickOrtho( Vec3 worldPos ) const;
         i32  BrushPick3D( Vec2 screenPos ) const;
+        i32  EntityPick3D( Vec2 screenPos ) const;
         bool BrushTryStartEdgeDrag( Vec3 worldClickPos );
         void BrushUpdateEdgeDrag( Vec3 worldMousePos );
         void BrushStartMoveDrag( Vec3 worldClickPos );

@@ -124,6 +124,10 @@ namespace atto {
         }
 
         bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver() || ImGuizmo::IsUsing();
+        if ( selectionMode == EditorSelectionMode::Entity && !imguiWantsMouse && viewMode == EditorViewMode::Cam3D && input.IsMouseButtonPressed( MouseButton::Left ) ) {
+            selectedEntityIndex = EntityPick3D( input.GetMousePosition() );
+        }
+
         if ( selectionMode == EditorSelectionMode::Brush && !imguiWantsMouse && brushDrag.mode == BrushDragMode::None && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             Vec2 mousePos = input.GetMousePosition();
 
@@ -472,6 +476,32 @@ namespace atto {
 
             if ( hit && tmin >= 0.0f && tmin < bestT ) {
                 bestT = tmin;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex;
+    }
+
+    i32 EditorScene::EntityPick3D( Vec2 screenPos ) const {
+        Vec2i windowSize = Engine::Get().GetWindowSize();
+        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>(windowSize.x) - 1.0f;
+        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>(windowSize.y);
+
+        Mat4 invVP = glm::inverse( flyCamera.GetViewProjectionMatrix() );
+        Vec4 nearNDC = invVP * Vec4( ndcX, ndcY, -1.0f, 1.0f );
+        Vec4 farNDC  = invVP * Vec4( ndcX, ndcY,  1.0f, 1.0f );
+        Vec3 rayOrigin = Vec3( nearNDC ) / nearNDC.w;
+        Vec3 rayDir    = Normalize( Vec3( farNDC ) / farNDC.w - rayOrigin );
+
+        i32 bestIndex = -1;
+        f32 bestDist  = 1e30f;
+
+        for ( i32 i = 0; i < map.GetEntityCount(); i++ ) {
+            const Entity * ent = map.GetEntity( i );
+            f32 dist = 0.0f;
+            if ( ent->RayTest( rayOrigin, rayDir, dist ) && dist < bestDist ) {
+                bestDist  = dist;
                 bestIndex = i;
             }
         }

@@ -37,7 +37,6 @@ Gameplay:
 
 Editor:
 - Entity ray selection in 3D view
-- Need an undo
 
 Renderering:
 - Add textures on brushes and materials
