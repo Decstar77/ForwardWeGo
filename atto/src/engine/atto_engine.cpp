@@ -296,6 +296,16 @@ namespace atto {
         running = false;
     }
 
+    bool Engine::IsCloseRequested() const {
+        return window && glfwWindowShouldClose( window );
+    }
+
+    void Engine::CancelCloseRequest() {
+        if ( window ) {
+            glfwSetWindowShouldClose( window, 0 );
+        }
+    }
+
     // GLFW Callbacks
     void Engine::OnKeyCallback( GLFWwindow * win, i32 key, i32 scancode, i32 action, i32 mods ) {
         Engine * engine = static_cast<Engine *>(glfwGetWindowUserPointer( win ));

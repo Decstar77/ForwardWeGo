@@ -69,6 +69,11 @@ namespace atto {
             }
         }
 
+        if ( Engine::Get().IsCloseRequested() ) {
+            Engine::Get().CancelCloseRequest();
+            TryExit();
+        }
+
         bool ctrl = input.IsKeyDown( Key::LeftControl ) || input.IsKeyDown( Key::RightControl );
         bool shift = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
 
@@ -368,6 +373,7 @@ namespace atto {
         DrawToolbar();
         DrawInspectorPanel();
         DrawViewOverlay();
+        DrawUnsavedChangesDialog();
 
         ImGui::Render();
 
@@ -673,7 +679,7 @@ namespace atto {
                 }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Exit" ) ) {
-                    Engine::Get().RequestQuit();
+                    TryExit();
                 }
                 ImGui::EndMenu();
             }
@@ -861,6 +867,10 @@ namespace atto {
                 ImguiPropertySerializer propSerializer;
                 ent->Serialize( propSerializer );
 
+                if ( propSerializer.HasChanges() ) {
+                    unsavedChanges = true;
+                }
+
                 ImGui::Spacing();
 
                 if ( ImGui::Button( "Delete Selected" ) ) {
@@ -900,6 +910,11 @@ namespace atto {
     }
 
     void EditorScene::NewMap() {
+        if ( unsavedChanges ) {
+            pendingAction = UnsavedChangesAction::NewMap;
+            showUnsavedChangesDialog = true;
+            return;
+        }
         map.Clear();
         map.Initialize();
         currentMapPath.clear();
@@ -911,9 +926,16 @@ namespace atto {
 
     void EditorScene::OpenMap() {
         std::string path = Engine::Get().GetAssetManager().OpenFilePicker( "assets/maps" );
-        if ( !path.empty() ) {
-            LoadMapFromFile( path );
+        if ( path.empty() ) {
+            return;
         }
+        if ( unsavedChanges ) {
+            pendingOpenPath = path;
+            pendingAction = UnsavedChangesAction::OpenMap;
+            showUnsavedChangesDialog = true;
+            return;
+        }
+        LoadMapFromFile( path );
     }
 
     void EditorScene::SaveMap() {
@@ -975,6 +997,79 @@ namespace atto {
                 selectedEntityIndex = entityCount - 1;
             }
             unsavedChanges = true;
+        }
+    }
+
+    void EditorScene::TryExit() {
+        if ( unsavedChanges ) {
+            pendingAction = UnsavedChangesAction::Exit;
+            showUnsavedChangesDialog = true;
+        }
+        else {
+            Engine::Get().RequestQuit();
+        }
+    }
+
+    void EditorScene::ConfirmUnsavedAction() {
+        UnsavedChangesAction action = pendingAction;
+        pendingAction = UnsavedChangesAction::None;
+
+        switch ( action ) {
+        case UnsavedChangesAction::Exit:
+            Engine::Get().RequestQuit();
+            break;
+        case UnsavedChangesAction::NewMap:
+            unsavedChanges = false;
+            map.Clear();
+            map.Initialize();
+            currentMapPath.clear();
+            selectedBrushIndex = -1;
+            selectedEntityIndex = -1;
+            brushDrag.mode = BrushDragMode::None;
+            break;
+        case UnsavedChangesAction::OpenMap:
+            unsavedChanges = false;
+            LoadMapFromFile( pendingOpenPath );
+            pendingOpenPath.clear();
+            break;
+        default: break;
+        }
+    }
+
+    void EditorScene::DrawUnsavedChangesDialog() {
+        if ( showUnsavedChangesDialog ) {
+            ImGui::OpenPopup( "Unsaved Changes" );
+            showUnsavedChangesDialog = false;
+        }
+
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos( center, ImGuiCond_Always, ImVec2( 0.5f, 0.5f ) );
+        if ( ImGui::BeginPopupModal( "Unsaved Changes", nullptr, ImGuiWindowFlags_AlwaysAutoResize ) ) {
+            ImGui::Text( "You have unsaved changes. Save before continuing?" );
+            ImGui::Spacing();
+
+            if ( ImGui::Button( "Save", ImVec2( 80, 0 ) ) ) {
+                ImGui::CloseCurrentPopup();
+                SaveMap();
+                if ( !unsavedChanges ) {
+                    ConfirmUnsavedAction();
+                }
+                else {
+                    pendingAction = UnsavedChangesAction::None;
+                }
+            }
+            ImGui::SameLine();
+            if ( ImGui::Button( "Discard", ImVec2( 80, 0 ) ) ) {
+                ImGui::CloseCurrentPopup();
+                ConfirmUnsavedAction();
+            }
+            ImGui::SameLine();
+            if ( ImGui::Button( "Cancel", ImVec2( 80, 0 ) ) ) {
+                ImGui::CloseCurrentPopup();
+                pendingAction = UnsavedChangesAction::None;
+            }
+
+            ImGui::EndPopup();
         }
     }
 

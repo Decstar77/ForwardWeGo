@@ -78,6 +78,12 @@ namespace atto {
         void LoadMapFromFile( const std::string & path );
         void SaveMapToFile( const std::string & path );
 
+        // Unsaved changes dialog
+        enum class UnsavedChangesAction { None, Exit, NewMap, OpenMap };
+        void DrawUnsavedChangesDialog();
+        void ConfirmUnsavedAction();
+        void TryExit();
+
         void DeleteSelected();
 
         Mat4 GetOrthoViewProjectionMatrix() const;
@@ -110,6 +116,11 @@ namespace atto {
         GameMap      map;
         std::string  currentMapPath;
         bool         unsavedChanges = false;
+
+        // Unsaved changes dialog state
+        bool                 showUnsavedChangesDialog = false;
+        UnsavedChangesAction pendingAction = UnsavedChangesAction::None;
+        std::string          pendingOpenPath;
 
         // Selection state
         i32 selectedBrushIndex = -1;

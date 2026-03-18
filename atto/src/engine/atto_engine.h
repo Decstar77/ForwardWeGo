@@ -69,6 +69,8 @@ namespace atto {
         bool IsRunning() const { return running; }
 
         GLFWwindow * GetWindowHandle() const { return window; }
+        bool IsCloseRequested() const;
+        void CancelCloseRequest();
 
     private:
         Engine() = default;
