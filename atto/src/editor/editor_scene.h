@@ -84,6 +84,12 @@ namespace atto {
         void ConfirmUnsavedAction();
         void TryExit();
 
+        // Undo/redo
+        static constexpr i32 MaxUndoSteps = 50;
+        void Snapshot();
+        void Undo();
+        void Redo();
+
         void DeleteSelected();
 
         Mat4 GetOrthoViewProjectionMatrix() const;
@@ -121,6 +127,12 @@ namespace atto {
         bool                 showUnsavedChangesDialog = false;
         UnsavedChangesAction pendingAction = UnsavedChangesAction::None;
         std::string          pendingOpenPath;
+
+        // Undo/redo state
+        std::vector<std::string> undoStack;
+        std::vector<std::string> redoStack;
+        bool imguiWasAnyItemActive = false;
+        bool gizmoWasUsing = false;
 
         // Selection state
         i32 selectedBrushIndex = -1;

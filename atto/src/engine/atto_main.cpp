@@ -36,9 +36,7 @@ Gameplay:
 - HUD
 
 Editor:
-- Warning if unsaved map
 - Entity ray selection in 3D view
-- Entity rotation
 - Need an undo
 
 Renderering:

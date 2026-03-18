@@ -79,6 +79,8 @@ namespace atto {
 
         if ( ctrl && shift && input.IsKeyPressed( Key::S ) ) { SaveMapAs(); }
         else if ( ctrl && input.IsKeyPressed( Key::S ) ) { SaveMap(); }
+        if ( ctrl && shift && input.IsKeyPressed( Key::Z ) ) { Redo(); }
+        else if ( ctrl && input.IsKeyPressed( Key::Z ) ) { Undo(); }
         if ( ctrl && input.IsKeyPressed( Key::N ) ) { NewMap(); }
         if ( ctrl && input.IsKeyPressed( Key::O ) ) { OpenMap(); }
         if ( input.IsKeyPressed( Key::Delete ) ) { DeleteSelected(); }
@@ -369,11 +371,25 @@ namespace atto {
             }
         }
 
+        // Snapshot when gizmo first becomes active
+        bool gizmoNowUsing = ImGuizmo::IsUsing();
+        if ( gizmoNowUsing && !gizmoWasUsing ) {
+            Snapshot();
+        }
+        gizmoWasUsing = gizmoNowUsing;
+
         DrawMainMenuBar();
         DrawToolbar();
         DrawInspectorPanel();
         DrawViewOverlay();
         DrawUnsavedChangesDialog();
+
+        // Snapshot when the user first activates an inspector widget
+        bool imguiNowActive = ImGui::IsAnyItemActive();
+        if ( imguiNowActive && !imguiWasAnyItemActive ) {
+            Snapshot();
+        }
+        imguiWasAnyItemActive = imguiNowActive;
 
         ImGui::Render();
 
@@ -515,6 +531,7 @@ namespace atto {
 
         f32 edgePos = brush.center[bestAxis] + bestSign * brush.halfExtents[bestAxis];
 
+        Snapshot();
         brushDrag.mode = BrushDragMode::Edge;
         brushDrag.brushIndex = selectedBrushIndex;
         brushDrag.axis = bestAxis;
@@ -557,6 +574,7 @@ namespace atto {
     }
 
     void EditorScene::BrushStartMoveDrag( Vec3 worldClickPos ) {
+        Snapshot();
         brushDrag.mode = BrushDragMode::Move;
         brushDrag.brushIndex = selectedBrushIndex;
 
@@ -595,6 +613,7 @@ namespace atto {
     }
 
     void EditorScene::BrushStartCreateDrag( Vec3 worldClickPos ) {
+        Snapshot();
         i32 hAxis, vAxis;
         BrushGetOrthoAxes( hAxis, vAxis );
         i32 depthAxis = 3 - hAxis - vAxis;
@@ -685,6 +704,9 @@ namespace atto {
             }
 
             if ( ImGui::BeginMenu( "Edit" ) ) {
+                if ( ImGui::MenuItem( "Undo", "Ctrl+Z", false, !undoStack.empty() ) ) { Undo(); }
+                if ( ImGui::MenuItem( "Redo", "Ctrl+Shift+Z", false, !redoStack.empty() ) ) { Redo(); }
+                ImGui::Separator();
                 if ( ImGui::MenuItem( "Delete Selected", "Del" ) ) { DeleteSelected(); }
                 ImGui::Separator();
                 ImGui::Checkbox( "Snap", &snapEnabled );
@@ -772,6 +794,7 @@ namespace atto {
 
         if ( selectionMode == EditorSelectionMode::Brush ) {
             if ( ImGui::Button( "+ Add Brush" ) ) {
+                Snapshot();
                 selectedBrushIndex = map.AddBrush();
                 unsavedChanges = true;
             }
@@ -810,6 +833,7 @@ namespace atto {
                 ImGui::Spacing();
 
                 if ( ImGui::Button( "Delete Selected" ) ) {
+                    Snapshot();
                     map.RemoveBrush( selectedBrushIndex );
                     brushCount = map.GetBrushCount();
                     if ( selectedBrushIndex >= brushCount ) {
@@ -833,6 +857,7 @@ namespace atto {
             ImGui::Combo( "##EntityType", &newEntityTypeIndex, entityTypeNames, entityTypeCount );
             ImGui::SameLine();
             if ( ImGui::Button( "+ Add Entity" ) ) {
+                Snapshot();
                 Entity * ent = map.CreateEntity( entityTypes[newEntityTypeIndex] );
                 if ( ent ) {
                     ent->OnSpawn();
@@ -874,6 +899,7 @@ namespace atto {
                 ImGui::Spacing();
 
                 if ( ImGui::Button( "Delete Selected" ) ) {
+                    Snapshot();
                     map.DestroyEntityByIndex( selectedEntityIndex );
                     entityCount = map.GetEntityCount();
                     if ( selectedEntityIndex >= entityCount ) {
@@ -922,6 +948,8 @@ namespace atto {
         selectedEntityIndex = -1;
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
+        undoStack.clear();
+        redoStack.clear();
     }
 
     void EditorScene::OpenMap() {
@@ -972,6 +1000,8 @@ namespace atto {
         selectedEntityIndex = -1;
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
+        undoStack.clear();
+        redoStack.clear();
     }
 
     void EditorScene::SaveMapToFile( const std::string & path ) {
@@ -983,6 +1013,7 @@ namespace atto {
 
     void EditorScene::DeleteSelected() {
         if ( selectionMode == EditorSelectionMode::Brush && selectedBrushIndex >= 0 && selectedBrushIndex < map.GetBrushCount() ) {
+            Snapshot();
             map.RemoveBrush( selectedBrushIndex );
             i32 brushCount = map.GetBrushCount();
             if ( selectedBrushIndex >= brushCount ) {
@@ -991,6 +1022,7 @@ namespace atto {
             unsavedChanges = true;
         }
         else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
+            Snapshot();
             map.DestroyEntityByIndex( selectedEntityIndex );
             i32 entityCount = map.GetEntityCount();
             if ( selectedEntityIndex >= entityCount ) {
@@ -998,6 +1030,60 @@ namespace atto {
             }
             unsavedChanges = true;
         }
+    }
+
+    void EditorScene::Snapshot() {
+        JsonSerializer serializer( true );
+        map.Serialize( serializer );
+        undoStack.push_back( serializer.ToString() );
+        if ( (i32)undoStack.size() > MaxUndoSteps ) {
+            undoStack.erase( undoStack.begin() );
+        }
+        redoStack.clear();
+    }
+
+    void EditorScene::Undo() {
+        if ( undoStack.empty() ) { return; }
+
+        JsonSerializer current( true );
+        map.Serialize( current );
+        redoStack.push_back( current.ToString() );
+
+        std::string state = undoStack.back();
+        undoStack.pop_back();
+
+        map.Clear();
+        JsonSerializer deserializer( false );
+        deserializer.FromString( state );
+        map.Serialize( deserializer );
+        map.Initialize();
+
+        selectedBrushIndex = -1;
+        selectedEntityIndex = -1;
+        brushDrag.mode = BrushDragMode::None;
+        unsavedChanges = true;
+    }
+
+    void EditorScene::Redo() {
+        if ( redoStack.empty() ) { return; }
+
+        JsonSerializer current( true );
+        map.Serialize( current );
+        undoStack.push_back( current.ToString() );
+
+        std::string state = redoStack.back();
+        redoStack.pop_back();
+
+        map.Clear();
+        JsonSerializer deserializer( false );
+        deserializer.FromString( state );
+        map.Serialize( deserializer );
+        map.Initialize();
+
+        selectedBrushIndex = -1;
+        selectedEntityIndex = -1;
+        brushDrag.mode = BrushDragMode::None;
+        unsavedChanges = true;
     }
 
     void EditorScene::TryExit() {
