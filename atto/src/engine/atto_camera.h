@@ -89,6 +89,8 @@ namespace atto {
 
         void SetViewportSize( i32 width, i32 height );
         void SetPosition( const Vec3 & pos );
+        void SetYaw( f32 yawRadians ) { yaw = yawRadians; }
+        void SetPitch( f32 pitchRadians );
         void SetFOV( f32 fovDegrees );
         void SetClipPlanes( f32 nearPlane, f32 farPlane );
         void SetMoveSpeed( f32 speed );

@@ -245,6 +245,11 @@ namespace atto {
         lookSensitivity = sensitivity;
     }
 
+    void FlyCamera::SetPitch( f32 pitchRadians ) {
+        constexpr f32 maxPitch = HALF_PI - 0.01f;
+        pitch = Clamp( pitchRadians, -maxPitch, maxPitch );
+    }
+
     Vec3 FlyCamera::GetForward() const {
         Vec3 fwd;
         fwd.x = Cos( yaw ) * Cos( pitch );

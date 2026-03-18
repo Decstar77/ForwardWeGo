@@ -19,7 +19,7 @@ namespace atto {
         flyCamera.SetMoveSpeed( 5.0f );
         flyCamera.SetLookSensitivity( 0.1f );
         if ( args == nullptr ) {
-            LoadMapFromFile( "assets/maps/level_001.map" );
+            LoadEditorState();
         }
         else {
             LoadMapFromFile( args );
@@ -211,6 +211,7 @@ namespace atto {
         }
 
         if ( input.IsKeyPressed( Key::F5 ) ) {
+            SaveEditorState();
             Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
         }
     }
@@ -724,6 +725,7 @@ namespace atto {
                 if ( ImGui::MenuItem( "Save As...", "Ctrl+Shift+S" ) ) { SaveMapAs(); }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Play", "F5" ) ) {
+                    SaveEditorState();
                     Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
                 }
                 ImGui::Separator();
@@ -1041,6 +1043,55 @@ namespace atto {
         unsavedChanges = false;
     }
 
+    void EditorScene::SaveEditorState() {
+        JsonSerializer s( true );
+        s( "MapPath",     currentMapPath );
+        s( "ViewMode",    reinterpret_cast<i32 &>( viewMode ) );
+        s( "OrthoTarget", orthoTarget );
+        s( "OrthoSize",   orthoSize );
+        Vec3 camPos   = flyCamera.GetPosition();
+        f32  camYaw   = flyCamera.GetYaw();
+        f32  camPitch = flyCamera.GetPitch();
+        s( "CamPos",   camPos );
+        s( "CamYaw",   camYaw );
+        s( "CamPitch", camPitch );
+        Engine::Get().GetAssetManager().WriteTextFile( EditorStatePath, s.ToString() );
+    }
+
+    void EditorScene::LoadEditorState() {
+        std::string content = Engine::Get().GetAssetManager().ReadTextFile( EditorStatePath );
+        if ( content.empty() ) {
+            LoadMapFromFile( "assets/maps/default.map" );
+            return;
+        }
+
+        JsonSerializer serializer( false );
+        serializer.FromString( content );
+
+        std::string mapPath;
+        serializer( "MapPath",     mapPath );
+        serializer( "ViewMode",    reinterpret_cast<i32 &>( viewMode ) );
+        serializer( "OrthoTarget", orthoTarget );
+        serializer( "OrthoSize",   orthoSize );
+
+        Vec3 camPos   = flyCamera.GetPosition();
+        f32  camYaw   = flyCamera.GetYaw();
+        f32  camPitch = flyCamera.GetPitch();
+        serializer( "CamPos",   camPos );
+        serializer( "CamYaw",   camYaw );
+        serializer( "CamPitch", camPitch );
+        flyCamera.SetPosition( camPos );
+        flyCamera.SetYaw( camYaw );
+        flyCamera.SetPitch( camPitch );
+
+        if ( !mapPath.empty() ) {
+            LoadMapFromFile( mapPath );
+        }
+        else {
+            LoadMapFromFile( "assets/maps/default.map" );
+        }
+    }
+
     void EditorScene::DeleteSelected() {
         if ( selectionMode == EditorSelectionMode::Brush && selectedBrushIndex >= 0 && selectedBrushIndex < map.GetBrushCount() ) {
             Snapshot();
@@ -1190,6 +1241,7 @@ namespace atto {
     }
 
     void EditorScene::OnShutdown() {
+        SaveEditorState();
     }
 
     void EditorScene::OnResize( i32 width, i32 height ) {

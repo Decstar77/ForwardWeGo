@@ -70,6 +70,11 @@ namespace atto {
         void DrawInspectorPanel();
         void DrawViewOverlay();
 
+        // Editor session state
+        static constexpr const char * EditorStatePath = "assets/editor_state.json";
+        void SaveEditorState();
+        void LoadEditorState();
+
         // File operations
         void NewMap();
         void OpenMap();

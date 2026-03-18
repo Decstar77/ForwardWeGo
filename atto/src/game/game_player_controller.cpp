@@ -105,7 +105,7 @@ namespace atto {
             playerIsAttacking = false;
             MapRaycastResult result;
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
-                if ( result.entity && result.distance <= 1.25f ) {
+                if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
                     result.entity->TakeDamage( 34 );
                     sndKnifeHitMetal1.Play( 0.5f );
@@ -119,7 +119,7 @@ namespace atto {
             playerIsAttacking = false;
             MapRaycastResult result;
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
-                if ( result.entity && result.distance <= 1.25f ) {
+                if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
                     result.entity->TakeDamage( 55 );
                     sndKnifeHitMetal2.Play( 0.5f );
