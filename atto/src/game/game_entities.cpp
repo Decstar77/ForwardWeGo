@@ -66,21 +66,110 @@ namespace atto {
         }
     };
 
+    // -------------------------------------------------------
+    //  Tuning constants
+    // -------------------------------------------------------
+    static constexpr f32 DroneMoveMaxSpeed  = 4.0f;   // m/s top speed
+    static constexpr f32 DroneMoveAccel     = 8.0f;   // steering lerp rate (higher = snappier)
+    static constexpr f32 DroneSlowdownDist  = 3.0f;   // distance at which braking begins
+    static constexpr f32 DroneArrivalDist   = 0.12f;  // snap-to-target threshold
+    static constexpr f32 DroneYawSpeed      = 3.5f;   // max yaw turn rate (rad/s)
+    static constexpr f32 DroneYawLerpRate   = 6.0f;
+    static constexpr f32 DronePitchLerpRate = 4.5f;
+    static constexpr f32 DroneRollLerpRate  = 3.5f;
+    static constexpr f32 DronePitchFactor   = 0.04f;  // rad per (m/s) of forward speed
+    static constexpr f32 DroneBankFactor    = 0.015f; // rad per (rad/s * m/s)
+    static constexpr f32 DroneHoverAmpY     = 0.035f; // metres of vertical bob
+    static constexpr f32 DroneHoverFreqY    = 1.7f;   // bob cycles per second
+
+    // -------------------------------------------------------
+
     Entity_DroneQuad::Entity_DroneQuad() {
         type = EntityType::Drone_QUAD;
     }
 
     void Entity_DroneQuad::OnSpawn() {
-         model.LoadFromFile( "assets/sm/SM_Prop_Drone_Quad_01.fbx", 0.01f );
+        model.LoadFromFile( "assets/sm/SM_Prop_Drone_Quad_01.fbx", 0.01f );
+        basePosition = position;
+        MoveTo( position + Vec3( 5, 0, 0 ) );
+    }
+
+    void Entity_DroneQuad::MoveTo( const Vec3 & target ) {
+        moveTarget = target;
+        hasTarget  = true;
     }
 
     void Entity_DroneQuad::OnUpdate( f32 dt ) {
+        hoverTime += dt;
 
+        // ---- Movement / arrival ----
+        if ( hasTarget ) {
+            Vec3 toTarget = moveTarget - basePosition;
+            f32  dist     = Length( toTarget );
+
+            if ( dist < DroneArrivalDist ) {
+                basePosition = moveTarget;
+                velocity     = Vec3( 0.0f );
+                hasTarget    = false;
+            }
+            else {
+                Vec3 dir = toTarget / dist;
+                // Smoothly ramp target speed down as we approach
+                f32  desiredSpeed = DroneMoveMaxSpeed * SmoothStep( 0.0f, DroneSlowdownDist, dist );
+                Vec3 desiredVel   = dir * desiredSpeed;
+                velocity = Lerp( velocity, desiredVel, Clamp( DroneMoveAccel * dt, 0.0f, 1.0f ) );
+            }
+        }
+        else {
+            // Dampen residual velocity after arrival
+            velocity = Lerp( velocity, Vec3( 0.0f ), Clamp( DroneMoveAccel * dt, 0.0f, 1.0f ) );
+        }
+
+        basePosition += velocity * dt;
+
+        // ---- Yaw: face direction of travel ----
+        Vec2 horizVel   = Vec2( velocity.x, velocity.z );
+        f32  horizSpeed = Length( horizVel );
+        f32  yawRate    = 0.0f;
+
+        if ( horizSpeed > 0.1f ) {
+            f32 targetYaw = atan2f( velocity.x, velocity.z );
+
+            // Shortest-path difference
+            f32 yawDiff = targetYaw - smoothYaw;
+            while ( yawDiff >  PI ) yawDiff -= TWO_PI;
+            while ( yawDiff < -PI ) yawDiff += TWO_PI;
+
+            f32 yawStep = Clamp( yawDiff, -DroneYawSpeed * dt, DroneYawSpeed * dt );
+            yawRate     = (dt > 0.0f) ? (yawStep / dt) : 0.0f;
+            smoothYaw  += yawStep;
+        }
+
+        // ---- Pitch: nose tilts opposite to forward acceleration ----
+        Vec3 facing      = Vec3( sinf( smoothYaw ), 0.0f, cosf( smoothYaw ) );
+        f32  forwardSpd  = Dot( velocity, facing );
+        f32  targetPitch = -forwardSpd * DronePitchFactor;
+        targetPitch     += sinf( hoverTime * 0.89f + 1.3f ) * 0.006f;  // micro-correction wobble
+        smoothPitch      = Lerp( smoothPitch, targetPitch, Clamp( DronePitchLerpRate * dt, 0.0f, 1.0f ) );
+
+        // ---- Roll: bank into turns (centripetal lean) ----
+        f32 targetRoll = yawRate * horizSpeed * DroneBankFactor;
+        targetRoll    += sinf( hoverTime * 0.73f ) * 0.008f;            // micro-correction wobble
+        smoothRoll     = Lerp( smoothRoll, targetRoll, Clamp( DroneRollLerpRate * dt, 0.0f, 1.0f ) );
+
+        // ---- Build orientation from stacked rotations ----
+        Quat yawQ   = glm::angleAxis( smoothYaw,   Vec3( 0.0f, 1.0f, 0.0f ) );
+        Quat pitchQ = glm::angleAxis( smoothPitch, Vec3( 1.0f, 0.0f, 0.0f ) );
+        Quat rollQ  = glm::angleAxis( smoothRoll,  Vec3( 0.0f, 0.0f, 1.0f ) );
+        orientation = Mat3( yawQ * pitchQ * rollQ );
+
+        // ---- Hover bob (applied last, purely visual) ----
+        f32 hoverOffsetY = sinf( hoverTime * DroneHoverFreqY ) * DroneHoverAmpY;
+        position = basePosition + Vec3( 0.0f, hoverOffsetY, 0.0f );
     }
 
     void Entity_DroneQuad::OnRender( Renderer & renderer ) {
-        Mat4 modelMatrix = Mat4( 1.0f );
-        modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
+        Mat4 modelMatrix = glm::translate( Mat4( 1.0f ), position ) * Mat4( orientation );
         renderer.RenderStaticModel( model, modelMatrix );
     }
 

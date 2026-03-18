@@ -36,7 +36,7 @@ Gameplay:
 - HUD
 
 Editor:
-- Entity ray selection in 3D view
+- Make a state file for last loaded map and camera position and load it on editor start
 
 Renderering:
 - Add textures on brushes and materials

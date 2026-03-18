@@ -122,9 +122,25 @@ namespace atto {
         void DebugDrawBounds( Renderer & renderer ) override;
         void TakeDamage( i32 damage ) override;
 
-    public:
+        void MoveTo( const Vec3 & target );
+
+    private:
         StaticModel model;
         i32 health = 100;
+
+        // Logical position (hover bob is added on top for rendering)
+        Vec3 basePosition  = Vec3( 0.0f );
+        Vec3 velocity      = Vec3( 0.0f );
+        Vec3 moveTarget    = Vec3( 0.0f );
+        bool hasTarget     = false;
+
+        // Accumulated time for periodic hover/wobble
+        f32 hoverTime  = 0.0f;
+
+        // Smoothed orientation angles (radians)
+        f32 smoothYaw   = 0.0f;
+        f32 smoothPitch = 0.0f;
+        f32 smoothRoll  = 0.0f;
     };
 
     class Entity_GameMode_KillAllEntities : public Entity {
