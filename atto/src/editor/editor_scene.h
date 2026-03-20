@@ -150,9 +150,13 @@ namespace atto {
         std::string entityClipboardJson;
 
         // Selection state
-        i32 selectedBrushIndex = -1;
-        i32 selectedEntityIndex = -1;
-        BrushDragState brushDrag;
+        i32              selectedBrushIndex = -1;
+        i32              selectedEntityIndex = -1;   // primary (last clicked), shown in inspector
+        std::vector<i32> selectedEntityIndices;      // full multi-selection set
+        BrushDragState   brushDrag;
+
+        // Gizmo transform tracking for multi-select delta computation
+        Mat4 prevGizmoMatrix = Mat4( 1.0f );
 
         // Snap
         bool snapEnabled = true;

@@ -1,6 +1,7 @@
 #include "editor_scene.h"
 #include "editor_property_serializer.h"
 
+#include <algorithm>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -66,6 +67,7 @@ namespace atto {
             }
             else if ( selectionMode == EditorSelectionMode::Entity ) {
                 selectedEntityIndex = -1;
+                selectedEntityIndices.clear();
             }
         }
 
@@ -125,9 +127,30 @@ namespace atto {
             }
         }
 
-        bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ( ImGuizmo::IsOver() && ImGuizmo::IsUsing() ) ;
+        bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ( ImGuizmo::IsOver() && ImGuizmo::IsUsing() );
         if ( selectionMode == EditorSelectionMode::Entity && !imguiWantsMouse && viewMode == EditorViewMode::Cam3D && input.IsMouseButtonPressed( MouseButton::Left ) ) {
-            selectedEntityIndex = EntityPick3D( input.GetMousePosition() );
+            i32 picked = EntityPick3D( input.GetMousePosition() );
+            bool shift  = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
+            if ( shift ) {
+                if ( picked >= 0 ) {
+                    auto it = std::find( selectedEntityIndices.begin(), selectedEntityIndices.end(), picked );
+                    if ( it != selectedEntityIndices.end() ) {
+                        selectedEntityIndices.erase( it );
+                        selectedEntityIndex = selectedEntityIndices.empty() ? -1 : selectedEntityIndices.back();
+                    }
+                    else {
+                        selectedEntityIndices.push_back( picked );
+                        selectedEntityIndex = picked;
+                    }
+                }
+            }
+            else {
+                selectedEntityIndices.clear();
+                if ( picked >= 0 ) {
+                    selectedEntityIndices.push_back( picked );
+                }
+                selectedEntityIndex = picked;
+            }
         }
 
         if ( selectionMode == EditorSelectionMode::Brush && !imguiWantsMouse && brushDrag.mode == BrushDragMode::None && input.IsMouseButtonPressed( MouseButton::Left ) ) {
@@ -359,9 +382,16 @@ namespace atto {
                     unsavedChanges = true;
                 }
             }
-            else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
-                Entity * ent = map.GetEntity( selectedEntityIndex );
-                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), ent->GetPosition() ) * Mat4( ent->GetOrientation() );
+            else if ( selectionMode == EditorSelectionMode::Entity && !selectedEntityIndices.empty() ) {
+                // Compute average pivot across all selected entities
+                Vec3 pivot = Vec3( 0.0f );
+                for ( i32 idx : selectedEntityIndices ) {
+                    pivot += map.GetEntity( idx )->GetPosition();
+                }
+                pivot /= static_cast<f32>( selectedEntityIndices.size() );
+
+                // Gizmo lives at pivot with world-space axes (no rotation baked in)
+                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), pivot );
 
                 if ( ImGuizmo::Manipulate(
                     glm::value_ptr( view ),
@@ -371,10 +401,34 @@ namespace atto {
                     glm::value_ptr( gizmoMatrix ),
                     nullptr,
                     currentSnap ) ) {
-                    ent->SetPosition( Vec3( gizmoMatrix[3] ) );
-                    ent->SetOrientation( Mat3( gizmoMatrix ) );
+
+                    // Frame-to-frame deltas from prevGizmoMatrix
+                    Vec3 prevPivot = Vec3( prevGizmoMatrix[3] );
+                    Vec3 newPivot  = Vec3( gizmoMatrix[3] );
+
+                    if ( gizmoOp == ImGuizmo::TRANSLATE ) {
+                        Vec3 delta = newPivot - prevPivot;
+                        for ( i32 idx : selectedEntityIndices ) {
+                            Entity * ent = map.GetEntity( idx );
+                            ent->SetPosition( ent->GetPosition() + delta );
+                        }
+                    }
+                    else {
+                        // Incremental rotation: newRot * transpose(prevRot) = delta rotation this frame
+                        Mat3 prevRot  = Mat3( prevGizmoMatrix );
+                        Mat3 newRot   = Mat3( gizmoMatrix );
+                        Mat3 rotDelta = newRot * glm::transpose( prevRot );
+                        for ( i32 idx : selectedEntityIndices ) {
+                            Entity * ent = map.GetEntity( idx );
+                            Vec3 relPos = ent->GetPosition() - prevPivot;
+                            ent->SetPosition( prevPivot + rotDelta * relPos );
+                            ent->SetOrientation( rotDelta * ent->GetOrientation() );
+                        }
+                    }
                     unsavedChanges = true;
                 }
+
+                prevGizmoMatrix = gizmoMatrix;
             }
         }
 
@@ -903,6 +957,7 @@ namespace atto {
                 if ( ent ) {
                     ent->OnSpawn();
                     selectedEntityIndex = map.GetEntityCount() - 1;
+                    selectedEntityIndices = { selectedEntityIndex };
                     unsavedChanges = true;
                 }
             }
@@ -916,15 +971,49 @@ namespace atto {
                 char label[64];
                 snprintf( label, sizeof( label ), "%s %d", EntityTypeToString( ent->GetType() ), i );
 
-                bool isSelected = (selectedEntityIndex == i);
+                bool isSelected = std::find( selectedEntityIndices.begin(), selectedEntityIndices.end(), i ) != selectedEntityIndices.end();
                 if ( ImGui::Selectable( label, isSelected ) ) {
-                    selectedEntityIndex = i;
+                    bool shift = ImGui::GetIO().KeyShift;
+                    if ( shift ) {
+                        auto it = std::find( selectedEntityIndices.begin(), selectedEntityIndices.end(), i );
+                        if ( it != selectedEntityIndices.end() ) {
+                            selectedEntityIndices.erase( it );
+                            selectedEntityIndex = selectedEntityIndices.empty() ? -1 : selectedEntityIndices.back();
+                        }
+                        else {
+                            selectedEntityIndices.push_back( i );
+                            selectedEntityIndex = i;
+                        }
+                    }
+                    else {
+                        selectedEntityIndices = { i };
+                        selectedEntityIndex = i;
+                    }
                 }
             }
 
             ImGui::Separator();
 
-            if ( selectedEntityIndex >= 0 && selectedEntityIndex < entityCount ) {
+            if ( selectedEntityIndices.size() > 1 ) {
+                ImGui::Text( "%d entities selected", static_cast<i32>( selectedEntityIndices.size() ) );
+                ImGui::Spacing();
+
+                if ( ImGui::Button( "Delete Selected" ) ) {
+                    Snapshot();
+                    std::vector<i32> toDelete = selectedEntityIndices;
+                    std::sort( toDelete.begin(), toDelete.end(), std::greater<i32>() );
+                    for ( i32 idx : toDelete ) {
+                        if ( idx >= 0 && idx < map.GetEntityCount() ) {
+                            map.DestroyEntityByIndex( idx );
+                        }
+                    }
+                    selectedEntityIndices.clear();
+                    selectedEntityIndex = -1;
+                    entityCount = map.GetEntityCount();
+                    unsavedChanges = true;
+                }
+            }
+            else if ( selectedEntityIndex >= 0 && selectedEntityIndex < entityCount ) {
                 Entity * ent = map.GetEntity( selectedEntityIndex );
 
                 ImGui::Text( "%s %d Properties", EntityTypeToString( ent->GetType() ), selectedEntityIndex );
@@ -943,14 +1032,14 @@ namespace atto {
                     Snapshot();
                     map.DestroyEntityByIndex( selectedEntityIndex );
                     entityCount = map.GetEntityCount();
-                    if ( selectedEntityIndex >= entityCount ) {
-                        selectedEntityIndex = entityCount - 1;
-                    }
+                    selectedEntityIndices.clear();
+                    selectedEntityIndex = -1;
                     unsavedChanges = true;
                 }
             }
             else {
                 selectedEntityIndex = -1;
+                selectedEntityIndices.clear();
                 ImGui::TextDisabled( "No entity selected" );
             }
         }
@@ -987,6 +1076,7 @@ namespace atto {
         currentMapPath.clear();
         selectedBrushIndex = -1;
         selectedEntityIndex = -1;
+        selectedEntityIndices.clear();
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
         undoStack.clear();
@@ -1039,6 +1129,7 @@ namespace atto {
         currentMapPath = path;
         selectedBrushIndex = -1;
         selectedEntityIndex = -1;
+        selectedEntityIndices.clear();
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
         undoStack.clear();
@@ -1140,6 +1231,7 @@ namespace atto {
                 newEnt->SetPosition( newEnt->GetPosition() + PasteOffset );
                 newEnt->OnSpawn();
                 selectedEntityIndex = map.GetEntityCount() - 1;
+                selectedEntityIndices = { selectedEntityIndex };
                 unsavedChanges = true;
             }
         }
@@ -1155,13 +1247,17 @@ namespace atto {
             }
             unsavedChanges = true;
         }
-        else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
+        else if ( selectionMode == EditorSelectionMode::Entity && !selectedEntityIndices.empty() ) {
             Snapshot();
-            map.DestroyEntityByIndex( selectedEntityIndex );
-            i32 entityCount = map.GetEntityCount();
-            if ( selectedEntityIndex >= entityCount ) {
-                selectedEntityIndex = entityCount - 1;
+            std::vector<i32> toDelete = selectedEntityIndices;
+            std::sort( toDelete.begin(), toDelete.end(), std::greater<i32>() );
+            for ( i32 idx : toDelete ) {
+                if ( idx >= 0 && idx < map.GetEntityCount() ) {
+                    map.DestroyEntityByIndex( idx );
+                }
             }
+            selectedEntityIndices.clear();
+            selectedEntityIndex = -1;
             unsavedChanges = true;
         }
     }
@@ -1194,6 +1290,7 @@ namespace atto {
 
         selectedBrushIndex = -1;
         selectedEntityIndex = -1;
+        selectedEntityIndices.clear();
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = true;
     }
@@ -1216,6 +1313,7 @@ namespace atto {
 
         selectedBrushIndex = -1;
         selectedEntityIndex = -1;
+        selectedEntityIndices.clear();
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = true;
     }
@@ -1245,6 +1343,7 @@ namespace atto {
             currentMapPath.clear();
             selectedBrushIndex = -1;
             selectedEntityIndex = -1;
+            selectedEntityIndices.clear();
             brushDrag.mode = BrushDragMode::None;
             break;
         case UnsavedChangesAction::OpenMap:
