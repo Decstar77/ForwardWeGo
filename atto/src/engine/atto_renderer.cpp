@@ -339,6 +339,19 @@ namespace atto {
         glDepthFunc( GL_LESS );
     }
 
+    const Texture * Renderer::GetOrLoadTexture( const char * filePath ) {
+        const int count = textures.GetCount();
+        for ( int i = 0; i < count; i++ ) {
+            if ( textures[i].GetPath() == filePath ) {
+                return &textures[i];
+            }
+        }
+
+        Texture & texture = textures.AddEmpty();
+        texture.LoadFromFile( filePath );
+        return &texture;
+    }
+
     static Vec3 AxisColor( Vec3 axis ) {
         if ( Abs( axis.x ) > 0.5f ) return Vec3( 0.7f, 0.15f, 0.15f );
         if ( Abs( axis.y ) > 0.5f ) return Vec3( 0.15f, 0.7f, 0.15f );

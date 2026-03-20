@@ -3,6 +3,7 @@
 #include "atto_core.h"
 #include "atto_math.h"
 #include "atto_shapes_3D.h"
+#include "atto_containers.h"
 #include "renderer/atto_render_model.h"
 #include "renderer/atto_render_material.h"
 
@@ -36,6 +37,9 @@ namespace atto {
 
         void LoadSkybox( const char * filePath );
         void RenderSkybox( const Mat4 & view, const Mat4 & projection );
+
+        // Texture management
+        const Texture * GetOrLoadTexture( const char * filePath );
 
         // Debug line drawing
         void DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
@@ -74,6 +78,10 @@ namespace atto {
         std::vector<DebugLineVert> debugLineVerts;
 
         Color clearColor = Color( 0.1f, 0.1f, 0.12f, 1.0f );
+
+        // This could be std::vector< std::unquie_ptr<Texture>> ??
+        // Textures
+        FixedList<Texture, 1024> textures;
     };
 
 } // namespace atto

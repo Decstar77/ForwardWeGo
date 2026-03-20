@@ -42,7 +42,7 @@ namespace atto {
 
         stbi_image_free( data );
 
-        path = SmallString::FromLiteral( filePath );
+        path = LargeString::FromLiteral( filePath );
     }
 
     void Texture::Destroy() {

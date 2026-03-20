@@ -18,13 +18,13 @@ namespace atto {
         i32  GetHeight() const { return height; }
         u32  GetHandle() const { return handle; }
 
-        const SmallString & GetPath() const { return path; }
+        const LargeString & GetPath() const { return path; }
 
     private:
         i32 width = 0;
         i32 height = 0;
         u32 handle = 0;
-        SmallString path = {};
+        LargeString path = {};
     };
 
     class Shader {

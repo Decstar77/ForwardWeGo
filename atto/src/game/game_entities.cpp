@@ -89,7 +89,7 @@ namespace atto {
     }
 
     void Entity_DroneQuad::OnSpawn() {
-        model.LoadFromFile( "assets/models/sm-raw/SM_Prop_Drone_Quad_01.fbx", 0.01f );
+        model.LoadFromFile( "assets/models/sm/SM_Prop_Drone_Quad_01.obj", 1.0f );
         basePosition = position;
         MoveTo( position + Vec3( 5, 0, 0 ) );
     }
