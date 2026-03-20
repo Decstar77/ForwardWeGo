@@ -87,6 +87,13 @@ namespace atto {
     }
 
     void Mesh::Draw( Shader * shader ) const {
+        bool hasTexture = material.albedoTexture != nullptr && material.albedoTexture->IsValid();
+        if ( hasTexture ) {
+            material.albedoTexture->Bind( 0 );
+            shader->SetInt( "uAlbedoTexture", 0 );
+        }
+        shader->SetInt( "uHasAlbedoTexture", hasTexture ? 1 : 0 );
+
         shader->SetVec3( "uObjectColor", material.albedo );
 
         glBindVertexArray( vao );
@@ -188,13 +195,13 @@ namespace atto {
             mat.roughness = static_cast<f32>(roughness);
         }
 
-        Renderer & renderer =Engine::Get().GetRenderer();
+        Renderer & renderer = Engine::Get().GetRenderer();
         aiString texPath;
         if ( aiMat->GetTexture( aiTextureType_DIFFUSE, 0, &texPath ) ) {
             mat.albedoTexture = renderer.GetOrLoadTexture( texPath.C_Str() );
         }
         else if ( aiMat->GetTexture( aiTextureType_BASE_COLOR, 0, &texPath ) ) {
-            mat.albedoTexture =renderer.GetOrLoadTexture( texPath.C_Str() );
+            mat.albedoTexture = renderer.GetOrLoadTexture( texPath.C_Str() );
         }
 
         if ( aiMat->GetTexture( aiTextureType_SPECULAR, 0, &texPath ) ) {

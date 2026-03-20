@@ -8,10 +8,12 @@ uniform mat4 uModel;
 
 out vec3 vNormal;
 out vec3 vFragPos;
+out vec2 vTexCoords;
 
 void main() {
     vec4 worldPos = uModel * vec4(aPos, 1.0);
     vFragPos = worldPos.xyz;
     vNormal = mat3(transpose(inverse(uModel))) * aNormal;
+    vTexCoords = aTexCoords;
     gl_Position = uViewProjection * worldPos;
 }
