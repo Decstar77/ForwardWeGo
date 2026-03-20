@@ -64,6 +64,8 @@ namespace atto {
         SpawnId         GetSpawnId() const { return spawnId; }
         void            SetSpawnId( SpawnId id ) { spawnId = id; }
 
+        Mat4            GetModelMatrix() const;
+
         // ================ Standard =============== //
         virtual void        OnSpawn() {}
         virtual void        OnUpdate( f32 dt ) {}

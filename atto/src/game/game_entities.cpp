@@ -3,6 +3,12 @@
 #include "game_map.h"
 
 namespace atto {
+    Mat4 Entity::GetModelMatrix() const {
+        Mat4 modelMatrix = Mat4( 1.0f );
+        modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
+        return modelMatrix;
+    }
+
     void Entity::Serialize( Serializer & serializer ) {
         // @SPEED: We should use a SmallString for this but the serializer doesn't support it yet
         if ( serializer.IsSaving() ) {
@@ -36,8 +42,7 @@ namespace atto {
     void Entity_Barrel::OnRender( Renderer & renderer ) {
         ATTO_ASSERT( model != nullptr, "Model is null" );
 
-        Mat4 modelMatrix = Mat4( 1.0f );
-        modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
+        Mat4 modelMatrix = GetModelMatrix();
         renderer.RenderStaticModel( model, modelMatrix );
     }
 
@@ -84,8 +89,7 @@ namespace atto {
     }
 
     void Entity_ExitDoor::OnRender( Renderer & renderer ) {
-        Mat4 modelMatrix = Mat4( 1.0f );
-        modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
+        Mat4 modelMatrix = GetModelMatrix();
         renderer.RenderStaticModel( modelClosed, modelMatrix );
     }
 
@@ -231,7 +235,7 @@ namespace atto {
     }
 
     void Entity_DroneQuad::OnRender( Renderer & renderer ) {
-        Mat4 modelMatrix = glm::translate( Mat4( 1.0f ), position ) * Mat4( orientation );
+        Mat4 modelMatrix = GetModelMatrix();
         renderer.RenderStaticModel( model, modelMatrix );
     }
 
