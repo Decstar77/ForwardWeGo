@@ -128,7 +128,7 @@ namespace atto {
         }
 
         bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ( ImGuizmo::IsOver() && ImGuizmo::IsUsing() );
-        if ( selectionMode == EditorSelectionMode::Entity && !imguiWantsMouse && viewMode == EditorViewMode::Cam3D && input.IsMouseButtonPressed( MouseButton::Left ) ) {
+        if ( selectionMode == EditorSelectionMode::Entity && !imguiWantsMouse && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             i32 picked = EntityPick3D( input.GetMousePosition() );
             bool shift  = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
             if ( shift ) {
@@ -545,7 +545,8 @@ namespace atto {
         f32 ndcX = 2.0f * screenPos.x / static_cast<f32>(windowSize.x) - 1.0f;
         f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>(windowSize.y);
 
-        Mat4 invVP = glm::inverse( flyCamera.GetViewProjectionMatrix() );
+        Mat4 vp = ( viewMode == EditorViewMode::Cam3D ) ? flyCamera.GetViewProjectionMatrix() : GetOrthoViewProjectionMatrix();
+        Mat4 invVP = glm::inverse( vp );
         Vec4 nearNDC = invVP * Vec4( ndcX, ndcY, -1.0f, 1.0f );
         Vec4 farNDC  = invVP * Vec4( ndcX, ndcY,  1.0f, 1.0f );
         Vec3 rayOrigin = Vec3( nearNDC ) / nearNDC.w;

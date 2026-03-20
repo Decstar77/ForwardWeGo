@@ -9,9 +9,9 @@
     "MapPath": "C:\\Projects\\2026\\ForwardWeGo\\assets\\maps\\level_003.map",
     "OrthoSize": 10.0,
     "OrthoTarget": [
+        -3.1666665077209473,
         0.0,
-        0.0,
-        0.0
+        -11.277777671813965
     ],
-    "ViewMode": 3
+    "ViewMode": 2
 }
