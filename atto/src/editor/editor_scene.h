@@ -96,6 +96,8 @@ namespace atto {
         void Redo();
 
         void DeleteSelected();
+        void CopySelected();
+        void PasteSelected();
 
         Mat4 GetOrthoViewProjectionMatrix() const;
         Vec3 ScreenToWorldOrtho( Vec2 screenPos ) const;
@@ -139,6 +141,13 @@ namespace atto {
         std::vector<std::string> redoStack;
         bool imguiWasAnyItemActive = false;
         bool gizmoWasUsing = false;
+
+        // Clipboard
+        bool        hasBrushClipboard  = false;
+        Brush       brushClipboard;
+        bool        hasEntityClipboard = false;
+        EntityType  entityClipboardType = EntityType::None;
+        std::string entityClipboardJson;
 
         // Selection state
         i32 selectedBrushIndex = -1;

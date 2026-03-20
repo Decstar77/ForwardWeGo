@@ -2,6 +2,7 @@
 
 #include "../atto_core.h"
 #include "../atto_math.h"
+#include "../atto_containers.h"
 
 namespace atto {
 
@@ -17,10 +18,13 @@ namespace atto {
         i32  GetHeight() const { return height; }
         u32  GetHandle() const { return handle; }
 
+        const SmallString & GetPath() const { return path; }
+
     private:
         i32 width = 0;
         i32 height = 0;
         u32 handle = 0;
+        SmallString path = {};
     };
 
     class Shader {
@@ -63,8 +67,12 @@ namespace atto {
 
     class Material {
     public:
-        Vec3    albedo = Vec3(1,1,1);
+        Vec3    albedo = Vec3( 1, 1, 1 );
         f32     metalic = 0;
         f32     roughness = 1;
+
+        const Texture * albedoTexture = nullptr;
+        const Texture * metalicTexture = nullptr;
+        const Texture * roughnessTexture = nullptr;
     };
 }

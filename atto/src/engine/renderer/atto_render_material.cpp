@@ -41,6 +41,8 @@ namespace atto {
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         stbi_image_free( data );
+
+        path = SmallString::FromLiteral( filePath );
     }
 
     void Texture::Destroy() {

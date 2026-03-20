@@ -187,6 +187,18 @@ namespace atto {
             mat.roughness = static_cast<f32>(roughness);
         }
 
+        aiString texPath;
+        if ( aiMat->GetTexture( aiTextureType_DIFFUSE, 0, &texPath ) ) {
+            LOG_INFO( "Material has diffuse texture: %s", texPath.C_Str() );
+        }
+        else if ( aiMat->GetTexture( aiTextureType_BASE_COLOR, 0, &texPath ) ) {
+            LOG_INFO( "Material has base color texture: %s", texPath.C_Str() );
+        }
+
+        if ( aiMat->GetTexture( aiTextureType_SPECULAR, 0, &texPath ) ) {
+            LOG_INFO( "Material has specular texture: %s", texPath.C_Str() );
+        }
+
         return mat;
     }
 

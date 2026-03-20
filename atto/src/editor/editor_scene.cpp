@@ -26,7 +26,7 @@ namespace atto {
         }
 
         Renderer & renderer = Engine::Get().GetRenderer();
-        renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
+        renderer.LoadSkybox( "assets/textures/FS002_Day_Sunless.png" );
 
         Engine::Get().GetInput().SetCursorCaptured( false );
     }
@@ -81,6 +81,8 @@ namespace atto {
         else if ( ctrl && input.IsKeyPressed( Key::S ) ) { SaveMap(); }
         if ( ctrl && shift && input.IsKeyPressed( Key::Z ) ) { Redo(); }
         else if ( ctrl && input.IsKeyPressed( Key::Z ) ) { Undo(); }
+        if ( ctrl && input.IsKeyPressed( Key::C ) ) { CopySelected(); }
+        if ( ctrl && input.IsKeyPressed( Key::V ) ) { PasteSelected(); }
         if ( ctrl && input.IsKeyPressed( Key::N ) ) { NewMap(); }
         if ( ctrl && input.IsKeyPressed( Key::O ) ) { OpenMap(); }
         if ( input.IsKeyPressed( Key::Delete ) ) { DeleteSelected(); }
@@ -123,7 +125,7 @@ namespace atto {
             }
         }
 
-        bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ImGuizmo::IsOver() || ImGuizmo::IsUsing();
+        bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ( ImGuizmo::IsOver() && ImGuizmo::IsUsing() ) ;
         if ( selectionMode == EditorSelectionMode::Entity && !imguiWantsMouse && viewMode == EditorViewMode::Cam3D && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             selectedEntityIndex = EntityPick3D( input.GetMousePosition() );
         }
@@ -739,6 +741,13 @@ namespace atto {
                 if ( ImGui::MenuItem( "Undo", "Ctrl+Z", false, !undoStack.empty() ) ) { Undo(); }
                 if ( ImGui::MenuItem( "Redo", "Ctrl+Shift+Z", false, !redoStack.empty() ) ) { Redo(); }
                 ImGui::Separator();
+                bool canCopy = (selectionMode == EditorSelectionMode::Brush  && selectedBrushIndex  >= 0) ||
+                               (selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0);
+                bool canPaste = (selectionMode == EditorSelectionMode::Brush  && hasBrushClipboard) ||
+                                (selectionMode == EditorSelectionMode::Entity && hasEntityClipboard);
+                if ( ImGui::MenuItem( "Copy",  "Ctrl+C", false, canCopy  ) ) { CopySelected(); }
+                if ( ImGui::MenuItem( "Paste", "Ctrl+V", false, canPaste ) ) { PasteSelected(); }
+                ImGui::Separator();
                 if ( ImGui::MenuItem( "Delete Selected", "Del" ) ) { DeleteSelected(); }
                 ImGui::Separator();
                 ImGui::Checkbox( "Snap", &snapEnabled );
@@ -1089,6 +1098,50 @@ namespace atto {
         }
         else {
             LoadMapFromFile( "assets/maps/default.map" );
+        }
+    }
+
+    void EditorScene::CopySelected() {
+        if ( selectionMode == EditorSelectionMode::Brush && selectedBrushIndex >= 0 && selectedBrushIndex < map.GetBrushCount() ) {
+            brushClipboard    = map.GetBrush( selectedBrushIndex );
+            hasBrushClipboard = true;
+        }
+        else if ( selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0 && selectedEntityIndex < map.GetEntityCount() ) {
+            const Entity * ent = map.GetEntity( selectedEntityIndex );
+            entityClipboardType = ent->GetType();
+            JsonSerializer serializer( true );
+            const_cast<Entity *>(ent)->Serialize( serializer );
+            entityClipboardJson  = serializer.ToString();
+            hasEntityClipboard   = true;
+        }
+    }
+
+    void EditorScene::PasteSelected() {
+        constexpr Vec3 PasteOffset = Vec3( 1.0f, 0.0f, 0.0f );
+
+        if ( selectionMode == EditorSelectionMode::Brush && hasBrushClipboard ) {
+            Snapshot();
+            selectedBrushIndex = map.AddBrush();
+            Brush & newBrush   = map.GetBrush( selectedBrushIndex );
+            newBrush           = brushClipboard;
+            newBrush.center   += PasteOffset;
+            map.RebuildBrushModel( selectedBrushIndex );
+            map.RebuildBrushCollision( selectedBrushIndex );
+            unsavedChanges = true;
+        }
+        else if ( selectionMode == EditorSelectionMode::Entity && hasEntityClipboard ) {
+            Snapshot();
+            Entity * newEnt = map.CreateEntity( entityClipboardType );
+            if ( newEnt ) {
+                JsonSerializer deserializer( false );
+                deserializer.FromString( entityClipboardJson );
+                newEnt->Serialize( deserializer );
+                newEnt->SetSpawnId( Engine::Get().GetRNG().Unsigned64() );
+                newEnt->SetPosition( newEnt->GetPosition() + PasteOffset );
+                newEnt->OnSpawn();
+                selectedEntityIndex = map.GetEntityCount() - 1;
+                unsavedChanges = true;
+            }
         }
     }
 

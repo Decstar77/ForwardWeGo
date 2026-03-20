@@ -11,7 +11,7 @@ namespace atto {
         map.Initialize();
 
         Renderer & renderer = Engine::Get().GetRenderer();
-        renderer.LoadSkybox( "assets/FS002_Day_Sunless.png" );
+        renderer.LoadSkybox( "assets/textures/FS002_Day_Sunless.png" );
 
         player.OnStart( map.GetPlayerStart().spawnPos );
 
