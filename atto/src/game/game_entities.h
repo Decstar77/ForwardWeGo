@@ -9,7 +9,7 @@ namespace atto {
         None = 0,
         Barrel,
         Drone_QUAD,
-
+        ExitDoor,
         GameMode_KillAllEntities,
 
         EntityTypeCount
@@ -23,6 +23,7 @@ namespace atto {
         EntityType::None,
         EntityType::Barrel,
         EntityType::Drone_QUAD,
+        EntityType::ExitDoor,
         EntityType::GameMode_KillAllEntities
     };
 
@@ -30,11 +31,12 @@ namespace atto {
         "None",
         "Barrel",
         "Drone_QUAD",
+        "ExitDoor",
         "GameMode_KillAllEntities"
     };
 
-    static_assert( EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch" );
-    static_assert( EntityTypeCount == sizeof( EntityTypeNames ) / sizeof( EntityTypeNames[0] ), "EntityTypeNames array size mismatch" );
+    static_assert(EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch");
+    static_assert(EntityTypeCount == sizeof( EntityTypeNames ) / sizeof( EntityTypeNames[0] ), "EntityTypeNames array size mismatch");
 
     inline const char * EntityTypeToString( EntityType type ) {
         return EntityTypeNames[static_cast<i32>(type)];
@@ -104,8 +106,26 @@ namespace atto {
         void TakeDamage( i32 damage ) override;
 
     private:
-        StaticModel model;
+        const StaticModel * model = nullptr;
         i32 health = 100;
+    };
+
+    class Entity_ExitDoor : public Entity {
+    public:
+        Entity_ExitDoor();
+
+        void OnSpawn() override;
+        void OnUpdate( f32 dt ) override;
+        void OnRender( Renderer & renderer ) override;
+        void OnDespawn() override;
+
+        AlignedBox GetBounds() const override;
+        bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
+        void DebugDrawBounds( Renderer & renderer ) override;
+
+    private:
+        const StaticModel * modelClosed = nullptr;
+        const StaticModel * modelOpen = nullptr;
     };
 
     class Entity_DroneQuad : public Entity {
@@ -124,23 +144,31 @@ namespace atto {
 
         void MoveTo( const Vec3 & target );
 
+        void Serialize( Serializer & serializer ) override;
+
     private:
-        StaticModel model;
+        void AdvanceWaypoint();
+
+        const StaticModel * model = nullptr;
         i32 health = 100;
 
+        // Waypoint patrol
+        std::vector<Vec3> waypoints;
+        i32  currentWaypointIndex = 0;
+
         // Logical position (hover bob is added on top for rendering)
-        Vec3 basePosition  = Vec3( 0.0f );
-        Vec3 velocity      = Vec3( 0.0f );
-        Vec3 moveTarget    = Vec3( 0.0f );
-        bool hasTarget     = false;
+        Vec3 basePosition = Vec3( 0.0f );
+        Vec3 velocity = Vec3( 0.0f );
+        Vec3 moveTarget = Vec3( 0.0f );
+        bool hasTarget = false;
 
         // Accumulated time for periodic hover/wobble
-        f32 hoverTime  = 0.0f;
+        f32 hoverTime = 0.0f;
 
         // Smoothed orientation angles (radians)
-        f32 smoothYaw   = 0.0f;
+        f32 smoothYaw = 0.0f;
         f32 smoothPitch = 0.0f;
-        f32 smoothRoll  = 0.0f;
+        f32 smoothRoll = 0.0f;
     };
 
     class Entity_GameMode_KillAllEntities : public Entity {

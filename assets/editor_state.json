@@ -1,11 +1,11 @@
 {
-    "CamPitch": -0.4717114567756653,
+    "CamPitch": 0.0,
     "CamPos": [
-        0.8343465924263,
-        3.8272359371185303,
-        2.2315118312835693
+        0.0,
+        0.0,
+        3.0
     ],
-    "CamYaw": -8.182117462158203,
+    "CamYaw": -1.5707963705062866,
     "MapPath": "C:\\Projects\\2026\\ForwardWeGo\\assets\\maps\\level_003.map",
     "OrthoSize": 10.0,
     "OrthoTarget": [

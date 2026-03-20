@@ -5,8 +5,8 @@
 
 namespace atto {
 
-    constexpr f32 PlayerHeight = 2.0f;
-    constexpr f32 PlayerEyeHeight = 1.8f;
+    constexpr f32 PlayerHeight = 1.8f;
+    constexpr f32 PlayerEyeHeight = 1.7f;
 
     struct PlayerStart {
         Vec3 spawnPos;

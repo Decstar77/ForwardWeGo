@@ -204,11 +204,11 @@ namespace atto {
         staticModelShader = &modelLitShader;
     }
 
-    void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix ) {
+    void Renderer::RenderStaticModel( const StaticModel * model, const Mat4 & modelMatrix ) {
         RenderStaticModel( model, modelMatrix, Vec3( 0.8f ) );
     }
 
-    void Renderer::RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color ) {
+    void Renderer::RenderStaticModel( const StaticModel * model, const Mat4 & modelMatrix, const Vec3 & color ) {
         if ( staticModelShader == nullptr ) {
             staticModelShader = &modelLitShader;
         }
@@ -223,7 +223,7 @@ namespace atto {
         staticModelShader->SetVec3( "uLightColor", Vec3( 1.0f ) );
         staticModelShader->SetVec3( "uObjectColor", color );
 
-        model.Draw( staticModelShader );
+        model->Draw( staticModelShader );
 
         staticModelShader->Unbind();
     }
@@ -350,6 +350,19 @@ namespace atto {
         Texture & texture = textures.AddEmpty();
         texture.LoadFromFile( filePath );
         return &texture;
+    }
+
+    const StaticModel * Renderer::GetOrLoadStaticModel( const char * filePath, f32 loadScale ) {
+        const int count = staticModels.GetCount();
+        for ( int i = 0; i < count; i++ ) {
+            if ( staticModels[i].GetPath() == filePath ) {
+                return &staticModels[i];
+            }
+        }
+
+        StaticModel & model = staticModels.AddEmpty();
+        model.LoadFromFile( filePath, loadScale );
+        return &model;
     }
 
     static Vec3 AxisColor( Vec3 axis ) {

@@ -25,7 +25,8 @@ namespace atto {
     }
 
     void Entity_Barrel::OnSpawn() {
-        model.LoadFromFile( "assets/player/props/barrel.fbx", 4.0f );
+        Renderer & renderer = Engine::Get().GetRenderer();
+        model = renderer.GetOrLoadStaticModel( "assets/player/props/barrel.fbx", 3.5f );
         orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( -90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
     }
 
@@ -33,17 +34,20 @@ namespace atto {
     }
 
     void Entity_Barrel::OnRender( Renderer & renderer ) {
+        ATTO_ASSERT( model != nullptr, "Model is null" );
+
         Mat4 modelMatrix = Mat4( 1.0f );
         modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
         renderer.RenderStaticModel( model, modelMatrix );
     }
 
     void Entity_Barrel::OnDespawn() {
-        model.Destroy();
+
     }
 
     AlignedBox Entity_Barrel::GetBounds() const {
-        AlignedBox bounds = model.GetBounds();
+        ATTO_ASSERT( model != nullptr, "Model is null" );
+        AlignedBox bounds = model->GetBounds();
         bounds.Translate( position );
         bounds.RotateAround( position, orientation );
         return bounds;
@@ -66,21 +70,63 @@ namespace atto {
         }
     };
 
+    Entity_ExitDoor::Entity_ExitDoor() {
+        type = EntityType::ExitDoor;
+    }
+
+    void Entity_ExitDoor::OnSpawn() {
+        Renderer & renderer = Engine::Get().GetRenderer();
+        modelClosed = renderer.GetOrLoadStaticModel( "assets/models/sm-declan/SM_Bld_Section_Door_06_Closed.obj" );
+    }
+
+    void Entity_ExitDoor::OnUpdate( f32 dt ) {
+
+    }
+
+    void Entity_ExitDoor::OnRender( Renderer & renderer ) {
+        Mat4 modelMatrix = Mat4( 1.0f );
+        modelMatrix = glm::translate( modelMatrix, position ) * Mat4( orientation );
+        renderer.RenderStaticModel( modelClosed, modelMatrix );
+    }
+
+    void Entity_ExitDoor::OnDespawn() {
+
+    }
+
+    AlignedBox Entity_ExitDoor::GetBounds() const {
+        AlignedBox bounds = modelClosed->GetBounds();
+        bounds.Translate( position );
+        bounds.RotateAround( position, orientation );
+        return bounds;
+    }
+
+    bool Entity_ExitDoor::RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const {
+        AlignedBox bounds = GetBounds();
+        return Raycast::TestAlignedBox( start, dir, bounds, dist );
+    }
+
+    void Entity_ExitDoor::DebugDrawBounds( Renderer & renderer ) {
+        AlignedBox bounds = GetBounds();
+        renderer.DebugAlignedBox( bounds );
+    }
+
+
+
     // -------------------------------------------------------
     //  Tuning constants
     // -------------------------------------------------------
-    static constexpr f32 DroneMoveMaxSpeed  = 4.0f;   // m/s top speed
-    static constexpr f32 DroneMoveAccel     = 8.0f;   // steering lerp rate (higher = snappier)
-    static constexpr f32 DroneSlowdownDist  = 3.0f;   // distance at which braking begins
-    static constexpr f32 DroneArrivalDist   = 0.12f;  // snap-to-target threshold
-    static constexpr f32 DroneYawSpeed      = 3.5f;   // max yaw turn rate (rad/s)
-    static constexpr f32 DroneYawLerpRate   = 6.0f;
+    static constexpr f32 DroneMoveMaxSpeed = 4.0f;   // m/s top speed
+    static constexpr f32 DroneMoveAccel = 8.0f;   // steering lerp rate (higher = snappier)
+    static constexpr f32 DroneSlowdownDist = 3.0f;   // distance at which braking begins
+    static constexpr f32 DroneArrivalDist = 0.12f;  // snap-to-target threshold
+    static constexpr f32 DroneYawSpeed = 3.5f;   // max yaw turn rate (rad/s)
+    static constexpr f32 DroneYawLerpRate = 6.0f;
     static constexpr f32 DronePitchLerpRate = 4.5f;
-    static constexpr f32 DroneRollLerpRate  = 3.5f;
-    static constexpr f32 DronePitchFactor   = 0.04f;  // rad per (m/s) of forward speed
-    static constexpr f32 DroneBankFactor    = 0.015f; // rad per (rad/s * m/s)
-    static constexpr f32 DroneHoverAmpY     = 0.035f; // metres of vertical bob
-    static constexpr f32 DroneHoverFreqY    = 1.7f;   // bob cycles per second
+    static constexpr f32 DroneRollLerpRate = 3.5f;
+    static constexpr f32 DronePitchFactor = 0.04f;  // rad per (m/s) of forward speed
+    static constexpr f32 DroneBankFactor = 0.015f; // rad per (rad/s * m/s)
+    static constexpr f32 DroneHoverAmpY = 0.035f; // metres of vertical bob
+    static constexpr f32 DroneHoverFreqY = 1.7f;   // bob cycles per second
 
     // -------------------------------------------------------
 
@@ -89,14 +135,29 @@ namespace atto {
     }
 
     void Entity_DroneQuad::OnSpawn() {
-        model.LoadFromFile( "assets/models/sm/SM_Prop_Drone_Quad_01.obj", 1.0f );
+        Renderer & renderer = Engine::Get().GetRenderer();
+        model = renderer.GetOrLoadStaticModel( "assets/models/sm/SM_Prop_Drone_Quad_01.obj" );
         basePosition = position;
-        MoveTo( position + Vec3( 5, 0, 0 ) );
+        currentWaypointIndex = 0;
+        if ( !waypoints.empty() ) {
+            MoveTo( waypoints[0] );
+        }
     }
 
     void Entity_DroneQuad::MoveTo( const Vec3 & target ) {
         moveTarget = target;
-        hasTarget  = true;
+        hasTarget = true;
+    }
+
+    void Entity_DroneQuad::AdvanceWaypoint() {
+        if ( waypoints.empty() ) { return; }
+        currentWaypointIndex = (currentWaypointIndex + 1) % static_cast<i32>(waypoints.size());
+        MoveTo( waypoints[currentWaypointIndex] );
+    }
+
+    void Entity_DroneQuad::Serialize( Serializer & serializer ) {
+        Entity::Serialize( serializer );
+        serializer( "Waypoints", waypoints );
     }
 
     void Entity_DroneQuad::OnUpdate( f32 dt ) {
@@ -105,18 +166,19 @@ namespace atto {
         // ---- Movement / arrival ----
         if ( hasTarget ) {
             Vec3 toTarget = moveTarget - basePosition;
-            f32  dist     = Length( toTarget );
+            f32  dist = Length( toTarget );
 
             if ( dist < DroneArrivalDist ) {
                 basePosition = moveTarget;
-                velocity     = Vec3( 0.0f );
-                hasTarget    = false;
+                velocity = Vec3( 0.0f );
+                hasTarget = false;
+                AdvanceWaypoint();
             }
             else {
                 Vec3 dir = toTarget / dist;
                 // Smoothly ramp target speed down as we approach
                 f32  desiredSpeed = DroneMoveMaxSpeed * SmoothStep( 0.0f, DroneSlowdownDist, dist );
-                Vec3 desiredVel   = dir * desiredSpeed;
+                Vec3 desiredVel = dir * desiredSpeed;
                 velocity = Lerp( velocity, desiredVel, Clamp( DroneMoveAccel * dt, 0.0f, 1.0f ) );
             }
         }
@@ -128,39 +190,39 @@ namespace atto {
         basePosition += velocity * dt;
 
         // ---- Yaw: face direction of travel ----
-        Vec2 horizVel   = Vec2( velocity.x, velocity.z );
+        Vec2 horizVel = Vec2( velocity.x, velocity.z );
         f32  horizSpeed = Length( horizVel );
-        f32  yawRate    = 0.0f;
+        f32  yawRate = 0.0f;
 
         if ( horizSpeed > 0.1f ) {
             f32 targetYaw = atan2f( velocity.x, velocity.z );
 
             // Shortest-path difference
             f32 yawDiff = targetYaw - smoothYaw;
-            while ( yawDiff >  PI ) yawDiff -= TWO_PI;
+            while ( yawDiff > PI ) yawDiff -= TWO_PI;
             while ( yawDiff < -PI ) yawDiff += TWO_PI;
 
             f32 yawStep = Clamp( yawDiff, -DroneYawSpeed * dt, DroneYawSpeed * dt );
-            yawRate     = (dt > 0.0f) ? (yawStep / dt) : 0.0f;
-            smoothYaw  += yawStep;
+            yawRate = (dt > 0.0f) ? (yawStep / dt) : 0.0f;
+            smoothYaw += yawStep;
         }
 
         // ---- Pitch: nose tilts opposite to forward acceleration ----
-        Vec3 facing      = Vec3( sinf( smoothYaw ), 0.0f, cosf( smoothYaw ) );
-        f32  forwardSpd  = Dot( velocity, facing );
+        Vec3 facing = Vec3( sinf( smoothYaw ), 0.0f, cosf( smoothYaw ) );
+        f32  forwardSpd = Dot( velocity, facing );
         f32  targetPitch = -forwardSpd * DronePitchFactor;
-        targetPitch     += sinf( hoverTime * 0.89f + 1.3f ) * 0.006f;  // micro-correction wobble
-        smoothPitch      = Lerp( smoothPitch, targetPitch, Clamp( DronePitchLerpRate * dt, 0.0f, 1.0f ) );
+        targetPitch += sinf( hoverTime * 0.89f + 1.3f ) * 0.006f;  // micro-correction wobble
+        smoothPitch = Lerp( smoothPitch, targetPitch, Clamp( DronePitchLerpRate * dt, 0.0f, 1.0f ) );
 
         // ---- Roll: bank into turns (centripetal lean) ----
         f32 targetRoll = yawRate * horizSpeed * DroneBankFactor;
-        targetRoll    += sinf( hoverTime * 0.73f ) * 0.008f;            // micro-correction wobble
-        smoothRoll     = Lerp( smoothRoll, targetRoll, Clamp( DroneRollLerpRate * dt, 0.0f, 1.0f ) );
+        targetRoll += sinf( hoverTime * 0.73f ) * 0.008f;            // micro-correction wobble
+        smoothRoll = Lerp( smoothRoll, targetRoll, Clamp( DroneRollLerpRate * dt, 0.0f, 1.0f ) );
 
         // ---- Build orientation from stacked rotations ----
-        Quat yawQ   = glm::angleAxis( smoothYaw,   Vec3( 0.0f, 1.0f, 0.0f ) );
+        Quat yawQ = glm::angleAxis( smoothYaw, Vec3( 0.0f, 1.0f, 0.0f ) );
         Quat pitchQ = glm::angleAxis( smoothPitch, Vec3( 1.0f, 0.0f, 0.0f ) );
-        Quat rollQ  = glm::angleAxis( smoothRoll,  Vec3( 0.0f, 0.0f, 1.0f ) );
+        Quat rollQ = glm::angleAxis( smoothRoll, Vec3( 0.0f, 0.0f, 1.0f ) );
         orientation = Mat3( yawQ * pitchQ * rollQ );
 
         // ---- Hover bob (applied last, purely visual) ----
@@ -174,11 +236,10 @@ namespace atto {
     }
 
     void Entity_DroneQuad::OnDespawn() {
-        model.Destroy();
     }
 
     AlignedBox Entity_DroneQuad::GetBounds() const {
-        AlignedBox bounds = model.GetBounds();
+        AlignedBox bounds = model->GetBounds();
         bounds.Translate( position );
         bounds.RotateAround( position, orientation );
         return bounds;

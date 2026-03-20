@@ -29,8 +29,8 @@ namespace atto {
         void SetWireframe( bool enabled );
         void UseUnlitShader();
         void UseLitShader();
-        void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix );
-        void RenderStaticModel( const StaticModel & model, const Mat4 & modelMatrix, const Vec3 & color );
+        void RenderStaticModel( const StaticModel * model, const Mat4 & modelMatrix );
+        void RenderStaticModel( const StaticModel * model, const Mat4 & modelMatrix, const Vec3 & color );
         void RenderAnimatedModel( const AnimatedModel & model, const Animator & animator, const Mat4 & modelMatrix );
         void RenderAnimatedModel( const AnimatedModel & model, const Animator & animator, const Mat4 & modelMatrix, const Vec3 & color );
         void RenderGrid( Vec3 axisH, Vec3 axisV, Vec3 center, f32 spacing, f32 halfExtentH, f32 halfExtentV );
@@ -40,6 +40,9 @@ namespace atto {
 
         // Texture management
         const Texture * GetOrLoadTexture( const char * filePath );
+
+        // Static model management
+        const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
 
         // Debug line drawing
         void DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
@@ -82,6 +85,10 @@ namespace atto {
         // This could be std::vector< std::unquie_ptr<Texture>> ??
         // Textures
         FixedList<Texture, 1024> textures;
+
+        // Static models
+        FixedList<StaticModel, 1024> staticModels;
+
     };
 
 } // namespace atto

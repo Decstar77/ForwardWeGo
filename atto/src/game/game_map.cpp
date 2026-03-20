@@ -71,7 +71,7 @@ namespace atto {
             for ( i32 j = 0; j < brushModels[i].GetMeshCount(); j++ ) {
                 brushModels[i].GetMesh( j ).GetMaterial().albedo = color;
             }
-            renderer.RenderStaticModel( brushModels[i], identity, color );
+            renderer.RenderStaticModel( &brushModels[i], identity, color );
         }
 
         for ( auto & entity : entities ) {
@@ -81,17 +81,20 @@ namespace atto {
     }
 
     std::unique_ptr<Entity> GameMap::MakeEntity( EntityType type ) {
+        std::unique_ptr<Entity> entity = nullptr;
         switch ( type ) {
-        case EntityType::Barrel:
-            return std::make_unique<Entity_Barrel>();
-        case EntityType::Drone_QUAD:
-            return std::make_unique<Entity_DroneQuad>();
-        case EntityType::GameMode_KillAllEntities:
-            return std::make_unique<Entity_GameMode_KillAllEntities>();
+        case EntityType::Barrel:                    entity = std::make_unique<Entity_Barrel>(); break;
+        case EntityType::Drone_QUAD:                entity = std::make_unique<Entity_DroneQuad>(); break;
+        case EntityType::ExitDoor:                  entity = std::make_unique<Entity_ExitDoor>(); break;
+        case EntityType::GameMode_KillAllEntities:  entity = std::make_unique<Entity_GameMode_KillAllEntities>(); break;
         default:
             ATTO_ASSERT( false, "Unknown EntityType provided to GameMap::MakeEntity" );
             return nullptr;
         }
+
+        ATTO_ASSERT( entity->GetType() != EntityType::None, "Made entity with None type" );
+
+        return entity;
     }
 
     Entity * GameMap::CreateEntity( EntityType type ) {

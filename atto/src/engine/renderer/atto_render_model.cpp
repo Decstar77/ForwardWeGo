@@ -332,6 +332,8 @@ namespace atto {
         ComputeBounds();
 
         LOG_INFO( "Loaded model '%s' (%d meshes)", filePath, GetMeshCount() );
+
+        path = LargeString::FromLiteral( filePath );
     }
 
     void StaticModel::CreateFromMesh( const std::vector<Vertex> & vertices, const std::vector<u32> & indices ) {

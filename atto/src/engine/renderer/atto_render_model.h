@@ -78,9 +78,9 @@ namespace atto {
         void Draw( Shader * shader ) const;
 
         i32                 GetIndexCount() const { return indexCount; }
-        const AlignedBox &  GetBounds() const { return bounds; }
-        const Material &    GetMaterial() const { return material; }
-        Material &          GetMaterial() { return material; }
+        const AlignedBox & GetBounds() const { return bounds; }
+        const Material & GetMaterial() const { return material; }
+        Material & GetMaterial() { return material; }
         void                SetMaterial( const Material & mat ) { material = mat; }
 
     private:
@@ -99,7 +99,7 @@ namespace atto {
         void Draw( Shader * shader ) const;
 
         i32                 GetIndexCount() const { return indexCount; }
-        const Material &    GetMaterial() const { return material; }
+        const Material & GetMaterial() const { return material; }
         void                SetMaterial( const Material & mat ) { material = mat; }
 
     private:
@@ -123,12 +123,14 @@ namespace atto {
         const Mesh & GetMesh( i32 index ) const { return meshes[index]; }
         const AlignedBox & GetBounds() const { return bounds; }
         const AlignedBox & GetMeshBounds( i32 index ) const { return meshes[index].GetBounds(); }
+        const LargeString & GetPath() const { return path; }
 
     private:
         void ComputeBounds();
 
         std::vector<Mesh> meshes;
         AlignedBox bounds = {};
+        LargeString path;
     };
 
     class AnimatedModel {
@@ -185,8 +187,8 @@ namespace atto {
         const BoneAnimationChannel * FindChannel( const std::string & nodeName ) const;
 
         Mat4                    finalBoneMatrices[MAX_BONES];
-        const AnimatedModel *   model = nullptr;
-        const AnimationClip *   currentClip = nullptr;
+        const AnimatedModel * model = nullptr;
+        const AnimationClip * currentClip = nullptr;
         f32                     currentTime = 0.0f;
         bool                    looping = true;
     };
