@@ -11,6 +11,7 @@ namespace atto {
         Drone_QUAD,
         ExitDoor,
         GameMode_KillAllEntities,
+        Prop,
 
         EntityTypeCount
     };
@@ -24,7 +25,8 @@ namespace atto {
         EntityType::Barrel,
         EntityType::Drone_QUAD,
         EntityType::ExitDoor,
-        EntityType::GameMode_KillAllEntities
+        EntityType::GameMode_KillAllEntities,
+        EntityType::Prop
     };
 
     inline static const char * EntityTypeNames[] = {
@@ -32,7 +34,8 @@ namespace atto {
         "Barrel",
         "Drone_QUAD",
         "ExitDoor",
-        "GameMode_KillAllEntities"
+        "GameMode_KillAllEntities",
+        "Prop"
     };
 
     static_assert(EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch");
@@ -113,6 +116,25 @@ namespace atto {
     private:
         const StaticModel * model = nullptr;
         i32 health = 100;
+    };
+
+    class Entity_Prop : public Entity {
+    public:
+        Entity_Prop();
+
+        void OnSpawn() override;
+        void OnUpdate( f32 dt ) override;
+        void OnRender( Renderer & renderer ) override;
+        void OnDespawn() override;
+
+        AlignedBox GetBounds() const override;
+        bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
+        void DebugDrawBounds( Renderer & renderer ) override;
+
+        void Serialize( Serializer & serializer ) override;
+
+    private:
+        const StaticModel * model = nullptr;
     };
 
     class Entity_ExitDoor : public Entity {

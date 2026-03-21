@@ -103,6 +103,7 @@ namespace atto {
         case EntityType::Barrel:                    entity = std::make_unique<Entity_Barrel>(); break;
         case EntityType::Drone_QUAD:                entity = std::make_unique<Entity_DroneQuad>(); break;
         case EntityType::ExitDoor:                  entity = std::make_unique<Entity_ExitDoor>(); break;
+        case EntityType::Prop:                      entity = std::make_unique<Entity_Prop>(); break;
         case EntityType::GameMode_KillAllEntities:  entity = std::make_unique<Entity_GameMode_KillAllEntities>(); break;
         default:
             ATTO_ASSERT( false, "Unknown EntityType provided to GameMap::MakeEntity" );

@@ -198,6 +198,27 @@
             "SpawnId": 6904133306131586321,
             "Type": "Drone_QUAD",
             "Waypoints": []
+        },
+        {
+            "Orientation": [
+                5.960464477539063e-08,
+                0.0,
+                0.9999998211860657,
+                0.0,
+                1.0,
+                0.0,
+                -0.9999998211860657,
+                0.0,
+                5.960464477539063e-08
+            ],
+            "Position": [
+                3.0,
+                0.0,
+                -8.0
+            ],
+            "SpawnId": 4826772186758417988,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Pillar_01.obj"
         }
     ],
     "playerStart": {

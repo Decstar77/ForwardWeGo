@@ -7,6 +7,8 @@
 
 namespace atto {
 
+    class StaticModel;
+
     // Type trait to detect if a type has a Serialize(Serializer&) method
     template<typename T, typename = void>
     struct HasSerializeMethod : std::false_type {};
@@ -50,6 +52,9 @@ namespace atto {
         inline void operator() ( const char * key, Mat2 & value ) { Op( key, value ); }
         inline void operator() ( const char * key, Mat3 & value ) { Op( key, value ); }
         inline void operator() ( const char * key, Mat4 & value ) { Op( key, value ); }
+
+        // Special case: const StaticModel * (saves path string, loads via Renderer)
+        void operator() ( const char * key, const StaticModel *& value );
 
         // Primitive vector types
         inline void operator() ( const char * key, std::vector<i32> & value ) { OpArrayPrimitive( key, value ); }

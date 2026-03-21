@@ -1,11 +1,31 @@
 #include "atto_assets.h"
+#include "atto_engine.h"
 #include "atto_log.h"
-
 
 #include <json/json.hpp>
 #include <fstream>
 
 namespace atto {
+
+    void Serializer::operator()( const char * key, const StaticModel *& value ) {
+        if ( IsSaving() ) {
+            std::string path;
+            if ( value ) {
+                path = value->GetPath().GetCStr();
+            }
+            Op( key, path );
+        }
+        else {
+            std::string path;
+            Op( key, path );
+            if ( !path.empty() ) {
+                value = Engine::Get().GetRenderer().GetOrLoadStaticModel( path.c_str() );
+            }
+            else {
+                value = nullptr;
+            }
+        }
+    }
 
     struct JsonSerializer::JsonContainer {
         nlohmann::json json;
