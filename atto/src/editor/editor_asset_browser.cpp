@@ -12,8 +12,8 @@ namespace atto {
         modelCurrentDir = ModelRootDir;
 
         Renderer & renderer = Engine::Get().GetRenderer();
-        folderIcon = renderer.GetOrLoadTexture( "assets/textures/folder.png" );
-        modelIcon  = renderer.GetOrLoadTexture( "assets/textures/model_icon.png" );
+        folderIcon = renderer.GetOrLoadTexture( "assets/textures/editor/folder.png" );
+        modelIcon  = renderer.GetOrLoadTexture( "assets/textures/editor/model_icon.png" );
 
         RefreshTextures();
         RefreshModels();

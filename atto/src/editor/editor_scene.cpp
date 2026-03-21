@@ -304,6 +304,10 @@ namespace atto {
             renderer.UseUnlitShader();
         }
 
+        if ( renderMode == EditorRenderMode::Unlit ) {
+            renderer.UseUnlitShader();
+        }
+
         map.Render( renderer, 0.0, selectedBrushIndex );
 
         const PlayerStart & playerStart = map.GetPlayerStart();

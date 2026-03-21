@@ -62,7 +62,7 @@ namespace atto {
             activeWeapon = WeaponSlot::Knife;
             knife.OnEquip();
         }
-        if ( input.IsKeyPressed( Key::Num2 ) && activeWeapon != WeaponSlot::Glock ) {
+        if ( ( input.IsKeyPressed( Key::Num2 ) || input.IsKeyPressed( Key::Num3 ) )  && activeWeapon != WeaponSlot::Glock ) {
             activeWeapon = WeaponSlot::Glock;
             glock.OnEquip();
         }

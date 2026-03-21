@@ -114,6 +114,7 @@ namespace atto {
 
         if ( !renderer.Initialize() ) {
             LOG_FATAL( "Failed to initialize renderer" );
+            system("PAUSE");
             glfwDestroyWindow( window );
             glfwTerminate();
             return false;

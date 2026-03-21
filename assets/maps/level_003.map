@@ -60,7 +60,7 @@
                     2.5,
                     0.505000114440918
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -76,7 +76,7 @@
                     2.5,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -92,7 +92,7 @@
                     2.5,
                     0.505000114440918
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -108,7 +108,7 @@
                     2.5,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -124,7 +124,7 @@
                     2.5,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -140,7 +140,7 @@
                     0.5,
                     1.0
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -172,7 +172,7 @@
                     2.5,
                     6.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -204,7 +204,7 @@
                     2.5,
                     1.75
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -220,7 +220,7 @@
                     2.5,
                     3.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -236,7 +236,7 @@
                     2.5,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -252,7 +252,7 @@
                     2.5,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -268,7 +268,7 @@
                     2.5,
                     1.75
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         }

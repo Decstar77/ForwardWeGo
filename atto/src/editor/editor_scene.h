@@ -119,7 +119,7 @@ namespace atto {
 
         // View state
         EditorViewMode      viewMode = EditorViewMode::Cam3D;
-        EditorRenderMode    renderMode = EditorRenderMode::Lit;
+        EditorRenderMode    renderMode = EditorRenderMode::Unlit;
         EditorSelectionMode selectionMode = EditorSelectionMode::Brush;
         EditorGizmoMode     gizmoMode = EditorGizmoMode::Translate;
 
