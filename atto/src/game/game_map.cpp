@@ -23,6 +23,7 @@ namespace atto {
             bm.Destroy();
         }
         brushModels.clear();
+        brushTextures.clear();
         brushCollsion.clear();
         brushes.clear();
 
@@ -42,9 +43,11 @@ namespace atto {
         // CreateEntity( EntityType::Barrel );
 
         brushModels.resize( brushes.size() );
+        brushTextures.resize( brushes.size(), nullptr );
         brushCollsion.resize( brushes.size() );
         RebuildAllBrushModels();
         RebuildAllBrushCollision();
+        RebuildAllBrushTextures();
 
         for ( auto & entity : entities ) {
             entity->OnSpawn();
@@ -80,9 +83,10 @@ namespace atto {
             if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
-            Vec3 color = (i == selectedBrush) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 0.8f, 0.8f, 0.8f );
+            Vec3 color = (i == selectedBrush) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 1.0f, 1.0f, 1.0f );
             for ( i32 j = 0; j < brushModels[i].GetMeshCount(); j++ ) {
                 brushModels[i].GetMesh( j ).GetMaterial().albedo = color;
+                brushModels[i].GetMesh( j ).GetMaterial().albedoTexture = brushTextures[i];
             }
             renderer.RenderStaticModel( &brushModels[i], identity, color );
         }
@@ -135,6 +139,7 @@ namespace atto {
         Brush brush;
         brushes.push_back( brush );
         brushModels.emplace_back();
+        brushTextures.push_back( nullptr );
         brushCollsion.emplace_back();
         i32 index = static_cast<i32>(brushes.size()) - 1;
         RebuildBrushModel( index );
@@ -148,6 +153,7 @@ namespace atto {
         brushModels[index].Destroy();
         brushes.erase( brushes.begin() + index );
         brushModels.erase( brushModels.begin() + index );
+        brushTextures.erase( brushTextures.begin() + index );
         brushCollsion.erase( brushCollsion.begin() + index );
     }
 
@@ -167,6 +173,19 @@ namespace atto {
         brushCollsion[index] = AlignedBox::FromCenterSize( brushes[index].center, brushes[index].halfExtents * 2.0f );
     }
 
+    void GameMap::RebuildBrushTexture( i32 index ) {
+        if ( index < 0 || index >= static_cast<i32>( brushes.size() ) ) {
+            return;
+        }
+
+        if ( !brushes[index].texturePath.empty() ) {
+            brushTextures[index] = Engine::Get().GetRenderer().GetOrLoadTexture( brushes[index].texturePath.c_str() );
+        }
+        else {
+            brushTextures[index] = nullptr;
+        }
+    }
+
     void GameMap::RebuildAllBrushModels() {
         for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
             RebuildBrushModel( i );
@@ -176,6 +195,12 @@ namespace atto {
     void GameMap::RebuildAllBrushCollision() {
         for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
             RebuildBrushCollision( i );
+        }
+    }
+
+    void GameMap::RebuildAllBrushTextures() {
+        for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
+            RebuildBrushTexture( i );
         }
     }
 

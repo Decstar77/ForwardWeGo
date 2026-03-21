@@ -203,6 +203,8 @@ namespace atto {
 
         Vec3 center = Vec3( 0.0f );
         Vec3 halfExtents = Vec3( 0.5f );
+        std::string texturePath;
+        f32 textureScale = 1.0f;
     };
 
 } // namespace atto

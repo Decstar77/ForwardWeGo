@@ -36,6 +36,11 @@ namespace atto {
         const Texture *           folderIcon     = nullptr;
         f32                       thumbnailSize  = 80.0f;
         bool                      isOpen         = false;
+
+        // Texture selection for brushes
+        i32                       selectingForBrush = -1;
+        std::string               selectedTexturePath;
+        bool                      selectionMade     = false;
     };
 
 } // namespace atto

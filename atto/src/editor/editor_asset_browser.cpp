@@ -50,10 +50,20 @@ namespace atto {
 
     void EditorAssetBrowser::Draw() {
         if ( !isOpen ) {
+            selectingForBrush = -1;
             return;
         }
 
         ImGui::Begin( "Asset Browser", &isOpen );
+
+        if ( selectingForBrush >= 0 ) {
+            ImGui::TextColored( ImVec4( 1.0f, 0.8f, 0.2f, 1.0f ), "Select texture for Brush %d", selectingForBrush );
+            ImGui::SameLine();
+            if ( ImGui::SmallButton( "Cancel" ) ) {
+                selectingForBrush = -1;
+            }
+            ImGui::Separator();
+        }
 
         // Navigation bar
         const bool atRoot = ( currentDir == RootDir );
@@ -116,17 +126,31 @@ namespace atto {
         }
 
         // Textures
+        const bool selecting = selectingForBrush >= 0;
+
         for ( i32 i = 0; i < (i32)textures.size(); i++ ) {
             ImGui::PushID( (i32)folders.size() + i );
 
             ImTextureID texID = (ImTextureID)(intptr_t)( textures[i].texture ? textures[i].texture->GetHandle() : 0 );
-            ImGui::Image( texID, thumbSize, uv0, uv1 );
+
+            if ( selecting ) {
+                if ( ImGui::ImageButton( "##tex", texID, thumbSize, uv0, uv1 ) ) {
+                    selectedTexturePath = textures[i].path;
+                    selectionMade = true;
+                }
+            }
+            else {
+                ImGui::Image( texID, thumbSize, uv0, uv1 );
+            }
 
             if ( ImGui::IsItemHovered() ) {
                 ImGui::BeginTooltip();
                 ImGui::TextUnformatted( textures[i].path.c_str() );
                 if ( textures[i].texture ) {
                     ImGui::Text( "%dx%d", textures[i].texture->GetWidth(), textures[i].texture->GetHeight() );
+                }
+                if ( selecting ) {
+                    ImGui::Text( "Click to apply" );
                 }
                 ImGui::EndTooltip();
             }

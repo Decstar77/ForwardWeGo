@@ -440,6 +440,25 @@ namespace atto {
         DrawUnsavedChangesDialog();
         assetBrowser.Draw();
 
+        // Handle texture selection from asset browser
+        if ( assetBrowser.selectionMade ) {
+            i32 brushIdx = assetBrowser.selectingForBrush;
+            if ( brushIdx >= 0 && brushIdx < map.GetBrushCount() ) {
+                Snapshot();
+                // Normalize path separators to forward slashes
+                std::string texPath = assetBrowser.selectedTexturePath;
+                for ( char & ch : texPath ) {
+                    if ( ch == '\\' ) ch = '/';
+                }
+                map.GetBrush( brushIdx ).texturePath = texPath;
+                map.RebuildBrushModel( brushIdx );
+                map.RebuildBrushTexture( brushIdx );
+                unsavedChanges = true;
+            }
+            assetBrowser.selectionMade = false;
+            assetBrowser.selectingForBrush = -1;
+        }
+
         // Snapshot when the user first activates an inspector widget
         bool imguiNowActive = ImGui::IsAnyItemActive();
         if ( imguiNowActive && !imguiWasAnyItemActive ) {
@@ -923,7 +942,42 @@ namespace atto {
                 if ( propSerializer.HasChanges() ) {
                     map.RebuildBrushModel( selectedBrushIndex );
                     map.RebuildBrushCollision( selectedBrushIndex );
+                    map.RebuildBrushTexture( selectedBrushIndex );
                     unsavedChanges = true;
+                }
+
+                ImGui::Separator();
+                ImGui::Text( "Texture" );
+
+                if ( !brush.texturePath.empty() ) {
+                    const Texture * tex = Engine::Get().GetRenderer().GetOrLoadTexture( brush.texturePath.c_str() );
+                    if ( tex && tex->IsValid() ) {
+                        ImTextureID texID = (ImTextureID)(intptr_t)tex->GetHandle();
+                        ImGui::Image( texID, ImVec2( 64, 64 ), ImVec2( 0, 1 ), ImVec2( 1, 0 ) );
+                    }
+
+                    // Extract just the filename for display
+                    std::string displayName = brush.texturePath;
+                    size_t lastSlash = displayName.find_last_of( "/\\" );
+                    if ( lastSlash != std::string::npos ) {
+                        displayName = displayName.substr( lastSlash + 1 );
+                    }
+                    ImGui::TextWrapped( "%s", displayName.c_str() );
+
+                    if ( ImGui::Button( "Clear Texture" ) ) {
+                        Snapshot();
+                        brush.texturePath.clear();
+                        map.RebuildBrushTexture( selectedBrushIndex );
+                        unsavedChanges = true;
+                    }
+                }
+                else {
+                    ImGui::TextDisabled( "No texture" );
+                }
+
+                if ( ImGui::Button( "Browse Textures..." ) ) {
+                    assetBrowser.isOpen = true;
+                    assetBrowser.selectingForBrush = selectedBrushIndex;
                 }
 
                 ImGui::Spacing();

@@ -63,8 +63,10 @@ namespace atto {
         void            RemoveBrush( i32 index );
         void            RebuildBrushModel( i32 index );
         void            RebuildBrushCollision( i32 index );
+        void            RebuildBrushTexture( i32 index );
         void            RebuildAllBrushModels();
         void            RebuildAllBrushCollision();
+        void            RebuildAllBrushTextures();
         void            DebugDrawBrushCollision( Renderer & renderer ) const;
         Vec3            ResolvePlayerCollision( const Capsule & playerCapsule ) const;
         Brush &         GetBrush( i32 index ) { return brushes[index]; }
@@ -78,6 +80,7 @@ namespace atto {
         std::vector<std::unique_ptr<Entity>>    entities;
         std::vector<Brush>                      brushes;
         std::vector<StaticModel>                brushModels;
+        std::vector<const Texture *>            brushTextures;
         std::vector<AlignedBox>                 brushCollsion;
     };
 }

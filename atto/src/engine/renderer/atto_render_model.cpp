@@ -826,13 +826,16 @@ namespace atto {
         std::vector<Vertex> vertices( 24 );
         std::vector<u32> indices( 36 );
 
-        auto setFace = [&]( i32 face, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3, Vec3 n )
+        const f32 s = textureScale > 0.0001f ? textureScale : 1.0f;
+
+        // World-space tiled UVs: project position onto face plane, divide by scale
+        auto setFace = [&]( i32 face, Vec3 p0, Vec3 p1, Vec3 p2, Vec3 p3, Vec3 n, i32 uAxis, i32 vAxis )
             {
                 i32 base = face * 4;
-                vertices[base + 0] = { p0, n, Vec2( 0.0f, 0.0f ) };
-                vertices[base + 1] = { p1, n, Vec2( 1.0f, 0.0f ) };
-                vertices[base + 2] = { p2, n, Vec2( 1.0f, 1.0f ) };
-                vertices[base + 3] = { p3, n, Vec2( 0.0f, 1.0f ) };
+                vertices[base + 0] = { p0, n, Vec2( p0[uAxis] / s, p0[vAxis] / s ) };
+                vertices[base + 1] = { p1, n, Vec2( p1[uAxis] / s, p1[vAxis] / s ) };
+                vertices[base + 2] = { p2, n, Vec2( p2[uAxis] / s, p2[vAxis] / s ) };
+                vertices[base + 3] = { p3, n, Vec2( p3[uAxis] / s, p3[vAxis] / s ) };
 
                 i32 idx = face * 6;
                 indices[idx + 0] = base + 0;
@@ -843,53 +846,53 @@ namespace atto {
                 indices[idx + 5] = base + 3;
             };
 
-        // +Z face (front)
+        // +Z face (front):  project onto X,Y
         setFace( 0,
             c + Vec3( -h.x, -h.y, +h.z ),
             c + Vec3( +h.x, -h.y, +h.z ),
             c + Vec3( +h.x, +h.y, +h.z ),
             c + Vec3( -h.x, +h.y, +h.z ),
-            Vec3( 0, 0, 1 )
+            Vec3( 0, 0, 1 ), 0, 1
         );
-        // -Z face (back)
+        // -Z face (back):   project onto X,Y
         setFace( 1,
             c + Vec3( +h.x, -h.y, -h.z ),
             c + Vec3( -h.x, -h.y, -h.z ),
             c + Vec3( -h.x, +h.y, -h.z ),
             c + Vec3( +h.x, +h.y, -h.z ),
-            Vec3( 0, 0, -1 )
+            Vec3( 0, 0, -1 ), 0, 1
         );
-        // +X face (right)
+        // +X face (right):  project onto Z,Y
         setFace( 2,
             c + Vec3( +h.x, -h.y, +h.z ),
             c + Vec3( +h.x, -h.y, -h.z ),
             c + Vec3( +h.x, +h.y, -h.z ),
             c + Vec3( +h.x, +h.y, +h.z ),
-            Vec3( 1, 0, 0 )
+            Vec3( 1, 0, 0 ), 2, 1
         );
-        // -X face (left)
+        // -X face (left):   project onto Z,Y
         setFace( 3,
             c + Vec3( -h.x, -h.y, -h.z ),
             c + Vec3( -h.x, -h.y, +h.z ),
             c + Vec3( -h.x, +h.y, +h.z ),
             c + Vec3( -h.x, +h.y, -h.z ),
-            Vec3( -1, 0, 0 )
+            Vec3( -1, 0, 0 ), 2, 1
         );
-        // +Y face (top)
+        // +Y face (top):    project onto X,Z
         setFace( 4,
             c + Vec3( -h.x, +h.y, +h.z ),
             c + Vec3( +h.x, +h.y, +h.z ),
             c + Vec3( +h.x, +h.y, -h.z ),
             c + Vec3( -h.x, +h.y, -h.z ),
-            Vec3( 0, 1, 0 )
+            Vec3( 0, 1, 0 ), 0, 2
         );
-        // -Y face (bottom)
+        // -Y face (bottom): project onto X,Z
         setFace( 5,
             c + Vec3( -h.x, -h.y, -h.z ),
             c + Vec3( +h.x, -h.y, -h.z ),
             c + Vec3( +h.x, -h.y, +h.z ),
             c + Vec3( -h.x, -h.y, +h.z ),
-            Vec3( 0, -1, 0 )
+            Vec3( 0, -1, 0 ), 0, 2
         );
 
         model.CreateFromMesh( vertices, indices );
@@ -898,6 +901,8 @@ namespace atto {
     void Brush::Serialize( Serializer & serializer ) {
         serializer( "center", center );
         serializer( "halfExtents", halfExtents );
+        serializer( "texturePath", texturePath );
+        serializer( "textureScale", textureScale );
     }
 
     bool Brush::IsPointInside( Vec3 point ) const {
