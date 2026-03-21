@@ -30,6 +30,8 @@ namespace atto {
         renderer.LoadSkybox( "assets/textures/FS002_Day_Sunless.png" );
 
         Engine::Get().GetInput().SetCursorCaptured( false );
+
+        assetBrowser.OnStart();
     }
 
     void EditorScene::StartImgui() {
@@ -436,6 +438,7 @@ namespace atto {
         DrawInspectorPanel();
         DrawViewOverlay();
         DrawUnsavedChangesDialog();
+        assetBrowser.Draw();
 
         // Snapshot when the user first activates an inspector widget
         bool imguiNowActive = ImGui::IsAnyItemActive();
@@ -834,6 +837,11 @@ namespace atto {
                 if ( ImGui::RadioButton( "Unlit", &rm, 1 ) ) { renderMode = EditorRenderMode::Unlit; }
                 if ( ImGui::RadioButton( "Wireframe", &rm, 2 ) ) { renderMode = EditorRenderMode::Wireframe; }
 
+                ImGui::EndMenu();
+            }
+
+            if ( ImGui::BeginMenu( "Window" ) ) {
+                ImGui::MenuItem( "Asset Browser", nullptr, &assetBrowser.isOpen );
                 ImGui::EndMenu();
             }
 

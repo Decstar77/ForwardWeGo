@@ -100,7 +100,7 @@ namespace atto {
             }
         }
         else {
-            footstepTimer = footstepInterval;
+            footstepTimer = 0.0f;
         }
     }
 

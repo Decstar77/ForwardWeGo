@@ -4,6 +4,7 @@
 #include "atto_math.h"
 #include "atto_shapes_3D.h"
 #include "atto_containers.h"
+#include "atto_ui.h"
 #include "renderer/atto_render_model.h"
 #include "renderer/atto_render_material.h"
 
@@ -41,11 +42,9 @@ namespace atto {
         // 2D sprite rendering (NDC center + pixel size relative to viewport)
         void RenderSprite( const Texture * texture, Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH );
 
-        // Texture management
         const Texture * GetOrLoadTexture( const char * filePath );
-
-        // Static model management
         const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
+        const Font * GetOrLoadFont( const char * path, f32 fontSize );
 
         // Debug line drawing
         void DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
@@ -96,6 +95,9 @@ namespace atto {
 
         // Static models
         FixedList<StaticModel, 1024> staticModels;
+
+        // Fonts
+        FixedList<Font, 64> fonts;
 
     };
 

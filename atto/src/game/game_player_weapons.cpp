@@ -336,7 +336,7 @@ namespace atto {
                     result.entity->TakeDamage( 25 );
                 }
             }
-            sndShoot.Play( 0.5f );
+            sndShoot.Play( 0.2f );
         }
 
         // Reload complete

@@ -3,6 +3,7 @@
 #include "engine/atto_engine.h"
 #include "engine/renderer/atto_render_model.h"
 #include "game/game_map.h"
+#include "editor_asset_browser.h"
 
 namespace atto {
 
@@ -158,6 +159,8 @@ namespace atto {
         // Snap
         bool snapEnabled = true;
         f32  snapSize = 1.0f;
+
+        EditorAssetBrowser assetBrowser;
     };
 
 } // namespace atto

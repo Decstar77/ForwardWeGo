@@ -30,6 +30,9 @@ TODO:
 
 Gameplay:
 - Entity id's
+- Animation blending 
+- Hit particles 
+- Muzzle particles
 - HUD
 
 Editor:

@@ -5,8 +5,12 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image/std_image.h>
+
 #include <vector>
 #include <cmath>
+
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype/stb_truetype.h"
 
 namespace atto {
 
@@ -381,7 +385,7 @@ namespace atto {
         }
 
         Vec2 halfSize = Vec2(
-            (f32)pixelWidth  / (f32)viewportW,
+            (f32)pixelWidth / (f32)viewportW,
             (f32)pixelHeight / (f32)viewportH
         );
 
@@ -390,9 +394,9 @@ namespace atto {
         glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
         spriteShader.Bind();
-        spriteShader.SetVec2( "uCenter",   centerNDC );
+        spriteShader.SetVec2( "uCenter", centerNDC );
         spriteShader.SetVec2( "uHalfSize", halfSize );
-        spriteShader.SetInt(  "uTexture",  0 );
+        spriteShader.SetInt( "uTexture", 0 );
 
         texture->Bind( 0 );
 
@@ -503,6 +507,72 @@ namespace atto {
         flatColorShader.Unbind();
 
         glEnable( GL_DEPTH_TEST );
+    }
+
+    const Font * Renderer::GetOrLoadFont( const char * path, f32 fontSize ) {
+        const i32 count = fonts.GetCount();
+        for ( i32 i = 0; i < count; i++ ) {
+            if ( fonts[i].GetPath() == path && fonts[i].GetFontSize() == fontSize ) {
+                return &fonts[i];
+            }
+        }
+
+        Font & font = fonts.AddEmpty();
+        if ( !font.LoadFromFile( path, fontSize ) ) {
+            LOG_ERROR( "Failed to load font: %s at size %.1f", path, fontSize );
+        }
+        return &font;
+    }
+
+    bool Font::LoadFromFile( const char * filePath, f32 inFontSize ) {
+        path     = filePath;
+        fontSize = inFontSize;
+
+        // Read the TTF file into memory
+        FILE * f = fopen( filePath, "rb" );
+        if ( !f ) {
+            LOG_ERROR( "Font::LoadFromFile — could not open %s", filePath );
+            return false;
+        }
+
+        fseek( f, 0, SEEK_END );
+        const long fileSize = ftell( f );
+        fseek( f, 0, SEEK_SET );
+
+        std::vector<u8> ttfBuffer( fileSize );
+        fread( ttfBuffer.data(), 1, fileSize, f );
+        fclose( f );
+
+        // Bake the font atlas into a single-channel bitmap
+        std::vector<u8> atlasBitmap( FONT_ATLAS_WIDTH * FONT_ATLAS_HEIGHT );
+
+        const i32 result = stbtt_BakeFontBitmap(
+            ttfBuffer.data(), 0,
+            inFontSize,
+            atlasBitmap.data(), FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
+            FONT_FIRST_CHAR, FONT_CHAR_COUNT,
+            charData
+        );
+
+        if ( result <= 0 ) {
+            LOG_ERROR( "Font::LoadFromFile — stbtt_BakeFontBitmap failed for %s (returned %d). Atlas may be too small.", filePath, result );
+            // result == 0 means none fit; negative means some fit but atlas was full
+            // Continue anyway — partially baked font is still usable
+        }
+
+        // Upload bitmap to OpenGL as a red-channel texture
+        glGenTextures( 1, &atlasHandle );
+        glBindTexture( GL_TEXTURE_2D, atlasHandle );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RED,
+                      FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
+                      0, GL_RED, GL_UNSIGNED_BYTE, atlasBitmap.data() );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glBindTexture( GL_TEXTURE_2D, 0 );
+
+        return true;
     }
 
     void Renderer::DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color ) {
