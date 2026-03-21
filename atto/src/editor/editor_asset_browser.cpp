@@ -1,5 +1,7 @@
 #include "editor_asset_browser.h"
 
+#include "editor_asset_thumbnail.h"
+
 #include <imgui.h>
 #include <filesystem>
 
@@ -12,8 +14,8 @@ namespace atto {
         modelCurrentDir = ModelRootDir;
 
         Renderer & renderer = Engine::Get().GetRenderer();
-        folderIcon = renderer.GetOrLoadTexture( "assets/textures/editor/folder.png" );
-        modelIcon  = renderer.GetOrLoadTexture( "assets/textures/editor/model_icon.png" );
+        folderIcon = renderer.GetOrLoadTexture( "assets/textures/editor/folder.png", true );
+        modelIcon  = renderer.GetOrLoadTexture( "assets/textures/editor/model_icon.png", true );
 
         RefreshTextures();
         RefreshModels();
@@ -205,6 +207,13 @@ namespace atto {
                 selectingForModel = false;
             }
             ImGui::Separator();
+        }
+
+        if ( ImGui::Button("Gen ") ) {
+            ThumbnailBaker baker;
+            
+            baker.GenerateThumbnailsForFolder("assets/models/sm");
+            //baker.GenerateThumbnailForModel("assets/models/sm/SM_Prop_Drone_Quad_01.obj");
         }
 
         // Navigation bar

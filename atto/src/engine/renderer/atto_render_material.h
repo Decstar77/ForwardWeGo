@@ -8,7 +8,7 @@ namespace atto {
 
     class Texture {
     public:
-        void LoadFromFile( const char * filePath );
+        void LoadFromFile( const char * filePath, bool flip = false );
         void Destroy();
         void Bind( i32 slot = 0 ) const;
         void Unbind( i32 slot = 0 ) const;

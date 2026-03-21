@@ -45,7 +45,7 @@ namespace atto {
         // Text rendering — screen-space pixels, (0,0) at top-left
         void DrawText( const Font * font, const char * text, f32 x, f32 y, Vec4 color, i32 viewportW, i32 viewportH );
 
-        const Texture * GetOrLoadTexture( const char * filePath );
+        const Texture * GetOrLoadTexture( const char * filePath, bool flip = false );
         const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
         const Font * GetOrLoadFont( const char * path, f32 fontSize );
 

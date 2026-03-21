@@ -348,6 +348,7 @@ namespace atto {
         for ( auto & mesh : meshes ) {
             mesh.Destroy();
         }
+        LOG_INFO( "Destroyed model '%s' (%d meshes)", path.GetCStr(), GetMeshCount() );
         meshes.clear();
         bounds = {};
     }

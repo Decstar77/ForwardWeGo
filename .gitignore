@@ -22,3 +22,5 @@ build
 
 imgui.ini
 editor_state.json
+
+assets/textures/editor/thumbnails

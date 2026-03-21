@@ -14,10 +14,10 @@ namespace atto {
     // Texture
     // =========================================================================
 
-    void Texture::LoadFromFile( const char * filePath ) {
+    void Texture::LoadFromFile( const char * filePath, bool flip ) {
         Destroy();
 
-        stbi_set_flip_vertically_on_load( false );
+        stbi_set_flip_vertically_on_load( flip );
 
         int w, h, channels;
         stbi_uc * data = stbi_load( filePath, &w, &h, &channels, STBI_rgb_alpha );
@@ -43,7 +43,6 @@ namespace atto {
         glBindTexture( GL_TEXTURE_2D, 0 );
 
         stbi_image_free( data );
-        stbi_set_flip_vertically_on_load( true );
 
         path = LargeString::FromLiteral( filePath );
     }

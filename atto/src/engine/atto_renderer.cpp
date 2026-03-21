@@ -429,7 +429,7 @@ namespace atto {
         glEnable( GL_DEPTH_TEST );
     }
 
-    const Texture * Renderer::GetOrLoadTexture( const char * filePath ) {
+    const Texture * Renderer::GetOrLoadTexture( const char * filePath, bool flip ) {
         const int count = textures.GetCount();
         for ( int i = 0; i < count; i++ ) {
             if ( textures[i].GetPath() == filePath ) {
@@ -438,7 +438,7 @@ namespace atto {
         }
 
         Texture & texture = textures.AddEmpty();
-        texture.LoadFromFile( filePath );
+        texture.LoadFromFile( filePath, flip );
         return &texture;
     }
 

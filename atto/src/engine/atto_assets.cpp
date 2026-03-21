@@ -4,6 +4,7 @@
 
 #include <json/json.hpp>
 #include <fstream>
+#include <filesystem>
 
 namespace atto {
 
@@ -537,5 +538,16 @@ namespace atto {
         return "";
     }
 
+    std::vector< std::string > AssetManager::GetFilesInFolderRecursive( const char * path, const char * ext ) {
+        std::vector<std::string> files;
+        const std::filesystem::path currentPath = std::filesystem::path( path );
 
+        for ( const auto & entry : std::filesystem::recursive_directory_iterator( currentPath ) ) {
+            if ( entry.is_regular_file() && entry.path().extension() == ext ) {
+                files.push_back( entry.path().string() );
+            }
+        }
+
+        return files;
+    }
 }
