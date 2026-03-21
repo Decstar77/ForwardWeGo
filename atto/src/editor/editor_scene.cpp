@@ -392,6 +392,7 @@ namespace atto {
 
                 // Gizmo lives at pivot with world-space axes (no rotation baked in)
                 Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), pivot );
+                Mat4 deltaMatrix = Mat4( 1.0f );
 
                 if ( ImGuizmo::Manipulate(
                     glm::value_ptr( view ),
@@ -399,36 +400,27 @@ namespace atto {
                     gizmoOp,
                     ImGuizmo::WORLD,
                     glm::value_ptr( gizmoMatrix ),
-                    nullptr,
+                    glm::value_ptr( deltaMatrix ),
                     currentSnap ) ) {
 
-                    // Frame-to-frame deltas from prevGizmoMatrix
-                    Vec3 prevPivot = Vec3( prevGizmoMatrix[3] );
-                    Vec3 newPivot  = Vec3( gizmoMatrix[3] );
-
                     if ( gizmoOp == ImGuizmo::TRANSLATE ) {
-                        Vec3 delta = newPivot - prevPivot;
+                        Vec3 delta = Vec3( deltaMatrix[3] );
                         for ( i32 idx : selectedEntityIndices ) {
                             Entity * ent = map.GetEntity( idx );
                             ent->SetPosition( ent->GetPosition() + delta );
                         }
                     }
                     else {
-                        // Incremental rotation: newRot * transpose(prevRot) = delta rotation this frame
-                        Mat3 prevRot  = Mat3( prevGizmoMatrix );
-                        Mat3 newRot   = Mat3( gizmoMatrix );
-                        Mat3 rotDelta = newRot * glm::transpose( prevRot );
+                        Mat3 rotDelta = Mat3( deltaMatrix );
                         for ( i32 idx : selectedEntityIndices ) {
                             Entity * ent = map.GetEntity( idx );
-                            Vec3 relPos = ent->GetPosition() - prevPivot;
-                            ent->SetPosition( prevPivot + rotDelta * relPos );
+                            Vec3 relPos = ent->GetPosition() - pivot;
+                            ent->SetPosition( pivot + rotDelta * relPos );
                             ent->SetOrientation( rotDelta * ent->GetOrientation() );
                         }
                     }
                     unsavedChanges = true;
                 }
-
-                prevGizmoMatrix = gizmoMatrix;
             }
         }
 

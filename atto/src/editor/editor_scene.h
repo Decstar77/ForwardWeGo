@@ -155,9 +155,6 @@ namespace atto {
         std::vector<i32> selectedEntityIndices;      // full multi-selection set
         BrushDragState   brushDrag;
 
-        // Gizmo transform tracking for multi-select delta computation
-        Mat4 prevGizmoMatrix = Mat4( 1.0f );
-
         // Snap
         bool snapEnabled = true;
         f32  snapSize = 1.0f;
