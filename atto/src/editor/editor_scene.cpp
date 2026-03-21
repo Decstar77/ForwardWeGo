@@ -19,12 +19,7 @@ namespace atto {
         flyCamera.SetFOV( 60.0f );
         flyCamera.SetMoveSpeed( 5.0f );
         flyCamera.SetLookSensitivity( 0.1f );
-        if ( args == nullptr ) {
-            LoadEditorState();
-        }
-        else {
-            LoadMapFromFile( args );
-        }
+        LoadEditorState();
 
         Renderer & renderer = Engine::Get().GetRenderer();
         renderer.LoadSkybox( "assets/textures/FS002_Day_Sunless.png" );
