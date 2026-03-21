@@ -12,9 +12,6 @@ namespace atto {
         camera.SetMoveSpeed( 5.0f );
         camera.SetLookSensitivity( 0.1f );
 
-        //Armature|Knife_Walk_Anim
-        //Armature|Knife_Run_Anim
-
         playerHands.LoadFromFile( "assets/player/arms/knife.glb" );
         animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
 
@@ -83,23 +80,32 @@ namespace atto {
             );
         }
 
+        f32 speed = camera.GetMoveSpeed() * deltaTime;
+
+        bool isMoving = false;
+        if ( input.IsKeyDown( Key::W ) ) { camera.MoveForward( speed );  isMoving = true; }
+        if ( input.IsKeyDown( Key::S ) ) { camera.MoveForward( -speed ); isMoving = true; }
+        if ( input.IsKeyDown( Key::D ) ) { camera.MoveRight( speed );    isMoving = true; }
+        if ( input.IsKeyDown( Key::A ) ) { camera.MoveRight( -speed );   isMoving = true; }
+
         ATTO_ASSERT( animator.GetCurrentAnimation(), "player hands are null ??" );
 
-        if ( input.IsMouseButtonDown( MouseButton::Left )
-            && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
+        const std::string & curAnim = animator.GetCurrentAnimation()->name;
+        bool isIdleOrWalk = ( curAnim == "Armature|Knife_Idle_Anim" || curAnim == "Armature|Knife_Walk_Anim" );
+
+        if ( input.IsMouseButtonDown( MouseButton::Left ) && isIdleOrWalk ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_1_Anim", false );
             sndKnifeSwing1.Play( 0.5f );
             playerIsAttacking = true;
         }
 
-        if ( input.IsMouseButtonDown( MouseButton::Right )
-            && animator.GetCurrentAnimation()->name == "Armature|Knife_Idle_Anim" ) {
+        if ( input.IsMouseButtonDown( MouseButton::Right ) && isIdleOrWalk ) {
             animator.PlayAnimation( playerHands, "Armature|Knife_Attack_3_Anim", false );
             sndKnifeSwing2.Play( 0.5f );
             playerIsAttacking = true;
         }
 
-        if ( animator.GetCurrentAnimation()->name == "Armature|Knife_Attack_1_Anim"
+        if ( curAnim == "Armature|Knife_Attack_1_Anim"
             && animator.GetPercentComplete() > 0.5f
             && playerIsAttacking == true ) {
             playerIsAttacking = false;
@@ -113,7 +119,7 @@ namespace atto {
             }
         }
 
-        if ( animator.GetCurrentAnimation()->name == "Armature|Knife_Attack_3_Anim"
+        if ( curAnim == "Armature|Knife_Attack_3_Anim"
             && animator.GetPercentComplete() > 0.5f
             && playerIsAttacking == true ) {
             playerIsAttacking = false;
@@ -127,20 +133,21 @@ namespace atto {
             }
         }
 
-        if ( animator.IsFinished() && animator.GetCurrentAnimation()->name != "Armature|Knife_Idle_Anim" ) {
-            animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
+        if ( animator.IsFinished() && !isIdleOrWalk ) {
             playerIsAttacking = false;
+            animator.PlayAnimation( playerHands, isMoving ? "Armature|Knife_Walk_Anim" : "Armature|Knife_Idle_Anim", true );
+        }
+
+        if ( !playerIsAttacking ) {
+            if ( isMoving && curAnim == "Armature|Knife_Idle_Anim" ) {
+                animator.PlayAnimation( playerHands, "Armature|Knife_Walk_Anim", true );
+            }
+            else if ( !isMoving && curAnim == "Armature|Knife_Walk_Anim" ) {
+                animator.PlayAnimation( playerHands, "Armature|Knife_Idle_Anim", true );
+            }
         }
 
         animator.Update( deltaTime );
-
-        f32 speed = camera.GetMoveSpeed() * deltaTime;
-
-        bool isMoving = false;
-        if ( input.IsKeyDown( Key::W ) ) { camera.MoveForward( speed );  isMoving = true; }
-        if ( input.IsKeyDown( Key::S ) ) { camera.MoveForward( -speed ); isMoving = true; }
-        if ( input.IsKeyDown( Key::D ) ) { camera.MoveRight( speed );    isMoving = true; }
-        if ( input.IsKeyDown( Key::A ) ) { camera.MoveRight( -speed );   isMoving = true; }
 
         Vec3 playerPos = camera.GetPosition();
         playerPos.y = 0.0f;
