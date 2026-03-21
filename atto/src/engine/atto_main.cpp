@@ -30,9 +30,6 @@ TODO:
 
 Gameplay:
 - Entity id's
-- Entities should be marked for removed/destroyed and them cleaned up at the end of the frame
-- Sprinting
-- Arms walk + run animatioons
 - HUD
 
 Editor:
@@ -48,4 +45,6 @@ Renderering:
 - Light probes
 - ? PBR ?
 - Animation blends ?
+
+https://www.fab.com/listings/8580e72a-1ac7-42b0-b76e-0ebbe0a922a8
 */
