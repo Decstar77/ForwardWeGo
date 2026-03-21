@@ -4,11 +4,14 @@
 
 namespace atto {
 
+    class EditorAssetBrowser;
+
     class ImguiPropertySerializer : public Serializer {
     public:
         ImguiPropertySerializer();
         ~ImguiPropertySerializer();
 
+        void SetAssetBrowser( EditorAssetBrowser * browser ) { assetBrowser = browser; }
         bool HasChanges() const { return changed; }
 
     protected:
@@ -46,7 +49,10 @@ namespace atto {
         void Op( const char * key, Mat3 & value ) override;
         void Op( const char * key, Mat4 & value ) override;
 
+        void OpStaticModel( const char * key, const StaticModel *& value ) override;
+
     private:
+        EditorAssetBrowser * assetBrowser = nullptr;
         bool changed = false;
         i32 nextSubId = 0;
         bool pushedImguiId = false;

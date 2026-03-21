@@ -1,4 +1,5 @@
 #include "editor_property_serializer.h"
+#include "editor_asset_browser.h"
 
 #include <imgui.h>
 #include <cstdio>
@@ -382,6 +383,49 @@ namespace atto {
             }
             ImGui::TreePop();
         }
+    }
+
+    // ============================================================
+    // Special-case: StaticModel pointer
+    // ============================================================
+
+    void ImguiPropertySerializer::OpStaticModel( const char * key, const StaticModel *& value ) {
+        ImGui::PushID( key );
+
+        // Show the current model path
+        const char * currentPath = value ? value->GetPath().GetCStr() : "<none>";
+        ImGui::Text( "%s: %s", key, currentPath );
+
+        // Check if the asset browser has a pending model selection
+        if ( assetBrowser && assetBrowser->modelSelectionMade ) {
+            std::string modelPath = assetBrowser->selectedModelPath;
+            for ( char & ch : modelPath ) {
+                if ( ch == '\\' ) ch = '/';
+            }
+            value = Engine::Get().GetRenderer().GetOrLoadStaticModel( modelPath.c_str() );
+            assetBrowser->modelSelectionMade = false;
+            assetBrowser->selectingForModel  = false;
+            changed = true;
+        }
+
+        // Browse button to open the asset browser on the Models tab
+        if ( assetBrowser ) {
+            if ( ImGui::Button( "Browse Models..." ) ) {
+                assetBrowser->isOpen          = true;
+                assetBrowser->selectingForModel = true;
+            }
+            ImGui::SameLine();
+        }
+
+        // Clear button
+        if ( value ) {
+            if ( ImGui::Button( "Clear" ) ) {
+                value = nullptr;
+                changed = true;
+            }
+        }
+
+        ImGui::PopID();
     }
 
 }

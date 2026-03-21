@@ -1076,6 +1076,7 @@ namespace atto {
                 ImGui::Spacing();
 
                 ImguiPropertySerializer propSerializer;
+                propSerializer.SetAssetBrowser( &assetBrowser );
                 ent->Serialize( propSerializer );
 
                 if ( propSerializer.HasChanges() ) {

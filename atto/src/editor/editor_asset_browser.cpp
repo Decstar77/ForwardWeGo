@@ -198,6 +198,15 @@ namespace atto {
     }
 
     void EditorAssetBrowser::DrawModelsTab() {
+        if ( selectingForModel ) {
+            ImGui::TextColored( ImVec4( 1.0f, 0.8f, 0.2f, 1.0f ), "Select a model" );
+            ImGui::SameLine();
+            if ( ImGui::SmallButton( "Cancel##mdl" ) ) {
+                selectingForModel = false;
+            }
+            ImGui::Separator();
+        }
+
         // Navigation bar
         const bool atRoot = ( modelCurrentDir == ModelRootDir );
         if ( !atRoot ) {
@@ -303,10 +312,17 @@ namespace atto {
     void EditorAssetBrowser::Draw() {
         if ( !isOpen ) {
             selectingForBrush = -1;
+            selectingForModel = false;
             return;
         }
 
         ImGui::Begin( "Asset Browser", &isOpen );
+
+        // Auto-select Models tab when selecting for model
+        ImGuiTabItemFlags modelTabFlags = 0;
+        if ( selectingForModel ) {
+            modelTabFlags = ImGuiTabItemFlags_SetSelected;
+        }
 
         if ( ImGui::BeginTabBar( "AssetBrowserTabs" ) ) {
             if ( ImGui::BeginTabItem( "Textures" ) ) {
@@ -314,7 +330,7 @@ namespace atto {
                 DrawTexturesTab();
                 ImGui::EndTabItem();
             }
-            if ( ImGui::BeginTabItem( "Models" ) ) {
+            if ( ImGui::BeginTabItem( "Models", nullptr, modelTabFlags ) ) {
                 activeTab = 1;
                 DrawModelsTab();
                 ImGui::EndTabItem();

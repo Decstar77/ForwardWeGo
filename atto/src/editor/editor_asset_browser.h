@@ -10,6 +10,7 @@ namespace atto {
 
     class EditorAssetBrowser {
         friend class EditorScene;
+        friend class ImguiPropertySerializer;
     public:
         void OnStart();
         void Draw();
@@ -62,6 +63,7 @@ namespace atto {
         bool                      selectionMade     = false;
 
         // Model selection
+        bool                      selectingForModel  = false;
         std::string               selectedModelPath;
         bool                      modelSelectionMade = false;
     };

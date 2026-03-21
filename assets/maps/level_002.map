@@ -212,13 +212,13 @@
                 5.960464477539063e-08
             ],
             "Position": [
-                3.0,
+                4.0,
                 0.0,
-                -8.0
+                -9.0
             ],
             "SpawnId": 4826772186758417988,
             "Type": "Prop",
-            "model": "assets/models/sm/SM_Prop_Pillar_01.obj"
+            "model": "assets/models/sm/SM_Prop_Plant_Vase_01.obj"
         }
     ],
     "playerStart": {

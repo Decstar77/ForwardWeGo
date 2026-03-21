@@ -54,7 +54,7 @@ namespace atto {
         inline void operator() ( const char * key, Mat4 & value ) { Op( key, value ); }
 
         // Special case: const StaticModel * (saves path string, loads via Renderer)
-        void operator() ( const char * key, const StaticModel *& value );
+        inline void operator() ( const char * key, const StaticModel *& value ) { OpStaticModel( key, value ); }
 
         // Primitive vector types
         inline void operator() ( const char * key, std::vector<i32> & value ) { OpArrayPrimitive( key, value ); }
@@ -181,6 +181,9 @@ namespace atto {
         virtual void Op( const char * key, Mat2 & value ) = 0;
         virtual void Op( const char * key, Mat3 & value ) = 0;
         virtual void Op( const char * key, Mat4 & value ) = 0;
+
+        // Special-case operations (not pure virtual — have default implementations)
+        virtual void OpStaticModel( const char * key, const StaticModel *& value );
 
     protected:
         bool isSaving;

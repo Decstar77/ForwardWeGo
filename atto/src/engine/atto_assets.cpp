@@ -7,7 +7,7 @@
 
 namespace atto {
 
-    void Serializer::operator()( const char * key, const StaticModel *& value ) {
+    void Serializer::OpStaticModel( const char * key, const StaticModel *& value ) {
         if ( IsSaving() ) {
             std::string path;
             if ( value ) {
