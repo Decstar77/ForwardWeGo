@@ -93,7 +93,7 @@ namespace atto {
 
         for ( auto & entity : entities ) {
             entity->OnRender( renderer );
-            entity->DebugDrawBounds( renderer );
+            //entity->DebugDrawBounds( renderer );
         }
     }
 

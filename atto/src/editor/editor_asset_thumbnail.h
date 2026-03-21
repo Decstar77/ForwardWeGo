@@ -16,7 +16,7 @@ namespace atto {
         void GenerateThumbnailForModel( const StaticModel * model );
 
     private:
-        static constexpr i32 THUMBNAIL_SIZE = 64;
+        static constexpr i32 THUMBNAIL_SIZE = 256;
         static constexpr i32 MSAA_SAMPLES   = 8;
 
         std::string path = "assets/textures/editor/thumbnails";

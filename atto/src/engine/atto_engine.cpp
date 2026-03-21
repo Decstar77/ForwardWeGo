@@ -11,6 +11,8 @@
 #include <cstdio>
 #include <filesystem>
 
+#include <stb_image/std_image.h>
+
 namespace atto {
 
     void Color::Serialize( Serializer & serializer ) {
@@ -101,6 +103,20 @@ namespace atto {
         std::filesystem::current_path( "../" );
         LOG_INFO( "New working directory: %s", std::filesystem::current_path().string().c_str() );
 #endif
+
+        // Set window icon
+        {
+            int w, h, channels;
+            unsigned char* pixels = stbi_load("assets/textures/ai-gen/gothgirl-square.png", &w, &h, &channels, 4);
+            if (pixels) {
+                GLFWimage icon;
+                icon.width = w;
+                icon.height = h;
+                icon.pixels = pixels;
+                glfwSetWindowIcon(window, 1, &icon);
+                stbi_image_free(pixels);
+            }
+        }
 
         // Print OpenGL info
         LOG_INFO( "OpenGL Version: %s", glGetString( GL_VERSION ) );
