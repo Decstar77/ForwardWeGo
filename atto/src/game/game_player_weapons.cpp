@@ -3,8 +3,6 @@
 
 namespace atto {
 
-    static constexpr Vec3 ArmsLocalOffset = Vec3( 0.0f, -0.15f, -0.06f );
-
     // =========================================================================
     // PlayerWeaponKnife
     // =========================================================================
@@ -127,6 +125,7 @@ namespace atto {
     }
 
     void PlayerWeaponKnife::OnRender( Renderer & renderer, const FPSCamera & camera ) {
+        const Vec3 ArmsLocalOffset = Vec3( 0.0f, -0.15f, -0.06f );
         Mat4 cameraWorld     = glm::inverse( camera.GetViewMatrix() );
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
         Mat4 armsMatrix      = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
@@ -218,6 +217,7 @@ namespace atto {
     }
 
     void PlayerWeaponGlock::OnRender( Renderer & renderer, const FPSCamera & camera ) {
+        const Vec3 ArmsLocalOffset = Vec3( 0.05f, -0.22f, -0.1f );
         Mat4 cameraWorld     = glm::inverse( camera.GetViewMatrix() );
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
         Mat4 armsMatrix      = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
