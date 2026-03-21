@@ -163,6 +163,16 @@ namespace atto {
 
         sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndEquip.LoadSounds( {
+            "glock/gun_pistol_general_handling_01.wav",
+            "glock/gun_pistol_general_handling_03.wav",
+            "glock/gun_pistol_general_handling_05.wav",
+            "glock/gun_pistol_general_handling_06.wav",
+            "glock/gun_pistol_general_handling_07.wav",
+            "glock/gun_pistol_general_handling_10.wav",
+        } );
+
+        sndCock.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndCock.LoadSounds( {
             "glock/gun_pistol_cock_01.wav",
             "glock/gun_pistol_cock_02.wav",
             "glock/gun_pistol_cock_03.wav",
@@ -198,6 +208,16 @@ namespace atto {
             "glock/gun_pistol_insert_mag_03.wav",
             "glock/gun_pistol_insert_mag_04.wav",
             "glock/gun_pistol_insert_mag_05.wav",
+        } );
+
+        sndDry.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndDry.LoadSounds( {
+            "glock/gun_pistol_dry_fire_01.wav",
+            "glock/gun_pistol_dry_fire_02.wav",
+            "glock/gun_pistol_dry_fire_03.wav",
+            "glock/gun_pistol_dry_fire_04.wav",
+            "glock/gun_pistol_dry_fire_05.wav",
+            "glock/gun_pistol_dry_fire_06.wav",
         } );
     }
 
@@ -238,16 +258,34 @@ namespace atto {
                 isAttacking = true;
             }
             else {
-                // Auto-reload on empty fire attempt
-                animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
-                isReloading = true;
+                sndDry.Play();
             }
         }
 
         // R to reload manually
         if ( input.IsKeyPressed( Key::R ) && isIdleWalkOrRun && !isReloading && ammo < MaxAmmo ) {
             animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
-            isReloading = true;
+            isReloading      = true;
+            reloadSnd1Played = false;
+            reloadSnd2Played = false;
+            reloadSnd3Played = false;
+        }
+
+        // Reload sound cues
+        if ( isReloading && curAnim == "Armature|Glock_Reload_Anim" ) {
+            f32 pct = animator.GetPercentComplete();
+            if ( !reloadSnd1Played ) {
+                sndRemoveMag.Play( 0.5f );
+                reloadSnd1Played = true;
+            }
+            if ( pct > 0.4f && !reloadSnd2Played ) {
+                sndInsertMag.Play( 0.5f );
+                reloadSnd2Played = true;
+            }
+            if ( pct > 0.7f && !reloadSnd3Played ) {
+                sndCock.Play( 0.5f );
+                reloadSnd3Played = true;
+            }
         }
 
         // Hit detection at 65% through fire animation

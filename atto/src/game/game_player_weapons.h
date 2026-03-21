@@ -42,13 +42,18 @@ namespace atto {
         Animator        animator;
         static constexpr i32 MaxAmmo = 12;
 
-        bool            isAttacking  = false;
-        bool            isEquipped   = false;
-        bool            isReloading  = false;
-        i32             ammo         = MaxAmmo;
+        bool            isAttacking      = false;
+        bool            isEquipped       = false;
+        bool            isReloading      = false;
+        bool            reloadSnd1Played = false;
+        bool            reloadSnd2Played = false;
+        bool            reloadSnd3Played = false;
+        i32             ammo             = MaxAmmo;
 
         SoundCollection sndEquip;
         SoundCollection sndShoot;
+        SoundCollection sndDry;
+        SoundCollection sndCock;
         SoundCollection sndRemoveMag;
         SoundCollection sndInsertMag;
     };
