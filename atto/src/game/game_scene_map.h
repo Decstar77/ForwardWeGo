@@ -20,8 +20,10 @@ namespace atto {
     private:
         GameMap             map;
         PlayerController    player;
+        UICanvas            ui;
         const Texture *     crosshairTexture = nullptr;
         const Font *        hudFont          = nullptr;
+        const Font *        hudFontSmall     = nullptr;
         f32                 fps              = 0.0f;
     };
 

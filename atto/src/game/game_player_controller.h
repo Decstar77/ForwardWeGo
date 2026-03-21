@@ -19,6 +19,9 @@ namespace atto {
         FPSCamera &         GetCamera() { return camera; }
         const FPSCamera &   GetCamera() const { return camera; }
 
+        WeaponSlot                  GetActiveWeapon() const { return activeWeapon; }
+        const PlayerWeaponGlock &   GetGlock()        const { return glock; }
+
     private:
         FPSCamera           camera;
         Capsule             playerCapsule;

@@ -37,6 +37,8 @@ namespace atto {
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
         bool IsAttacking() const { return isAttacking; }
+        i32  GetAmmo()     const { return ammo; }
+        i32  GetMaxAmmo()  const { return MaxAmmo; }
 
     private:
         AnimatedModel   model;

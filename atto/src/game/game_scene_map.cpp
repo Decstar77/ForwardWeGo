@@ -16,7 +16,8 @@ namespace atto {
         player.OnStart( map.GetPlayerStart().spawnPos );
 
         crosshairTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair008.png" );
-        hudFont          = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 18.0f );
+        hudFont          = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 26.0f );
+        hudFontSmall     = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 20.0f );
 
         Engine::Get().GetAudioSystem().SetMuted( false );
     }
@@ -50,11 +51,44 @@ namespace atto {
 
         player.OnRender( renderer );
 
-        renderer.RenderSprite( crosshairTexture, Vec2( 0.0f, 0.0f ), 32, 32, camera.GetViewportWidth(), camera.GetViewportHeight() );
+        // HUD
+        const i32 vpW = camera.GetViewportWidth();
+        const i32 vpH = camera.GetViewportHeight();
+
+        ui.Begin( vpW, vpH );
+
+        ui.Sprite(
+            UIConstraint::FromPreset( UIAnchorPreset::Center ),
+            crosshairTexture, 32, 32
+        );
 
         char fpsText[ 32 ];
         snprintf( fpsText, sizeof( fpsText ), "FPS: %.0f", fps );
-        renderer.DrawText( hudFont, fpsText, 20.0f, 20.0f, Vec4( 1.0f, 1.0f, 1.0f, 1.0f ), camera.GetViewportWidth(), camera.GetViewportHeight() );
+        ui.Text(
+            UIConstraint::FromPreset( UIAnchorPreset::TopLeft, Vec2( 20.0f, 20.0f ) ),
+            hudFont, fpsText, Vec4( 1.0f )
+        );
+
+        // Ammo / weapon display — bottom right
+        const bool hasAmmo = player.GetActiveWeapon() == WeaponSlot::Glock;
+        const char * weaponName = hasAmmo ? "Glock" : "Knife";
+
+        if ( hasAmmo ) {
+            char ammoText[ 32 ];
+            snprintf( ammoText, sizeof( ammoText ), "%d / %d",
+                      player.GetGlock().GetAmmo(), player.GetGlock().GetMaxAmmo() );
+            ui.Text(
+                UIConstraint::FromPreset( UIAnchorPreset::BottomRight, Vec2( -20.0f, -40.0f ) ),
+                hudFont, ammoText, Vec4( 1.0f )
+            );
+        }
+
+        ui.Text(
+            UIConstraint::FromPreset( UIAnchorPreset::BottomRight, Vec2( -20.0f, -20.0f ) ),
+            hudFontSmall, weaponName, Vec4( 0.7f, 0.7f, 0.7f, 1.0f )
+        );
+
+        ui.End( renderer );
     }
 
     void GameMapScene::OnShutdown() {
