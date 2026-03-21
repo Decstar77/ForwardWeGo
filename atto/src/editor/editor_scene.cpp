@@ -1000,6 +1000,7 @@ namespace atto {
                             map.DestroyEntityByIndex( idx );
                         }
                     }
+                    map.FlushDestroyedEntities();
                     selectedEntityIndices.clear();
                     selectedEntityIndex = -1;
                     entityCount = map.GetEntityCount();
@@ -1024,6 +1025,7 @@ namespace atto {
                 if ( ImGui::Button( "Delete Selected" ) ) {
                     Snapshot();
                     map.DestroyEntityByIndex( selectedEntityIndex );
+                    map.FlushDestroyedEntities();
                     entityCount = map.GetEntityCount();
                     selectedEntityIndices.clear();
                     selectedEntityIndex = -1;
@@ -1249,6 +1251,7 @@ namespace atto {
                     map.DestroyEntityByIndex( idx );
                 }
             }
+            map.FlushDestroyedEntities();
             selectedEntityIndices.clear();
             selectedEntityIndex = -1;
             unsavedChanges = true;

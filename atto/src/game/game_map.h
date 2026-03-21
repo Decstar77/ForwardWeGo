@@ -53,6 +53,7 @@ namespace atto {
         Entity *        CreateEntity( EntityType type );
         void            DestroyEntity( Entity * entity );
         void            DestroyEntityByIndex( i32 index );
+        void            FlushDestroyedEntities();
         Entity *        GetEntity( i32 index ) { return entities[index].get(); }
         const Entity *  GetEntity( i32 index ) const { return entities[index].get(); }
         i32             GetEntityCount() const { return static_cast<i32>(entities.size()); }

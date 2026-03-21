@@ -63,6 +63,8 @@ namespace atto {
         GameMap * GetMap() const { return map; }
         SpawnId         GetSpawnId() const { return spawnId; }
         void            SetSpawnId( SpawnId id ) { spawnId = id; }
+        bool            IsPendingDestroy() const { return pendingDestroy; }
+        void            MarkForDestroy() { pendingDestroy = true; }
 
         Mat4            GetModelMatrix() const;
 
@@ -91,6 +93,7 @@ namespace atto {
         GameMap * map = nullptr;
         Vec3 position = Vec3( 0.0f, 0.0f, 0.0f );
         Mat3 orientation = Mat3( 1 );
+        bool pendingDestroy = false;
     };
 
     class Entity_Barrel : public Entity {

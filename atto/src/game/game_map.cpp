@@ -57,7 +57,20 @@ namespace atto {
 
     void GameMap::Update( f32 dt ) {
         for ( auto & entity : entities ) {
-            entity->OnUpdate( dt );
+            if ( !entity->IsPendingDestroy() ) {
+                entity->OnUpdate( dt );
+            }
+        }
+
+        FlushDestroyedEntities();
+    }
+
+    void GameMap::FlushDestroyedEntities() {
+        for ( i32 i = static_cast<i32>( entities.size() ) - 1; i >= 0; i-- ) {
+            if ( entities[i]->IsPendingDestroy() ) {
+                entities[i]->OnDespawn();
+                entities.erase( entities.begin() + i );
+            }
         }
     }
 
@@ -106,12 +119,8 @@ namespace atto {
     }
 
     void GameMap::DestroyEntity( Entity * entity ) {
-        for ( i32 i = 0; i < static_cast<i32>( entities.size() ); i++ ) {
-            if ( entities[i].get() == entity ) {
-                entities[i]->OnDespawn();
-                entities.erase( entities.begin() + i );
-                return;
-            }
+        if ( entity ) {
+            entity->MarkForDestroy();
         }
     }
 
@@ -119,8 +128,7 @@ namespace atto {
         if ( index < 0 || index >= static_cast<i32>( entities.size() ) ) {
             return;
         }
-        entities[index]->OnDespawn();
-        entities.erase( entities.begin() + index );
+        entities[index]->MarkForDestroy();
     }
 
     i32 GameMap::AddBrush() {
