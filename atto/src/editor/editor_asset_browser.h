@@ -2,7 +2,9 @@
 
 #include "engine/atto_engine.h"
 #include "engine/renderer/atto_render_material.h"
+#include "editor_asset_thumbnail.h"
 
+#include <memory>
 #include <vector>
 #include <string>
 
@@ -34,8 +36,9 @@ namespace atto {
         };
 
         struct ModelEntry {
-            std::string path;
-            std::string filename;
+            std::string     path;
+            std::string     filename;
+            const Texture * thumbnail = nullptr;
         };
 
         static constexpr const char * TextureRootDir = "assets/textures";
@@ -50,6 +53,8 @@ namespace atto {
         std::vector<FolderEntry>  modelFolders;
         std::vector<ModelEntry>   models;
         std::string               modelCurrentDir;
+
+        std::unique_ptr<ThumbnailBaker> thumbnailBaker;
 
         const Texture *           folderIcon     = nullptr;
         const Texture *           modelIcon      = nullptr;

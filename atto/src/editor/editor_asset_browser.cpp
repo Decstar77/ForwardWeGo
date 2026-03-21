@@ -13,6 +13,8 @@ namespace atto {
         texCurrentDir   = TextureRootDir;
         modelCurrentDir = ModelRootDir;
 
+        thumbnailBaker = std::make_unique<ThumbnailBaker>();
+
         Renderer & renderer = Engine::Get().GetRenderer();
         folderIcon = renderer.GetOrLoadTexture( "assets/textures/editor/folder.png", true );
         modelIcon  = renderer.GetOrLoadTexture( "assets/textures/editor/model_icon.png", true );
@@ -65,6 +67,8 @@ namespace atto {
             return;
         }
 
+        Renderer & renderer = Engine::Get().GetRenderer();
+
         for ( const fs::directory_entry & entry : fs::directory_iterator( dir ) ) {
             if ( entry.is_directory() ) {
                 FolderEntry & folder = modelFolders.emplace_back();
@@ -85,6 +89,12 @@ namespace atto {
             ModelEntry & model = models.emplace_back();
             model.path     = entry.path().string();
             model.filename = entry.path().filename().string();
+
+            const std::string stem      = entry.path().stem().string();
+            const std::string thumbPath = "assets/textures/editor/thumbnails/" + stem + ".png";
+            if ( fs::exists( thumbPath ) ) {
+                model.thumbnail = renderer.GetOrLoadTexture( thumbPath.c_str(), true );
+            }
         }
     }
 
@@ -209,13 +219,6 @@ namespace atto {
             ImGui::Separator();
         }
 
-        if ( ImGui::Button("Gen ") ) {
-            ThumbnailBaker baker;
-            
-            baker.GenerateThumbnailsForFolder("assets/models/sm");
-            //baker.GenerateThumbnailForModel("assets/models/sm/SM_Prop_Drone_Quad_01.obj");
-        }
-
         // Navigation bar
         const bool atRoot = ( modelCurrentDir == ModelRootDir );
         if ( !atRoot ) {
@@ -229,7 +232,14 @@ namespace atto {
         const std::string relPath = fs::relative( fs::path( modelCurrentDir ), "assets" ).string();
         ImGui::TextDisabled( "%s", relPath.c_str() );
 
-        ImGui::SameLine( ImGui::GetContentRegionAvail().x - 160.0f );
+        ImGui::SameLine( ImGui::GetContentRegionAvail().x - 280.0f );
+        if ( ImGui::Button( "Regen Thumbs##mdl" ) ) {
+            LargeString fixedPath = LargeString::FromLiteral( modelCurrentDir.c_str() );
+            fixedPath.BackSlashesToSlashes();
+            thumbnailBaker->GenerateThumbnailsForFolder( fixedPath.GetCStr() );
+            RefreshModels();
+        }
+        ImGui::SameLine();
         if ( ImGui::Button( "Refresh##mdl" ) ) {
             RefreshModels();
         }
@@ -278,26 +288,31 @@ namespace atto {
             ImGui::PopID();
         }
 
-        // Models with dummy icon
-        ImTextureID modelTexID = (ImTextureID)(intptr_t)( modelIcon ? modelIcon->GetHandle() : 0 );
-        const bool hasModelIcon = ( modelIcon != nullptr );
+        // Models
+        ImTextureID fallbackTexID = (ImTextureID)(intptr_t)( modelIcon ? modelIcon->GetHandle() : 0 );
 
         for ( i32 i = 0; i < (i32)models.size(); i++ ) {
             ImGui::PushID( (i32)modelFolders.size() + i );
 
-            if ( hasModelIcon ) {
-                if ( ImGui::ImageButton( "##mdl", modelTexID, thumbSize, uv0, uv1 ) ) {
-                    selectedModelPath  = models[i].path;
+            const ModelEntry & m = models[i];
+            const bool hasTex = ( m.thumbnail != nullptr ) || ( modelIcon != nullptr );
+
+            if ( hasTex ) {
+                ImTextureID texID = m.thumbnail
+                    ? (ImTextureID)(intptr_t)m.thumbnail->GetHandle()
+                    : fallbackTexID;
+                if ( ImGui::ImageButton( "##mdl", texID, thumbSize, uv0, uv1 ) ) {
+                    selectedModelPath  = m.path;
                     modelSelectionMade = true;
                 }
             }
             else {
-                // Fallback: draw a colored button as dummy thumbnail
+                // Fallback: colored button
                 ImGui::PushStyleColor( ImGuiCol_Button,        ImVec4( 0.2f, 0.3f, 0.5f, 1.0f ) );
                 ImGui::PushStyleColor( ImGuiCol_ButtonHovered,  ImVec4( 0.3f, 0.4f, 0.6f, 1.0f ) );
                 ImGui::PushStyleColor( ImGuiCol_ButtonActive,   ImVec4( 0.4f, 0.5f, 0.7f, 1.0f ) );
                 if ( ImGui::Button( "3D", thumbSize ) ) {
-                    selectedModelPath  = models[i].path;
+                    selectedModelPath  = m.path;
                     modelSelectionMade = true;
                 }
                 ImGui::PopStyleColor( 3 );
@@ -305,11 +320,11 @@ namespace atto {
 
             if ( ImGui::IsItemHovered() ) {
                 ImGui::BeginTooltip();
-                ImGui::TextUnformatted( models[i].path.c_str() );
+                ImGui::TextUnformatted( m.path.c_str() );
                 ImGui::EndTooltip();
             }
 
-            ImGui::TextUnformatted( models[i].filename.c_str() );
+            ImGui::TextUnformatted( m.filename.c_str() );
             ImGui::NextColumn();
             ImGui::PopID();
         }
