@@ -10,6 +10,7 @@ namespace atto {
     void PlayerWeaponKnife::OnStart() {
         model.LoadFromFile( "assets/player/arms/knife.glb" );
         animator.PlayAnimation( model, "Armature|Knife_Idle_Anim", true );
+        isEquipped = true;
 
         sndSwing1.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndSwing1.LoadSounds( {
@@ -48,8 +49,27 @@ namespace atto {
         } );
     }
 
+    void PlayerWeaponKnife::OnEquip() {
+        animator.PlayAnimation( model, "Armature|Knife_Draw_Anim", false );
+        isAttacking = false;
+        isEquipped  = false;
+    }
+
     void PlayerWeaponKnife::OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map ) {
         ATTO_ASSERT( animator.GetCurrentAnimation(), "knife animator has no animation" );
+
+        // Finish equip animation before allowing any input
+        if ( !isEquipped ) {
+            if ( animator.IsFinished() ) {
+                isEquipped = true;
+                const char * idleAnim = !isMoving   ? "Armature|Knife_Idle_Anim"
+                                      : isSprinting ? "Armature|Knife_Run_Anim"
+                                      :               "Armature|Knife_Walk_Anim";
+                animator.PlayAnimation( model, idleAnim, true );
+            }
+            animator.Update( dt );
+            return;
+        }
 
         Input & input = Engine::Get().GetInput();
         const std::string & curAnim = animator.GetCurrentAnimation()->name;
@@ -139,13 +159,34 @@ namespace atto {
     void PlayerWeaponGlock::OnStart() {
         model.LoadFromFile( "assets/player/arms/glock.glb" );
         animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
-        isDrawn = true;
+        isEquipped = true;
+
+        sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndEquip.LoadSounds( {
+            "glock/gun_pistol_cock_01.wav",
+            "glock/gun_pistol_cock_02.wav",
+            "glock/gun_pistol_cock_03.wav",
+            "glock/gun_pistol_cock_04.wav",
+            "glock/gun_pistol_cock_05.wav",
+            "glock/gun_pistol_cock_06.wav",
+            "glock/gun_pistol_cock_07.wav",
+        } );
+
+        sndShoot.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndShoot.LoadSounds( {
+            "glock/gun_pistol_shot_01.wav",
+            "glock/gun_pistol_shot_02.wav",
+            "glock/gun_pistol_shot_03.wav",
+            "glock/gun_pistol_shot_04.wav",
+            "glock/gun_pistol_shot_05.wav",
+        } );
     }
 
-    void PlayerWeaponGlock::OnDraw() {
+    void PlayerWeaponGlock::OnEquip() {
         animator.PlayAnimation( model, "Armature|Glock_Draw_Anim", false );
         isAttacking = false;
-        isDrawn = false;
+        isEquipped  = false;
+        sndEquip.Play();
     }
 
     void PlayerWeaponGlock::OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map ) {
@@ -155,9 +196,9 @@ namespace atto {
         const std::string & curAnim = animator.GetCurrentAnimation()->name;
 
         // Finish draw animation before allowing any input
-        if ( !isDrawn ) {
+        if ( !isEquipped ) {
             if ( animator.IsFinished() ) {
-                isDrawn = true;
+                isEquipped = true;
                 const char * idleAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                       : isSprinting ? "Armature|Glock_Run_Anim"
                                       :               "Armature|Glock_Walk_Anim";
@@ -179,7 +220,7 @@ namespace atto {
 
         // Hit detection at 50% through fire animation
         if ( curAnim == "Armature|Glock_Fire_Anim"
-            && animator.GetPercentComplete() > 0.5f
+            && animator.GetPercentComplete() > 0.65f
             && isAttacking ) {
             isAttacking = false;
             MapRaycastResult result;
@@ -189,6 +230,8 @@ namespace atto {
                     result.entity->TakeDamage( 25 );
                 }
             }
+
+            sndShoot.Play( 0.5f );
         }
 
         // Return to locomotion after fire finishes

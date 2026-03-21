@@ -10,6 +10,7 @@ namespace atto {
     class PlayerWeaponKnife {
     public:
         void OnStart();
+        void OnEquip();
         void OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map );
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
@@ -19,6 +20,7 @@ namespace atto {
         AnimatedModel   model;
         Animator        animator;
         bool            isAttacking = false;
+        bool            isEquipped  = true;
 
         SoundCollection sndSwing1;
         SoundCollection sndSwing2;
@@ -29,7 +31,7 @@ namespace atto {
     class PlayerWeaponGlock {
     public:
         void OnStart();
-        void OnDraw();
+        void OnEquip();
         void OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map );
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
@@ -39,7 +41,10 @@ namespace atto {
         AnimatedModel   model;
         Animator        animator;
         bool            isAttacking = false;
-        bool            isDrawn     = false;
+        bool            isEquipped  = false;
+
+        SoundCollection sndEquip;
+        SoundCollection sndShoot;
     };
 
 }

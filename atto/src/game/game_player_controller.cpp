@@ -60,10 +60,11 @@ namespace atto {
         // Weapon switching
         if ( input.IsKeyPressed( Key::Num1 ) && activeWeapon != WeaponSlot::Knife ) {
             activeWeapon = WeaponSlot::Knife;
+            knife.OnEquip();
         }
         if ( input.IsKeyPressed( Key::Num2 ) && activeWeapon != WeaponSlot::Glock ) {
             activeWeapon = WeaponSlot::Glock;
-            glock.OnDraw();
+            glock.OnEquip();
         }
 
         if ( activeWeapon == WeaponSlot::Knife ) {
