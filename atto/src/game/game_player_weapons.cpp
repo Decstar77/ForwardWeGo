@@ -180,6 +180,25 @@ namespace atto {
             "glock/gun_pistol_shot_04.wav",
             "glock/gun_pistol_shot_05.wav",
         } );
+
+        sndRemoveMag.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndRemoveMag.LoadSounds( {
+            "glock/gun_pistol_remove_mag_01.wav",
+            "glock/gun_pistol_remove_mag_02.wav",
+            "glock/gun_pistol_remove_mag_03.wav",
+            "glock/gun_pistol_remove_mag_04.wav",
+            "glock/gun_pistol_remove_mag_05.wav",
+            "glock/gun_pistol_remove_mag_06.wav",
+        } );
+
+        sndInsertMag.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndInsertMag.LoadSounds( {
+            "glock/gun_pistol_insert_mag_01.wav",
+            "glock/gun_pistol_insert_mag_02.wav",
+            "glock/gun_pistol_insert_mag_03.wav",
+            "glock/gun_pistol_insert_mag_04.wav",
+            "glock/gun_pistol_insert_mag_05.wav",
+        } );
     }
 
     void PlayerWeaponGlock::OnEquip() {
@@ -212,17 +231,31 @@ namespace atto {
                                || curAnim == "Armature|Glock_Walk_Anim"
                                || curAnim == "Armature|Glock_Run_Anim" );
 
-        // Fire on left click — not while sprinting
-        if ( input.IsMouseButtonPressed( MouseButton::Left ) && isIdleWalkOrRun && !isSprinting ) {
-            animator.PlayAnimation( model, "Armature|Glock_Fire_Anim", false );
-            isAttacking = true;
+        // Fire on left click — not while sprinting or reloading
+        if ( input.IsMouseButtonPressed( MouseButton::Left ) && isIdleWalkOrRun && !isSprinting && !isReloading ) {
+            if ( ammo > 0 ) {
+                animator.PlayAnimation( model, "Armature|Glock_Fire_Anim", false );
+                isAttacking = true;
+            }
+            else {
+                // Auto-reload on empty fire attempt
+                animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
+                isReloading = true;
+            }
         }
 
-        // Hit detection at 50% through fire animation
+        // R to reload manually
+        if ( input.IsKeyPressed( Key::R ) && isIdleWalkOrRun && !isReloading && ammo < MaxAmmo ) {
+            animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
+            isReloading = true;
+        }
+
+        // Hit detection at 65% through fire animation
         if ( curAnim == "Armature|Glock_Fire_Anim"
             && animator.GetPercentComplete() > 0.65f
             && isAttacking ) {
             isAttacking = false;
+            ammo--;
             MapRaycastResult result;
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 50.0f ) {
@@ -230,12 +263,21 @@ namespace atto {
                     result.entity->TakeDamage( 25 );
                 }
             }
-
             sndShoot.Play( 0.5f );
         }
 
+        // Reload complete
+        if ( isReloading && animator.IsFinished() ) {
+            isReloading = false;
+            ammo        = MaxAmmo;
+            const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
+                                    : isSprinting ? "Armature|Glock_Run_Anim"
+                                    :               "Armature|Glock_Walk_Anim";
+            animator.PlayAnimation( model, returnAnim, true );
+        }
+
         // Return to locomotion after fire finishes
-        if ( animator.IsFinished() && !isIdleWalkOrRun ) {
+        if ( !isReloading && animator.IsFinished() && !isIdleWalkOrRun ) {
             isAttacking = false;
             const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                     : isSprinting ? "Armature|Glock_Run_Anim"
@@ -244,7 +286,7 @@ namespace atto {
         }
 
         // Locomotion transitions
-        if ( !isAttacking ) {
+        if ( !isAttacking && !isReloading ) {
             if ( !isMoving && curAnim != "Armature|Glock_Idle_Anim" ) {
                 animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
             }

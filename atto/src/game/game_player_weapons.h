@@ -40,11 +40,17 @@ namespace atto {
     private:
         AnimatedModel   model;
         Animator        animator;
-        bool            isAttacking = false;
-        bool            isEquipped  = false;
+        static constexpr i32 MaxAmmo = 12;
+
+        bool            isAttacking  = false;
+        bool            isEquipped   = false;
+        bool            isReloading  = false;
+        i32             ammo         = MaxAmmo;
 
         SoundCollection sndEquip;
         SoundCollection sndShoot;
+        SoundCollection sndRemoveMag;
+        SoundCollection sndInsertMag;
     };
 
 }
