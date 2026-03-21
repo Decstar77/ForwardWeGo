@@ -22,6 +22,7 @@ namespace atto {
         bool            isAttacking = false;
         bool            isEquipped  = true;
 
+        SoundCollection sndEquip;
         SoundCollection sndSwing1;
         SoundCollection sndSwing2;
         SoundCollection sndHitMetal1;
@@ -45,6 +46,7 @@ namespace atto {
         bool            isAttacking      = false;
         bool            isEquipped       = false;
         bool            isReloading      = false;
+        bool            isADS            = false;
         bool            reloadSnd1Played = false;
         bool            reloadSnd2Played = false;
         bool            reloadSnd3Played = false;

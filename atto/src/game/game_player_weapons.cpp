@@ -12,6 +12,14 @@ namespace atto {
         animator.PlayAnimation( model, "Armature|Knife_Idle_Anim", true );
         isEquipped = true;
 
+        sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndEquip.LoadSounds( {
+            "knife/draw-01.wav",
+            "knife/draw-02.wav",
+            "knife/draw-03.wav",
+            "knife/draw-04.wav",
+        } );
+
         sndSwing1.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndSwing1.LoadSounds( {
             "knife/swing-1_1.wav",
@@ -53,6 +61,7 @@ namespace atto {
         animator.PlayAnimation( model, "Armature|Knife_Draw_Anim", false );
         isAttacking = false;
         isEquipped  = false;
+        sndEquip.Play();
     }
 
     void PlayerWeaponKnife::OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map ) {
@@ -250,9 +259,36 @@ namespace atto {
         bool isIdleWalkOrRun = ( curAnim == "Armature|Glock_Idle_Anim"
                                || curAnim == "Armature|Glock_Walk_Anim"
                                || curAnim == "Armature|Glock_Run_Anim" );
+        bool isADSIdle = ( curAnim == "Armature|Glock_ADS_Anim" );
 
-        // Fire on left click — not while sprinting or reloading
-        if ( input.IsMouseButtonPressed( MouseButton::Left ) && isIdleWalkOrRun && !isSprinting && !isReloading ) {
+        // Enter ADS — RMB held while in a normal locomotion state
+        if ( input.IsMouseButtonDown( MouseButton::Right ) && !isADS && isIdleWalkOrRun && !isSprinting && !isReloading && !isAttacking ) {
+            isADS = true;
+            animator.PlayAnimation( model, "Armature|Glock_ADS_Anim", true );
+        }
+
+        // Exit ADS — RMB released while ADS idle (not mid-fire)
+        if ( !input.IsMouseButtonDown( MouseButton::Right ) && isADS && isADSIdle ) {
+            isADS = false;
+            const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
+                                    : isSprinting ? "Armature|Glock_Run_Anim"
+                                    :               "Armature|Glock_Walk_Anim";
+            animator.PlayAnimation( model, returnAnim, true );
+        }
+
+        // Fire — ADS
+        if ( input.IsMouseButtonPressed( MouseButton::Left ) && isADS && isADSIdle ) {
+            if ( ammo > 0 ) {
+                animator.PlayAnimation( model, "Armature|Glock_ADS_Fire_Anim", false );
+                isAttacking = true;
+            }
+            else {
+                sndDry.Play();
+            }
+        }
+
+        // Fire — hip
+        if ( input.IsMouseButtonPressed( MouseButton::Left ) && !isADS && isIdleWalkOrRun && !isSprinting && !isReloading ) {
             if ( ammo > 0 ) {
                 animator.PlayAnimation( model, "Armature|Glock_Fire_Anim", false );
                 isAttacking = true;
@@ -262,8 +298,8 @@ namespace atto {
             }
         }
 
-        // R to reload manually
-        if ( input.IsKeyPressed( Key::R ) && isIdleWalkOrRun && !isReloading && ammo < MaxAmmo ) {
+        // R to reload manually — not while ADS
+        if ( input.IsKeyPressed( Key::R ) && !isADS && isIdleWalkOrRun && !isReloading && ammo < MaxAmmo ) {
             animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
             isReloading      = true;
             reloadSnd1Played = false;
@@ -288,10 +324,9 @@ namespace atto {
             }
         }
 
-        // Hit detection at 65% through fire animation
-        if ( curAnim == "Armature|Glock_Fire_Anim"
-            && animator.GetPercentComplete() > 0.65f
-            && isAttacking ) {
+        // Hit detection at 65% — both hip and ADS fire
+        bool isFiring = ( curAnim == "Armature|Glock_Fire_Anim" || curAnim == "Armature|Glock_ADS_Fire_Anim" );
+        if ( isFiring && animator.GetPercentComplete() > 0.65f && isAttacking ) {
             isAttacking = false;
             ammo--;
             MapRaycastResult result;
@@ -314,8 +349,23 @@ namespace atto {
             animator.PlayAnimation( model, returnAnim, true );
         }
 
-        // Return to locomotion after fire finishes
-        if ( !isReloading && animator.IsFinished() && !isIdleWalkOrRun ) {
+        // ADS fire finished — return to ADS if RMB still held, else hip
+        if ( curAnim == "Armature|Glock_ADS_Fire_Anim" && animator.IsFinished() ) {
+            isAttacking = false;
+            if ( input.IsMouseButtonDown( MouseButton::Right ) ) {
+                animator.PlayAnimation( model, "Armature|Glock_ADS_Anim", true );
+            }
+            else {
+                isADS = false;
+                const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
+                                        : isSprinting ? "Armature|Glock_Run_Anim"
+                                        :               "Armature|Glock_Walk_Anim";
+                animator.PlayAnimation( model, returnAnim, true );
+            }
+        }
+
+        // Hip fire finished — return to locomotion
+        if ( curAnim == "Armature|Glock_Fire_Anim" && animator.IsFinished() ) {
             isAttacking = false;
             const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                     : isSprinting ? "Armature|Glock_Run_Anim"
@@ -323,8 +373,8 @@ namespace atto {
             animator.PlayAnimation( model, returnAnim, true );
         }
 
-        // Locomotion transitions
-        if ( !isAttacking && !isReloading ) {
+        // Locomotion transitions — only when fully in hip-fire mode
+        if ( !isAttacking && !isReloading && !isADS ) {
             if ( !isMoving && curAnim != "Armature|Glock_Idle_Anim" ) {
                 animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
             }
@@ -340,7 +390,11 @@ namespace atto {
     }
 
     void PlayerWeaponGlock::OnRender( Renderer & renderer, const FPSCamera & camera ) {
-        const Vec3 ArmsLocalOffset = Vec3( 0.05f, -0.22f, -0.1f );
+        Vec3 ArmsLocalOffset = Vec3( 0.05f, -0.22f, -0.1f );
+        if (isADS == true) {
+            ArmsLocalOffset = Vec3( 0.00f, -0.22f, -0.1f );
+        }
+
         Mat4 cameraWorld     = glm::inverse( camera.GetViewMatrix() );
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
         Mat4 armsMatrix      = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
