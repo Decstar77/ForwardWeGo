@@ -95,6 +95,32 @@ namespace atto {
         glEnableVertexAttribArray( 1 );
         glBindVertexArray( 0 );
 
+        if ( !spriteShader.CreateFromFiles( "assets/shaders/sprite.vert", "assets/shaders/sprite.frag" ) ) {
+            LOG_ERROR( "Failed to create sprite shader" );
+            return false;
+        }
+
+        // Unit quad: two triangles, each vertex is (x, y, u, v)
+        static const f32 SPRITE_QUAD[] = {
+            -1.0f, -1.0f,   0.0f, 0.0f,
+             1.0f, -1.0f,   1.0f, 0.0f,
+             1.0f,  1.0f,   1.0f, 1.0f,
+            -1.0f, -1.0f,   0.0f, 0.0f,
+             1.0f,  1.0f,   1.0f, 1.0f,
+            -1.0f,  1.0f,   0.0f, 1.0f,
+        };
+
+        glGenVertexArrays( 1, &spriteVAO );
+        glGenBuffers( 1, &spriteVBO );
+        glBindVertexArray( spriteVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, spriteVBO );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( SPRITE_QUAD ), SPRITE_QUAD, GL_STATIC_DRAW );
+        glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( f32 ), (void *)0 );
+        glEnableVertexAttribArray( 0 );
+        glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( f32 ), (void *)(2 * sizeof( f32 )) );
+        glEnableVertexAttribArray( 1 );
+        glBindVertexArray( 0 );
+
         if ( !skyboxShader.CreateFromFiles( "assets/shaders/skybox.vert", "assets/shaders/skybox.frag" ) ) {
             LOG_ERROR( "Failed to create skybox shader" );
             return false;
@@ -145,6 +171,15 @@ namespace atto {
             debugLineVBO = 0;
         }
 
+        if ( spriteVAO != 0 ) {
+            glDeleteVertexArrays( 1, &spriteVAO );
+            spriteVAO = 0;
+        }
+        if ( spriteVBO != 0 ) {
+            glDeleteBuffers( 1, &spriteVBO );
+            spriteVBO = 0;
+        }
+
         if ( skyboxVAO != 0 ) {
             glDeleteVertexArrays( 1, &skyboxVAO );
             skyboxVAO = 0;
@@ -162,6 +197,7 @@ namespace atto {
         modelLitShader.Destroy();
         modelUnlitShader.Destroy();
         skinnedLitShader.Destroy();
+        spriteShader.Destroy();
         skyboxShader.Destroy();
 
         LOG_INFO( "Renderer shutdown" );
@@ -337,6 +373,37 @@ namespace atto {
 
         glDepthMask( GL_TRUE );
         glDepthFunc( GL_LESS );
+    }
+
+    void Renderer::RenderSprite( const Texture * texture, Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH ) {
+        if ( !texture || !texture->IsValid() ) {
+            return;
+        }
+
+        Vec2 halfSize = Vec2(
+            (f32)pixelWidth  / (f32)viewportW,
+            (f32)pixelHeight / (f32)viewportH
+        );
+
+        glDisable( GL_DEPTH_TEST );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        spriteShader.Bind();
+        spriteShader.SetVec2( "uCenter",   centerNDC );
+        spriteShader.SetVec2( "uHalfSize", halfSize );
+        spriteShader.SetInt(  "uTexture",  0 );
+
+        texture->Bind( 0 );
+
+        glBindVertexArray( spriteVAO );
+        glDrawArrays( GL_TRIANGLES, 0, 6 );
+        glBindVertexArray( 0 );
+
+        spriteShader.Unbind();
+
+        glDisable( GL_BLEND );
+        glEnable( GL_DEPTH_TEST );
     }
 
     const Texture * Renderer::GetOrLoadTexture( const char * filePath ) {

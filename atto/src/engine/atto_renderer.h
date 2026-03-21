@@ -38,6 +38,9 @@ namespace atto {
         void LoadSkybox( const char * filePath );
         void RenderSkybox( const Mat4 & view, const Mat4 & projection );
 
+        // 2D sprite rendering (NDC center + pixel size relative to viewport)
+        void RenderSprite( const Texture * texture, Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH );
+
         // Texture management
         const Texture * GetOrLoadTexture( const char * filePath );
 
@@ -67,6 +70,11 @@ namespace atto {
         Shader modelUnlitShader;
         Shader skinnedLitShader;
         Shader * staticModelShader = nullptr;
+
+        // Sprite resources
+        Shader spriteShader;
+        u32    spriteVAO = 0;
+        u32    spriteVBO = 0;
 
         // Skybox resources
         Shader skyboxShader;

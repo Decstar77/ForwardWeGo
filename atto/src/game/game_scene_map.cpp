@@ -15,6 +15,8 @@ namespace atto {
 
         player.OnStart( map.GetPlayerStart().spawnPos );
 
+        crosshairTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair008.png" );
+
         Engine::Get().GetAudioSystem().SetMuted( false );
     }
 
@@ -44,6 +46,8 @@ namespace atto {
         renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
 
         player.OnRender( renderer );
+
+        renderer.RenderSprite( crosshairTexture, Vec2( 0.0f, 0.0f ), 32, 32, camera.GetViewportWidth(), camera.GetViewportHeight() );
     }
 
     void GameMapScene::OnShutdown() {

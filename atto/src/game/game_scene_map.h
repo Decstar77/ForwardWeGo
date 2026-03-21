@@ -20,6 +20,7 @@ namespace atto {
     private:
         GameMap             map;
         PlayerController    player;
+        const Texture *     crosshairTexture = nullptr;
     };
 
 }
