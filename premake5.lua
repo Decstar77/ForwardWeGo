@@ -27,6 +27,8 @@ project "atto"
     rtti "Off"
     warnings "Default"
     flags { "MultiProcessorCompile" }
+    targetdir ("build/bin/%{cfg.platform}/%{cfg.buildcfg}")
+    objdir ("build/obj/%{cfg.platform}/%{cfg.buildcfg}")
 
     files {
         "atto/src/**.h",
@@ -88,6 +90,10 @@ project "atto"
             "ws2_32",
             "winmm",
             "assimp-vc143-mt"
+        }
+
+        postbuildcommands {
+            '{COPY} "%{wks.location}/../vendor/assimp/bin/x64/assimp-vc143-mt.dll" "%{cfg.targetdir}"'
         }
 
 
