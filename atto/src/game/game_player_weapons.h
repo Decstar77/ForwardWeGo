@@ -29,6 +29,7 @@ namespace atto {
     class PlayerWeaponGlock {
     public:
         void OnStart();
+        void OnDraw();
         void OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map );
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
@@ -36,8 +37,9 @@ namespace atto {
 
     private:
         AnimatedModel   model;
-        
-        bool isAttacking = false;
+        Animator        animator;
+        bool            isAttacking = false;
+        bool            isDrawn     = false;
     };
 
 }

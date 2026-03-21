@@ -13,6 +13,7 @@ namespace atto {
         camera.SetLookSensitivity( 0.1f );
 
         knife.OnStart();
+        glock.OnStart();
 
         sndFootsteps.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndFootsteps.LoadSounds( {
@@ -56,7 +57,21 @@ namespace atto {
         if ( input.IsKeyDown( Key::D ) ) { camera.MoveRight( speed );    isMoving = true; }
         if ( input.IsKeyDown( Key::A ) ) { camera.MoveRight( -speed );   isMoving = true; }
 
-        knife.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
+        // Weapon switching
+        if ( input.IsKeyPressed( Key::Num1 ) && activeWeapon != WeaponSlot::Knife ) {
+            activeWeapon = WeaponSlot::Knife;
+        }
+        if ( input.IsKeyPressed( Key::Num2 ) && activeWeapon != WeaponSlot::Glock ) {
+            activeWeapon = WeaponSlot::Glock;
+            glock.OnDraw();
+        }
+
+        if ( activeWeapon == WeaponSlot::Knife ) {
+            knife.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
+        }
+        else {
+            glock.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
+        }
 
         Vec3 playerPos = camera.GetPosition();
         playerPos.y    = 0.0f;
@@ -90,7 +105,12 @@ namespace atto {
 
     void PlayerController::OnRender( Renderer & renderer ) {
         renderer.ClearDepthBuffer();
-        knife.OnRender( renderer, camera );
+        if ( activeWeapon == WeaponSlot::Knife ) {
+            knife.OnRender( renderer, camera );
+        }
+        else {
+            glock.OnRender( renderer, camera );
+        }
     }
 
     void PlayerController::OnResize( i32 width, i32 height ) {

@@ -7,6 +7,8 @@ namespace atto {
 
     class GameMap;
 
+    enum class WeaponSlot { Knife, Glock };
+
     class PlayerController {
     public:
         void OnStart( const Vec3 & position );
@@ -21,6 +23,8 @@ namespace atto {
         FPSCamera           camera;
         Capsule             playerCapsule;
         PlayerWeaponKnife   knife;
+        PlayerWeaponGlock   glock;
+        WeaponSlot          activeWeapon = WeaponSlot::Knife;
 
         SoundCollection     sndFootsteps;
         f32                 footstepTimer    = 0.0f;

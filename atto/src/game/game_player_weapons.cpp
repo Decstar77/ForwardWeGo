@@ -138,13 +138,90 @@ namespace atto {
     // =========================================================================
 
     void PlayerWeaponGlock::OnStart() {
-        
+        model.LoadFromFile( "assets/player/arms/glock.glb" );
+        animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
+        isDrawn = true;
+    }
+
+    void PlayerWeaponGlock::OnDraw() {
+        animator.PlayAnimation( model, "Armature|Glock_Draw_Anim", false );
+        isAttacking = false;
+        isDrawn = false;
     }
 
     void PlayerWeaponGlock::OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map ) {
+        ATTO_ASSERT( animator.GetCurrentAnimation(), "glock animator has no animation" );
+
+        Input & input = Engine::Get().GetInput();
+        const std::string & curAnim = animator.GetCurrentAnimation()->name;
+
+        // Finish draw animation before allowing any input
+        if ( !isDrawn ) {
+            if ( animator.IsFinished() ) {
+                isDrawn = true;
+                const char * idleAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
+                                      : isSprinting ? "Armature|Glock_Run_Anim"
+                                      :               "Armature|Glock_Walk_Anim";
+                animator.PlayAnimation( model, idleAnim, true );
+            }
+            animator.Update( dt );
+            return;
+        }
+
+        bool isIdleWalkOrRun = ( curAnim == "Armature|Glock_Idle_Anim"
+                               || curAnim == "Armature|Glock_Walk_Anim"
+                               || curAnim == "Armature|Glock_Run_Anim" );
+
+        // Fire on left click — not while sprinting
+        if ( input.IsMouseButtonPressed( MouseButton::Left ) && isIdleWalkOrRun && !isSprinting ) {
+            animator.PlayAnimation( model, "Armature|Glock_Fire_Anim", false );
+            isAttacking = true;
+        }
+
+        // Hit detection at 50% through fire animation
+        if ( curAnim == "Armature|Glock_Fire_Anim"
+            && animator.GetPercentComplete() > 0.5f
+            && isAttacking ) {
+            isAttacking = false;
+            MapRaycastResult result;
+            if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
+                if ( result.entity && result.distance <= 50.0f ) {
+                    LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
+                    result.entity->TakeDamage( 25 );
+                }
+            }
+        }
+
+        // Return to locomotion after fire finishes
+        if ( animator.IsFinished() && !isIdleWalkOrRun ) {
+            isAttacking = false;
+            const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
+                                    : isSprinting ? "Armature|Glock_Run_Anim"
+                                    :               "Armature|Glock_Walk_Anim";
+            animator.PlayAnimation( model, returnAnim, true );
+        }
+
+        // Locomotion transitions
+        if ( !isAttacking ) {
+            if ( !isMoving && curAnim != "Armature|Glock_Idle_Anim" ) {
+                animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
+            }
+            else if ( isMoving && isSprinting && curAnim != "Armature|Glock_Run_Anim" ) {
+                animator.PlayAnimation( model, "Armature|Glock_Run_Anim", true );
+            }
+            else if ( isMoving && !isSprinting && curAnim != "Armature|Glock_Walk_Anim" ) {
+                animator.PlayAnimation( model, "Armature|Glock_Walk_Anim", true );
+            }
+        }
+
+        animator.Update( dt );
     }
 
     void PlayerWeaponGlock::OnRender( Renderer & renderer, const FPSCamera & camera ) {
+        Mat4 cameraWorld     = glm::inverse( camera.GetViewMatrix() );
+        Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
+        Mat4 armsMatrix      = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
+        renderer.RenderAnimatedModel( model, animator, armsMatrix );
     }
 
 }
