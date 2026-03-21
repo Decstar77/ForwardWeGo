@@ -104,6 +104,21 @@ namespace atto {
             return false;
         }
 
+        if ( !textShader.CreateFromFiles( "assets/shaders/text.vert", "assets/shaders/text.frag" ) ) {
+            LOG_ERROR( "Failed to create text shader" );
+            return false;
+        }
+
+        glGenVertexArrays( 1, &textVAO );
+        glGenBuffers( 1, &textVBO );
+        glBindVertexArray( textVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, textVBO );
+        glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( f32 ), (void *)0 );
+        glEnableVertexAttribArray( 0 );
+        glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof( f32 ), (void *)(2 * sizeof( f32 )) );
+        glEnableVertexAttribArray( 1 );
+        glBindVertexArray( 0 );
+
         // Unit quad: two triangles, each vertex is (x, y, u, v)
         static const f32 SPRITE_QUAD[] = {
             -1.0f, -1.0f,   0.0f, 0.0f,
@@ -197,11 +212,15 @@ namespace atto {
             skyboxTexture = 0;
         }
 
+        if ( textVAO != 0 ) { glDeleteVertexArrays( 1, &textVAO ); textVAO = 0; }
+        if ( textVBO != 0 ) { glDeleteBuffers( 1, &textVBO );      textVBO = 0; }
+
         flatColorShader.Destroy();
         modelLitShader.Destroy();
         modelUnlitShader.Destroy();
         skinnedLitShader.Destroy();
         spriteShader.Destroy();
+        textShader.Destroy();
         skyboxShader.Destroy();
 
         LOG_INFO( "Renderer shutdown" );
@@ -522,6 +541,73 @@ namespace atto {
             LOG_ERROR( "Failed to load font: %s at size %.1f", path, fontSize );
         }
         return &font;
+    }
+
+    void Renderer::DrawText( const Font * font, const char * text, f32 x, f32 y, Vec4 color, i32 viewportW, i32 viewportH ) {
+        if ( !font || !font->IsValid() || !text || *text == '\0' ) {
+            return;
+        }
+
+        struct TextVert { f32 x, y, u, v; };
+        static std::vector<TextVert> verts;
+        verts.clear();
+
+        const stbtt_bakedchar * charData = font->GetCharData();
+        f32 xpos = x;
+        f32 ypos = y;
+
+        while ( *text ) {
+            const char c = *text++;
+            if ( c == '\n' ) {
+                xpos  = x;
+                ypos += font->GetFontSize();
+                continue;
+            }
+            if ( c < FONT_FIRST_CHAR || c >= FONT_FIRST_CHAR + FONT_CHAR_COUNT ) {
+                continue;
+            }
+
+            stbtt_aligned_quad q;
+            stbtt_GetBakedQuad( charData, FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
+                                c - FONT_FIRST_CHAR, &xpos, &ypos, &q, 0 );
+
+            verts.push_back( { q.x0, q.y0, q.s0, q.t0 } );
+            verts.push_back( { q.x1, q.y0, q.s1, q.t0 } );
+            verts.push_back( { q.x1, q.y1, q.s1, q.t1 } );
+            verts.push_back( { q.x0, q.y0, q.s0, q.t0 } );
+            verts.push_back( { q.x1, q.y1, q.s1, q.t1 } );
+            verts.push_back( { q.x0, q.y1, q.s0, q.t1 } );
+        }
+
+        if ( verts.empty() ) {
+            return;
+        }
+
+        // Orthographic projection: (0,0) top-left, (w,h) bottom-right
+        Mat4 projection = glm::ortho( 0.0f, (f32)viewportW, (f32)viewportH, 0.0f );
+
+        glDisable( GL_DEPTH_TEST );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        textShader.Bind();
+        textShader.SetMat4( "uProjection", projection );
+        textShader.SetVec4( "uColor",      color );
+        textShader.SetInt(  "uFontAtlas",  0 );
+
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, font->GetAtlasHandle() );
+
+        glBindVertexArray( textVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, textVBO );
+        glBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)( verts.size() * sizeof( TextVert ) ), verts.data(), GL_DYNAMIC_DRAW );
+        glDrawArrays( GL_TRIANGLES, 0, (i32)verts.size() );
+        glBindVertexArray( 0 );
+
+        textShader.Unbind();
+
+        glDisable( GL_BLEND );
+        glEnable( GL_DEPTH_TEST );
     }
 
     bool Font::LoadFromFile( const char * filePath, f32 inFontSize ) {

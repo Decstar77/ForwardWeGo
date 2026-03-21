@@ -21,6 +21,8 @@ namespace atto {
         GameMap             map;
         PlayerController    player;
         const Texture *     crosshairTexture = nullptr;
+        const Font *        hudFont          = nullptr;
+        f32                 fps              = 0.0f;
     };
 
 }

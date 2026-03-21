@@ -16,6 +16,7 @@ namespace atto {
         player.OnStart( map.GetPlayerStart().spawnPos );
 
         crosshairTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair008.png" );
+        hudFont          = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 18.0f );
 
         Engine::Get().GetAudioSystem().SetMuted( false );
     }
@@ -30,6 +31,8 @@ namespace atto {
         if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
             Engine::Get().GetAudioSystem().ToggleMuted();
         }
+
+        fps = fps * 0.9f + ( 1.0f / deltaTime ) * 0.1f;
 
         player.OnUpdate( deltaTime, map );
 
@@ -48,6 +51,10 @@ namespace atto {
         player.OnRender( renderer );
 
         renderer.RenderSprite( crosshairTexture, Vec2( 0.0f, 0.0f ), 32, 32, camera.GetViewportWidth(), camera.GetViewportHeight() );
+
+        char fpsText[ 32 ];
+        snprintf( fpsText, sizeof( fpsText ), "FPS: %.0f", fps );
+        renderer.DrawText( hudFont, fpsText, 20.0f, 20.0f, Vec4( 1.0f, 1.0f, 1.0f, 1.0f ), camera.GetViewportWidth(), camera.GetViewportHeight() );
     }
 
     void GameMapScene::OnShutdown() {

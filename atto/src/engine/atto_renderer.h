@@ -42,6 +42,9 @@ namespace atto {
         // 2D sprite rendering (NDC center + pixel size relative to viewport)
         void RenderSprite( const Texture * texture, Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH );
 
+        // Text rendering — screen-space pixels, (0,0) at top-left
+        void DrawText( const Font * font, const char * text, f32 x, f32 y, Vec4 color, i32 viewportW, i32 viewportH );
+
         const Texture * GetOrLoadTexture( const char * filePath );
         const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
         const Font * GetOrLoadFont( const char * path, f32 fontSize );
@@ -98,6 +101,11 @@ namespace atto {
 
         // Fonts
         FixedList<Font, 64> fonts;
+
+        // Text rendering resources
+        Shader textShader;
+        u32    textVAO = 0;
+        u32    textVBO = 0;
 
     };
 
