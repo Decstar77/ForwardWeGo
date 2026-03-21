@@ -15,7 +15,11 @@ namespace atto {
         void Draw();
 
     private:
-        void Refresh();
+        void RefreshTextures();
+        void RefreshModels();
+
+        void DrawTexturesTab();
+        void DrawModelsTab();
 
         struct TextureEntry {
             std::string     path;
@@ -28,19 +32,38 @@ namespace atto {
             std::string name;
         };
 
-        static constexpr const char * RootDir = "assets/textures";
+        struct ModelEntry {
+            std::string path;
+            std::string filename;
+        };
 
-        std::vector<FolderEntry>  folders;
+        static constexpr const char * TextureRootDir = "assets/textures";
+        static constexpr const char * ModelRootDir   = "assets/models";
+
+        // Texture tab state
+        std::vector<FolderEntry>  texFolders;
         std::vector<TextureEntry> textures;
-        std::string               currentDir;
+        std::string               texCurrentDir;
+
+        // Model tab state
+        std::vector<FolderEntry>  modelFolders;
+        std::vector<ModelEntry>   models;
+        std::string               modelCurrentDir;
+
         const Texture *           folderIcon     = nullptr;
+        const Texture *           modelIcon      = nullptr;
         f32                       thumbnailSize  = 80.0f;
         bool                      isOpen         = false;
+        i32                       activeTab      = 0; // 0 = Textures, 1 = Models
 
         // Texture selection for brushes
         i32                       selectingForBrush = -1;
         std::string               selectedTexturePath;
         bool                      selectionMade     = false;
+
+        // Model selection
+        std::string               selectedModelPath;
+        bool                      modelSelectionMade = false;
     };
 
 } // namespace atto

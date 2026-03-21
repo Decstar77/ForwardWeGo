@@ -19,3 +19,6 @@ res
 *.vcxproj.user
 *.csproj
 build
+
+imgui.ini
+editor_state.json

@@ -71,3 +71,8 @@ bin/             # Build output
 - Multi-processor compilation enabled
 - Linked: `opengl32`, `openal32`, `assimp-vc143-mt`, `Dbghelp`, `ws2_32`, `winmm`
 - Warnings suppressed: C4100 (unreferenced param), C4201 (nameless struct), C4702 (unreachable code)
+
+
+## Build system
+- Premake5
+- Do not build project.

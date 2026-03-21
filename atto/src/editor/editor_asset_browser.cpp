@@ -8,16 +8,22 @@ namespace atto {
     namespace fs = std::filesystem;
 
     void EditorAssetBrowser::OnStart() {
-        currentDir = RootDir;
-        folderIcon = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/folder.png" );
-        Refresh();
+        texCurrentDir   = TextureRootDir;
+        modelCurrentDir = ModelRootDir;
+
+        Renderer & renderer = Engine::Get().GetRenderer();
+        folderIcon = renderer.GetOrLoadTexture( "assets/textures/folder.png" );
+        modelIcon  = renderer.GetOrLoadTexture( "assets/textures/model_icon.png" );
+
+        RefreshTextures();
+        RefreshModels();
     }
 
-    void EditorAssetBrowser::Refresh() {
-        folders.clear();
+    void EditorAssetBrowser::RefreshTextures() {
+        texFolders.clear();
         textures.clear();
 
-        const fs::path dir = currentDir;
+        const fs::path dir = texCurrentDir;
         if ( !fs::exists( dir ) || !fs::is_directory( dir ) ) {
             return;
         }
@@ -26,7 +32,7 @@ namespace atto {
 
         for ( const fs::directory_entry & entry : fs::directory_iterator( dir ) ) {
             if ( entry.is_directory() ) {
-                FolderEntry & folder = folders.emplace_back();
+                FolderEntry & folder = texFolders.emplace_back();
                 folder.path = entry.path().string();
                 folder.name = entry.path().filename().string();
                 continue;
@@ -48,14 +54,39 @@ namespace atto {
         }
     }
 
-    void EditorAssetBrowser::Draw() {
-        if ( !isOpen ) {
-            selectingForBrush = -1;
+    void EditorAssetBrowser::RefreshModels() {
+        modelFolders.clear();
+        models.clear();
+
+        const fs::path dir = modelCurrentDir;
+        if ( !fs::exists( dir ) || !fs::is_directory( dir ) ) {
             return;
         }
 
-        ImGui::Begin( "Asset Browser", &isOpen );
+        for ( const fs::directory_entry & entry : fs::directory_iterator( dir ) ) {
+            if ( entry.is_directory() ) {
+                FolderEntry & folder = modelFolders.emplace_back();
+                folder.path = entry.path().string();
+                folder.name = entry.path().filename().string();
+                continue;
+            }
 
+            if ( !entry.is_regular_file() ) {
+                continue;
+            }
+
+            const std::string ext = entry.path().extension().string();
+            if ( ext != ".obj" && ext != ".fbx" && ext != ".glb" && ext != ".gltf" ) {
+                continue;
+            }
+
+            ModelEntry & model = models.emplace_back();
+            model.path     = entry.path().string();
+            model.filename = entry.path().filename().string();
+        }
+    }
+
+    void EditorAssetBrowser::DrawTexturesTab() {
         if ( selectingForBrush >= 0 ) {
             ImGui::TextColored( ImVec4( 1.0f, 0.8f, 0.2f, 1.0f ), "Select texture for Brush %d", selectingForBrush );
             ImGui::SameLine();
@@ -66,28 +97,30 @@ namespace atto {
         }
 
         // Navigation bar
-        const bool atRoot = ( currentDir == RootDir );
+        const bool atRoot = ( texCurrentDir == TextureRootDir );
         if ( !atRoot ) {
             if ( ImGui::Button( "<- Up" ) ) {
-                currentDir = fs::path( currentDir ).parent_path().string();
-                Refresh();
+                texCurrentDir = fs::path( texCurrentDir ).parent_path().string();
+                RefreshTextures();
             }
             ImGui::SameLine();
         }
 
-        // Show path relative to "assets/" for brevity
-        const std::string relPath = fs::relative( fs::path( currentDir ), "assets" ).string();
+        const std::string relPath = fs::relative( fs::path( texCurrentDir ), "assets" ).string();
         ImGui::TextDisabled( "%s", relPath.c_str() );
 
         ImGui::SameLine( ImGui::GetContentRegionAvail().x - 160.0f );
-        if ( ImGui::Button( "Refresh" ) ) {
-            Refresh();
+        if ( ImGui::Button( "Refresh##tex" ) ) {
+            RefreshTextures();
         }
         ImGui::SameLine();
         ImGui::SetNextItemWidth( 100.0f );
-        ImGui::SliderFloat( "##size", &thumbnailSize, 40.0f, 200.0f );
+        ImGui::SliderFloat( "##size_tex", &thumbnailSize, 40.0f, 200.0f );
 
         ImGui::Separator();
+
+        // Scrollable grid region
+        ImGui::BeginChild( "##tex_scroll", ImVec2( 0, 0 ), false );
 
         // Grid layout
         const f32 padding     = 8.0f;
@@ -104,23 +137,23 @@ namespace atto {
         // Folders first
         ImTextureID folderTexID = (ImTextureID)(intptr_t)( folderIcon ? folderIcon->GetHandle() : 0 );
 
-        for ( i32 i = 0; i < (i32)folders.size(); i++ ) {
+        for ( i32 i = 0; i < (i32)texFolders.size(); i++ ) {
             ImGui::PushID( i );
 
             if ( ImGui::ImageButton( "##folder", folderTexID, thumbSize, uv0, uv1 ) ) {
-                currentDir = folders[i].path;
-                Refresh();
+                texCurrentDir = texFolders[i].path;
+                RefreshTextures();
                 ImGui::PopID();
-                break; // folders vector was cleared — stop iterating
+                break;
             }
 
             if ( ImGui::IsItemHovered() ) {
                 ImGui::BeginTooltip();
-                ImGui::TextUnformatted( folders[i].path.c_str() );
+                ImGui::TextUnformatted( texFolders[i].path.c_str() );
                 ImGui::EndTooltip();
             }
 
-            ImGui::TextUnformatted( folders[i].name.c_str() );
+            ImGui::TextUnformatted( texFolders[i].name.c_str() );
             ImGui::NextColumn();
             ImGui::PopID();
         }
@@ -129,7 +162,7 @@ namespace atto {
         const bool selecting = selectingForBrush >= 0;
 
         for ( i32 i = 0; i < (i32)textures.size(); i++ ) {
-            ImGui::PushID( (i32)folders.size() + i );
+            ImGui::PushID( (i32)texFolders.size() + i );
 
             ImTextureID texID = (ImTextureID)(intptr_t)( textures[i].texture ? textures[i].texture->GetHandle() : 0 );
 
@@ -161,6 +194,133 @@ namespace atto {
         }
 
         ImGui::Columns( 1 );
+        ImGui::EndChild();
+    }
+
+    void EditorAssetBrowser::DrawModelsTab() {
+        // Navigation bar
+        const bool atRoot = ( modelCurrentDir == ModelRootDir );
+        if ( !atRoot ) {
+            if ( ImGui::Button( "<- Up##mdl" ) ) {
+                modelCurrentDir = fs::path( modelCurrentDir ).parent_path().string();
+                RefreshModels();
+            }
+            ImGui::SameLine();
+        }
+
+        const std::string relPath = fs::relative( fs::path( modelCurrentDir ), "assets" ).string();
+        ImGui::TextDisabled( "%s", relPath.c_str() );
+
+        ImGui::SameLine( ImGui::GetContentRegionAvail().x - 160.0f );
+        if ( ImGui::Button( "Refresh##mdl" ) ) {
+            RefreshModels();
+        }
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth( 100.0f );
+        ImGui::SliderFloat( "##size_mdl", &thumbnailSize, 40.0f, 200.0f );
+
+        ImGui::Separator();
+
+        // Scrollable grid region
+        ImGui::BeginChild( "##mdl_scroll", ImVec2( 0, 0 ), false );
+
+        // Grid layout
+        const f32 padding     = 8.0f;
+        const f32 cellSize    = thumbnailSize + padding;
+        const f32 panelWidth  = ImGui::GetContentRegionAvail().x;
+        const i32 columnCount = Max( 1, (i32)( panelWidth / cellSize ) );
+
+        ImGui::Columns( columnCount, nullptr, false );
+
+        const ImVec2 thumbSize( thumbnailSize, thumbnailSize );
+        const ImVec2 uv0( 0, 1 );
+        const ImVec2 uv1( 1, 0 );
+
+        // Folders first
+        ImTextureID folderTexID = (ImTextureID)(intptr_t)( folderIcon ? folderIcon->GetHandle() : 0 );
+
+        for ( i32 i = 0; i < (i32)modelFolders.size(); i++ ) {
+            ImGui::PushID( i );
+
+            if ( ImGui::ImageButton( "##mfolder", folderTexID, thumbSize, uv0, uv1 ) ) {
+                modelCurrentDir = modelFolders[i].path;
+                RefreshModels();
+                ImGui::PopID();
+                break;
+            }
+
+            if ( ImGui::IsItemHovered() ) {
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted( modelFolders[i].path.c_str() );
+                ImGui::EndTooltip();
+            }
+
+            ImGui::TextUnformatted( modelFolders[i].name.c_str() );
+            ImGui::NextColumn();
+            ImGui::PopID();
+        }
+
+        // Models with dummy icon
+        ImTextureID modelTexID = (ImTextureID)(intptr_t)( modelIcon ? modelIcon->GetHandle() : 0 );
+        const bool hasModelIcon = ( modelIcon != nullptr );
+
+        for ( i32 i = 0; i < (i32)models.size(); i++ ) {
+            ImGui::PushID( (i32)modelFolders.size() + i );
+
+            if ( hasModelIcon ) {
+                if ( ImGui::ImageButton( "##mdl", modelTexID, thumbSize, uv0, uv1 ) ) {
+                    selectedModelPath  = models[i].path;
+                    modelSelectionMade = true;
+                }
+            }
+            else {
+                // Fallback: draw a colored button as dummy thumbnail
+                ImGui::PushStyleColor( ImGuiCol_Button,        ImVec4( 0.2f, 0.3f, 0.5f, 1.0f ) );
+                ImGui::PushStyleColor( ImGuiCol_ButtonHovered,  ImVec4( 0.3f, 0.4f, 0.6f, 1.0f ) );
+                ImGui::PushStyleColor( ImGuiCol_ButtonActive,   ImVec4( 0.4f, 0.5f, 0.7f, 1.0f ) );
+                if ( ImGui::Button( "3D", thumbSize ) ) {
+                    selectedModelPath  = models[i].path;
+                    modelSelectionMade = true;
+                }
+                ImGui::PopStyleColor( 3 );
+            }
+
+            if ( ImGui::IsItemHovered() ) {
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted( models[i].path.c_str() );
+                ImGui::EndTooltip();
+            }
+
+            ImGui::TextUnformatted( models[i].filename.c_str() );
+            ImGui::NextColumn();
+            ImGui::PopID();
+        }
+
+        ImGui::Columns( 1 );
+        ImGui::EndChild();
+    }
+
+    void EditorAssetBrowser::Draw() {
+        if ( !isOpen ) {
+            selectingForBrush = -1;
+            return;
+        }
+
+        ImGui::Begin( "Asset Browser", &isOpen );
+
+        if ( ImGui::BeginTabBar( "AssetBrowserTabs" ) ) {
+            if ( ImGui::BeginTabItem( "Textures" ) ) {
+                activeTab = 0;
+                DrawTexturesTab();
+                ImGui::EndTabItem();
+            }
+            if ( ImGui::BeginTabItem( "Models" ) ) {
+                activeTab = 1;
+                DrawModelsTab();
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
 
         ImGui::End();
     }
