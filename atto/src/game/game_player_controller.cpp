@@ -104,6 +104,14 @@ namespace atto {
         }
     }
 
+    void PlayerController::TakeDamage( i32 damage ) {
+        health -= damage;
+        if ( health < 0 ) {
+            health = 0;
+        }
+        LOG_INFO( "Player took %d damage, health: %d", damage, health );
+    }
+
     void PlayerController::OnRender( Renderer & renderer ) {
         renderer.ClearDepthBuffer();
         if ( activeWeapon == WeaponSlot::Knife ) {

@@ -49,6 +49,11 @@ namespace atto {
         const PlayerStart &  GetPlayerStart() const { return playerStart; }
         bool                 IsPlayerStartColliding() const;
 
+        void                 SetPlayerPosition( const Vec3 & pos ) { playerPosition = pos; }
+        Vec3                 GetPlayerPosition() const { return playerPosition; }
+        void                 DamagePlayer( i32 damage ) { playerDamagePending += damage; }
+        i32                  FlushPlayerDamage() { i32 d = playerDamagePending; playerDamagePending = 0; return d; }
+
         // =========== Entities ===========
         std::unique_ptr<Entity> MakeEntity( EntityType type );
         Entity *        CreateEntity( EntityType type );
@@ -81,6 +86,8 @@ namespace atto {
     private:
         SmallString path;
         PlayerStart playerStart;
+        Vec3        playerPosition = Vec3( 0.0f );
+        i32         playerDamagePending = 0;
 
         WaypointGraph                           navGraph;
         std::vector<std::unique_ptr<Entity>>    entities;

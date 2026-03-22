@@ -37,7 +37,16 @@ namespace atto {
 
         player.OnUpdate( deltaTime, map );
 
+        // Feed player position to the map so entities (AI) can query it
+        map.SetPlayerPosition( player.GetCamera().GetPosition() );
+
         map.Update( deltaTime );
+
+        // Apply any damage entities dealt to the player
+        i32 pendingDmg = map.FlushPlayerDamage();
+        if ( pendingDmg > 0 ) {
+            player.TakeDamage( pendingDmg );
+        }
     }
 
     void GameMapScene::OnRender( Renderer & renderer ) {
@@ -68,6 +77,17 @@ namespace atto {
             UIConstraint::FromPreset( UIAnchorPreset::TopLeft, Vec2( 20.0f, 20.0f ) ),
             hudFont, fpsText, Vec4( 1.0f )
         );
+
+        // Health display — bottom left
+        {
+            char healthText[ 32 ];
+            snprintf( healthText, sizeof( healthText ), "HP: %d", player.GetHealth() );
+            Vec4 healthColor = player.GetHealth() > 30 ? Vec4( 1.0f ) : Vec4( 1.0f, 0.3f, 0.3f, 1.0f );
+            ui.Text(
+                UIConstraint::FromPreset( UIAnchorPreset::BottomLeft, Vec2( 20.0f, -20.0f ) ),
+                hudFont, healthText, healthColor
+            );
+        }
 
         // Ammo / weapon display — bottom right
         const bool hasAmmo = player.GetActiveWeapon() == WeaponSlot::Glock;

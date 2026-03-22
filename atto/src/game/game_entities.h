@@ -157,6 +157,12 @@ namespace atto {
         const StaticModel * modelOpen = nullptr;
     };
 
+    enum class DroneAIState {
+        Wander,
+        Chase,
+        Attack
+    };
+
     class Entity_DroneQuad : public Entity {
     public:
         Entity_DroneQuad();
@@ -176,7 +182,11 @@ namespace atto {
         void Serialize( Serializer & serializer ) override;
 
     private:
-        void Think();
+        void BuildSmoothedPath( const std::vector<i32> & nodePath );
+        void PickNewWanderTarget();
+        void PathToward( const Vec3 & target );
+        bool CanSeePlayer() const;
+        bool HasLineOfSightTo( const Vec3 & target ) const;
 
         const StaticModel * model = nullptr;
         i32 health = 100;
@@ -195,9 +205,15 @@ namespace atto {
         f32 smoothPitch = 0.0f;
         f32 smoothRoll = 0.0f;
 
-        // Wander AI — smoothed path following
+        // Smoothed path following
         std::vector<Vec3> smoothedPath;
         i32 smoothedPathIndex = 0;
+
+        // AI state
+        DroneAIState aiState = DroneAIState::Wander;
+        f32 attackCooldown = 0.0f;
+        f32 lostSightTimer = 0.0f;
+        f32 rePathTimer = 0.0f;
     };
 
     class Entity_GameMode_KillAllEntities : public Entity {

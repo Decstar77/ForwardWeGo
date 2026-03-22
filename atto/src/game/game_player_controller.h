@@ -22,6 +22,10 @@ namespace atto {
         WeaponSlot                  GetActiveWeapon() const { return activeWeapon; }
         const PlayerWeaponGlock &   GetGlock()        const { return glock; }
 
+        void                TakeDamage( i32 damage );
+        i32                 GetHealth() const { return health; }
+        bool                IsAlive() const { return health > 0; }
+
     private:
         FPSCamera           camera;
         Capsule             playerCapsule;
@@ -29,6 +33,7 @@ namespace atto {
         PlayerWeaponGlock   glock;
         WeaponSlot          activeWeapon = WeaponSlot::Knife;
 
+        i32                 health           = 100;
         SoundCollection     sndFootsteps;
         f32                 footstepTimer    = 0.0f;
         f32                 footstepInterval = 0.6f;
