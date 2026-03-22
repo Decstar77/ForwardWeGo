@@ -7,6 +7,39 @@ namespace atto {
         return modelMatrix;
     }
 
+    void Entity::RotateXLocal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[0] ) ) );
+        orientation = r * orientation;
+    }
+
+    void Entity::RotateYLocal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[0] ) ) );
+        orientation = r * orientation;
+    }
+
+    void Entity::RotateZLocal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[2] ) ) );
+        orientation = r * orientation;
+    }
+
+    void Entity::RotateXGlobal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 1, 0, 0 ) ) );
+        orientation = r * orientation;
+        position = r * position;
+    }
+
+    void Entity::RotateYGlobal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 0, 1, 0 ) ) );
+        orientation = r * orientation;
+        position = r * position;
+    }
+
+    void Entity::RotateZGlobal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 0, 0, 1 ) ) );
+        orientation = r * orientation;
+        position = r * position;
+    }
+
     void Entity::Serialize( Serializer & serializer ) {
         // @SPEED: We should use a SmallString for this but the serializer doesn't support it yet
         if ( serializer.IsSaving() ) {

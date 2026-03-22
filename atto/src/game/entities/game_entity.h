@@ -81,6 +81,15 @@ namespace atto {
         virtual void        OnRender( Renderer & renderer ) {}
         virtual void        OnDespawn() {}
 
+        // ================ Helpers =============== //
+        void                RotateXLocal( f32 amount );
+        void                RotateYLocal( f32 amount );
+        void                RotateZLocal( f32 amount );
+
+        void                RotateXGlobal( f32 amount );
+        void                RotateYGlobal( f32 amount );
+        void                RotateZGlobal( f32 amount );
+
         // ================ Physics =============== //
         virtual AlignedBox  GetBounds() const { return {}; }
         virtual Box         GetCollider() const { return {}; }
@@ -94,7 +103,7 @@ namespace atto {
 
         // ================ Debug =============== //
         virtual void        DebugDrawBounds( Renderer & renderer ) {}
-        virtual void        DebugDrawCollider( Renderer & renderer ) {};
+        virtual void        DebugDrawCollider( Renderer & renderer ) {}
 
     protected:
         EntityType type = EntityType::None;

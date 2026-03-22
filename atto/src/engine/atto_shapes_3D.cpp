@@ -186,43 +186,43 @@ namespace atto {
         orientation = rotation * orientation;
     }
 
-    void Box::RotateXLocal( f32 amount ) {
-        Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[0] ) ) );
+    void Box::RotateXLocal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[0] ) ) );
         orientation = r * orientation;
     }
 
-    void Box::RotateYLocal( f32 amount ) {
-        Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[1] ) ) );
+    void Box::RotateYLocal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[1] ) ) );
         orientation = r * orientation;
     }
 
-    void Box::RotateZLocal( f32 amount ) {
-        Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[2] ) ) );
+    void Box::RotateZLocal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( orientation[2] ) ) );
         orientation = r * orientation;
     }
 
-    void Box::RotateXGlobal( f32 amount ) {
-        Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 1, 0, 0 ) ) );
-        orientation = r * orientation;
-        center = r * center;
-    }
-
-    void Box::RotateYGlobal( f32 amount ) {
-        Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 0, 1, 0 ) ) );
+    void Box::RotateXGlobal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 1, 0, 0 ) ) );
         orientation = r * orientation;
         center = r * center;
     }
 
-    void Box::RotateZGlobal( f32 amount ) {
-        Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 0, 0, 1 ) ) );
+    void Box::RotateYGlobal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 0, 1, 0 ) ) );
+        orientation = r * orientation;
+        center = r * center;
+    }
+
+    void Box::RotateZGlobal( const f32 amount ) {
+        const Mat3 r = Mat3( glm::rotate( Mat4( 1 ), amount, Vec3( 0, 0, 1 ) ) );
         orientation = r * orientation;
         center = r * center;
     }
 
     void Box::GetCorners( Vec3 * cornerArray ) const {
-        Vec3 ax = orientation[0] * halfExtent.x;
-        Vec3 ay = orientation[1] * halfExtent.y;
-        Vec3 az = orientation[2] * halfExtent.z;
+        const Vec3 ax = orientation[0] * halfExtent.x;
+        const Vec3 ay = orientation[1] * halfExtent.y;
+        const Vec3 az = orientation[2] * halfExtent.z;
         cornerArray[0] = center - ax - ay - az;
         cornerArray[1] = center + ax - ay - az;
         cornerArray[2] = center - ax + ay - az;

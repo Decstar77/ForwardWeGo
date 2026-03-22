@@ -28,6 +28,7 @@ namespace atto {
 
         void DebugDrawBounds( Renderer &renderer ) override;
         void DebugDrawCollider( Renderer & renderer ) override;
+        void DebugDrawPath( Renderer & renderer );
 
         void MoveTo( Vec3 target );
 
@@ -35,6 +36,8 @@ namespace atto {
         void PickPathTo( const Vec3 & dest );
         bool HasLineOfSightTo( const Vec3 & target ) const;
         bool CanSeePlayer() const;
+
+        Vec3 Avoidance( Vec3 currentDirection, f32 dt );
 
         const StaticModel * model = nullptr;
         i32 health = 100;

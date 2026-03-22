@@ -134,68 +134,9 @@ namespace atto {
         return atan2f( dir.y, dir.x );
     }
 
-    // Transform utilities
-    struct Transform2D {
-        Vec2 position = Vec2( 0.0f );
-        f32 rotation = 0.0f;  // radians
-        Vec2 scale = Vec2( 1.0f );
-
-        Mat4 ToMatrix() const {
-            Mat4 mat = Mat4( 1.0f );
-            mat = glm::translate( mat, Vec3( position, 0.0f ) );
-            mat = glm::rotate( mat, rotation, Vec3( 0.0f, 0.0f, 1.0f ) );
-            mat = glm::scale( mat, Vec3( scale, 1.0f ) );
-            return mat;
-        }
-
-        Vec2 TransformPoint( const Vec2 & point ) const {
-            Vec2 scaled = point * scale;
-            Vec2 rotated = Rotate( scaled, rotation );
-            return rotated + position;
-        }
-
-        Vec2 InverseTransformPoint( const Vec2 & point ) const {
-            Vec2 translated = point - position;
-            Vec2 rotated = Rotate( translated, -rotation );
-            return rotated / scale;
-        }
-    };
-
-    struct fp2 {
-        fp x;
-        fp y;
-
-        fp2() : x( fp( 0 ) ), y( fp( 0 ) ) {}
-        fp2( fp x, fp y ) : x( x ), y( y ) {}
-        explicit fp2( i32 x, i32 y ) : x( fp( x ) ), y( fp( y ) ) {}
-
-        fp2 operator+( const fp2 & other ) const { return { x + other.x, y + other.y }; }
-        fp2 operator-( const fp2 & other ) const { return { x - other.x, y - other.y }; }
-        fp2 operator*( fp scalar ) const { return { x * scalar, y * scalar }; }
-        fp2 operator/( fp scalar ) const { return { x / scalar, y / scalar }; }
-        fp2 operator-() const { return { -x, -y }; }
-
-        fp2 & operator+=( const fp2 & other ) { x += other.x; y += other.y; return *this; }
-        fp2 & operator-=( const fp2 & other ) { x -= other.x; y -= other.y; return *this; }
-        fp2 & operator*=( fp scalar ) { x *= scalar; y *= scalar; return *this; }
-
-        bool operator==( const fp2 & other ) const { return x == other.x && y == other.y; }
-        bool operator!=( const fp2 & other ) const { return !( *this == other ); }
-
-        // Convert to floating point Vec2 for rendering
-        Vec2 ToVec2() const { return Vec2( static_cast<f32>( x ), static_cast<f32>( y ) ); }
-
-        static fp2 FromVec2( const Vec2 & v ) { return fp2( fp( v.x ), fp( v.y ) ); }
-    };
-
-    // Fixed-point vector math utilities
-    inline fp FpDot( const fp2 & a, const fp2 & b ) { return a.x * b.x + a.y * b.y; }
-    inline fp FpLengthSquared( const fp2 & v ) { return FpDot( v, v ); }
-    inline fp FpDistanceSquared( const fp2 & a, const fp2 & b ) { return FpLengthSquared( b - a ); }
-
-    // These require fpm::sqrt - include fpm/math.hpp in the .cpp that uses them
-    fp FpLength( const fp2 & v );
-    fp FpDistance( const fp2 & a, const fp2 & b );
-    fp2 FpNormalize( const fp2 & v );
-
+    inline f32 NormalizeAngle( f32 angle ) {
+        while ( angle > PI ) { angle -= TWO_PI; }
+        while ( angle < -PI ) { angle += TWO_PI; }
+        return angle;
+    }
 } // namespace atto
