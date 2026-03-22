@@ -191,10 +191,6 @@ namespace atto {
         Renderer & renderer = Engine::Get().GetRenderer();
         model = renderer.GetOrLoadStaticModel( "assets/models/sm/SM_Prop_Drone_Quad_01.obj" );
         basePosition = position;
-        currentWaypointIndex = 0;
-        if ( !waypoints.empty() ) {
-            MoveTo( waypoints[0] );
-        }
     }
 
     void Entity_DroneQuad::MoveTo( const Vec3 & target ) {
@@ -202,19 +198,52 @@ namespace atto {
         hasTarget = true;
     }
 
-    void Entity_DroneQuad::AdvanceWaypoint() {
-        if ( waypoints.empty() ) { return; }
-        currentWaypointIndex = (currentWaypointIndex + 1) % static_cast<i32>(waypoints.size());
-        MoveTo( waypoints[currentWaypointIndex] );
-    }
 
     void Entity_DroneQuad::Serialize( Serializer & serializer ) {
         Entity::Serialize( serializer );
-        serializer( "Waypoints", waypoints );
+    }
+
+    void Entity_DroneQuad::Think() {
+        WaypointGraph & navGraph = map->GetNavGraph();
+        const i32 nodeCount = navGraph.GetNodeCount();
+        if ( nodeCount < 2 ) {
+            return;
+        }
+
+        // Advance along the existing path if one is queued
+        if ( wanderPathIndex < (i32)wanderPath.size() ) {
+            MoveTo( navGraph.GetWaypoint( wanderPath[wanderPathIndex] ).position );
+            wanderPathIndex++;
+            return;
+        }
+
+        // Path exhausted — compute a new one to a random node
+        i32 startNode = navGraph.FindNearestNode( basePosition );
+        if ( startNode < 0 ) {
+            return;
+        }
+
+        RNG & rng = Engine::Get().GetRNG();
+        i32 goalNode = rng.Signed32( 0, nodeCount - 1 );
+        if ( goalNode == startNode ) {
+            goalNode = ( goalNode + 1 ) % nodeCount;
+        }
+
+        wanderPath = navGraph.FindPath( startNode, goalNode );
+        wanderPathIndex = 1;  // index 0 is the start node we're already at
+
+        if ( wanderPathIndex < (i32)wanderPath.size() ) {
+            MoveTo( navGraph.GetWaypoint( wanderPath[wanderPathIndex] ).position );
+            wanderPathIndex++;
+        }
     }
 
     void Entity_DroneQuad::OnUpdate( f32 dt ) {
         hoverTime += dt;
+
+        if ( !hasTarget ) {
+            Think();
+        }
 
         // ---- Movement / arrival ----
         if ( hasTarget ) {
@@ -225,7 +254,6 @@ namespace atto {
                 basePosition = moveTarget;
                 velocity = Vec3( 0.0f );
                 hasTarget = false;
-                AdvanceWaypoint();
             }
             else {
                 Vec3 dir = toTarget / dist;

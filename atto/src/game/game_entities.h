@@ -176,14 +176,10 @@ namespace atto {
         void Serialize( Serializer & serializer ) override;
 
     private:
-        void AdvanceWaypoint();
+        void Think();
 
         const StaticModel * model = nullptr;
         i32 health = 100;
-
-        // Waypoint patrol
-        std::vector<Vec3> waypoints;
-        i32  currentWaypointIndex = 0;
 
         // Logical position (hover bob is added on top for rendering)
         Vec3 basePosition = Vec3( 0.0f );
@@ -198,6 +194,10 @@ namespace atto {
         f32 smoothYaw = 0.0f;
         f32 smoothPitch = 0.0f;
         f32 smoothRoll = 0.0f;
+
+        // Wander AI
+        std::vector<i32> wanderPath;
+        i32 wanderPathIndex = 0;
     };
 
     class Entity_GameMode_KillAllEntities : public Entity {
