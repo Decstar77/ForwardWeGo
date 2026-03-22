@@ -305,10 +305,12 @@ namespace atto {
 
         map.Render( renderer, 0.0, selectedBrushIndex );
 
-        const PlayerStart & playerStart = map.GetPlayerStart();
-        Vec3 capsuleColor = map.IsPlayerStartColliding() ? Vec3( 1.0f, 0.0f, 0.0f ) : Vec3( 0.0f, 1.0f, 0.0f );
-        renderer.DebugCapsule( playerStart.GetCapsule(), capsuleColor );
-
+        if ( selectionMode == EditorSelectionMode::PlayerStart ) {
+            const PlayerStart & playerStart = map.GetPlayerStart();
+            Vec3 capsuleColor = map.IsPlayerStartColliding() ? Vec3( 1.0f, 0.0f, 0.0f ) : Vec3( 0.0f, 1.0f, 0.0f );
+            renderer.DebugCapsule( playerStart.GetCapsule(), capsuleColor );
+        }
+        
         renderer.SetWireframe( false );
         renderer.UseLitShader();
 
@@ -438,6 +440,76 @@ namespace atto {
         DrawViewOverlay();
         DrawUnsavedChangesDialog();
         assetBrowser.Draw();
+
+        // Handle model drag-drop from asset browser into viewport
+        {
+            const ImGuiPayload * dragPayload = ImGui::GetDragDropPayload();
+            if ( dragPayload && dragPayload->IsDataType( "MODEL_ASSET" ) && ImGui::IsMouseReleased( ImGuiMouseButton_Left ) ) {
+                // Only accept if mouse is over the viewport (not over any ImGui window)
+                if ( !ImGui::IsWindowHovered( ImGuiHoveredFlags_AnyWindow ) ) {
+                    const char * modelPath = static_cast<const char *>( dragPayload->Data );
+
+                    // Normalize path separators
+                    std::string path = modelPath;
+                    for ( char & ch : path ) {
+                        if ( ch == '\\' ) ch = '/';
+                    }
+
+                    // Compute placement position via raycast from mouse into the scene
+                    Vec2 mousePos = Engine::Get().GetInput().GetMousePosition();
+                    Vec2i windowSize = Engine::Get().GetWindowSize();
+                    f32 ndcX = 2.0f * mousePos.x / static_cast<f32>( windowSize.x ) - 1.0f;
+                    f32 ndcY = 1.0f - 2.0f * mousePos.y / static_cast<f32>( windowSize.y );
+
+                    Mat4 vp = ( viewMode == EditorViewMode::Cam3D )
+                        ? flyCamera.GetViewProjectionMatrix()
+                        : GetOrthoViewProjectionMatrix();
+                    Mat4 invVP = glm::inverse( vp );
+
+                    Vec4 nearNDC = invVP * Vec4( ndcX, ndcY, -1.0f, 1.0f );
+                    Vec4 farNDC  = invVP * Vec4( ndcX, ndcY,  1.0f, 1.0f );
+                    Vec3 rayOrigin = Vec3( nearNDC ) / nearNDC.w;
+                    Vec3 rayDir    = Normalize( Vec3( farNDC ) / farNDC.w - rayOrigin );
+
+                    Vec3 spawnPos;
+                    MapRaycastResult hitResult;
+                    if ( map.Raycast( rayOrigin, rayDir, hitResult ) && hitResult.distance < 1e20f ) {
+                        spawnPos = rayOrigin + rayDir * hitResult.distance;
+                    }
+                    else {
+                        // No intersection — place 5 meters ahead of the camera
+                        if ( viewMode == EditorViewMode::Cam3D ) {
+                            spawnPos = flyCamera.GetPosition() + flyCamera.GetForward() * 5.0f;
+                        }
+                        else {
+                            spawnPos = ScreenToWorldOrtho( mousePos );
+                        }
+                    }
+
+                    // Snap position
+                    if ( snapEnabled ) {
+                        spawnPos.x = SnapValue( spawnPos.x );
+                        spawnPos.y = SnapValue( spawnPos.y );
+                        spawnPos.z = SnapValue( spawnPos.z );
+                    }
+
+                    Snapshot();
+                    Entity * ent = map.CreateEntity( EntityType::Prop );
+                    if ( ent ) {
+                        ent->SetPosition( spawnPos );
+                        ent->OnSpawn();
+
+                        const StaticModel * mdl = renderer.GetOrLoadStaticModel( path.c_str() );
+                        static_cast<Entity_Prop *>( ent )->SetModel( mdl );
+
+                        selectionMode = EditorSelectionMode::Entity;
+                        selectedEntityIndex = map.GetEntityCount() - 1;
+                        selectedEntityIndices = { selectedEntityIndex };
+                        unsavedChanges = true;
+                    }
+                }
+            }
+        }
 
         // Handle texture selection from asset browser
         if ( assetBrowser.selectionMade ) {

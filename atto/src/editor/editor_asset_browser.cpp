@@ -113,6 +113,7 @@ namespace atto {
         if ( !atRoot ) {
             if ( ImGui::Button( "<- Up" ) ) {
                 texCurrentDir = fs::path( texCurrentDir ).parent_path().string();
+                texSearch[ 0 ] = '\0';
                 RefreshTextures();
             }
             ImGui::SameLine();
@@ -128,6 +129,10 @@ namespace atto {
         ImGui::SameLine();
         ImGui::SetNextItemWidth( 100.0f );
         ImGui::SliderFloat( "##size_tex", &thumbnailSize, 40.0f, 200.0f );
+
+        // Search bar
+        ImGui::SetNextItemWidth( -1.0f );
+        ImGui::InputTextWithHint( "##tex_search", "Search...", texSearch, sizeof( texSearch ) );
 
         ImGui::Separator();
 
@@ -146,34 +151,48 @@ namespace atto {
         const ImVec2 uv0( 0, 1 );
         const ImVec2 uv1( 1, 0 );
 
-        // Folders first
+        // Build lowercase search string
+        const bool texFiltering = texSearch[ 0 ] != '\0';
+        std::string texSearchLower = texSearch;
+        for ( char & c : texSearchLower ) { c = (char)tolower( (unsigned char)c ); }
+
+        // Folders first (hidden while searching)
         ImTextureID folderTexID = (ImTextureID)(intptr_t)( folderIcon ? folderIcon->GetHandle() : 0 );
 
-        for ( i32 i = 0; i < (i32)texFolders.size(); i++ ) {
-            ImGui::PushID( i );
+        if ( !texFiltering ) {
+            for ( i32 i = 0; i < (i32)texFolders.size(); i++ ) {
+                ImGui::PushID( i );
 
-            if ( ImGui::ImageButton( "##folder", folderTexID, thumbSize, uv0, uv1 ) ) {
-                texCurrentDir = texFolders[i].path;
-                RefreshTextures();
+                if ( ImGui::ImageButton( "##folder", folderTexID, thumbSize, uv0, uv1 ) ) {
+                    texCurrentDir = texFolders[i].path;
+                    RefreshTextures();
+                    ImGui::PopID();
+                    break;
+                }
+
+                if ( ImGui::IsItemHovered() ) {
+                    ImGui::BeginTooltip();
+                    ImGui::TextUnformatted( texFolders[i].path.c_str() );
+                    ImGui::EndTooltip();
+                }
+
+                ImGui::TextUnformatted( texFolders[i].name.c_str() );
+                ImGui::NextColumn();
                 ImGui::PopID();
-                break;
             }
-
-            if ( ImGui::IsItemHovered() ) {
-                ImGui::BeginTooltip();
-                ImGui::TextUnformatted( texFolders[i].path.c_str() );
-                ImGui::EndTooltip();
-            }
-
-            ImGui::TextUnformatted( texFolders[i].name.c_str() );
-            ImGui::NextColumn();
-            ImGui::PopID();
         }
 
         // Textures
         const bool selecting = selectingForBrush >= 0;
 
         for ( i32 i = 0; i < (i32)textures.size(); i++ ) {
+            if ( texFiltering ) {
+                std::string nameLower = textures[i].filename;
+                for ( char & c : nameLower ) { c = (char)tolower( (unsigned char)c ); }
+                if ( nameLower.find( texSearchLower ) == std::string::npos ) {
+                    continue;
+                }
+            }
             ImGui::PushID( (i32)texFolders.size() + i );
 
             ImTextureID texID = (ImTextureID)(intptr_t)( textures[i].texture ? textures[i].texture->GetHandle() : 0 );
@@ -224,6 +243,7 @@ namespace atto {
         if ( !atRoot ) {
             if ( ImGui::Button( "<- Up##mdl" ) ) {
                 modelCurrentDir = fs::path( modelCurrentDir ).parent_path().string();
+                modelSearch[ 0 ] = '\0';
                 RefreshModels();
             }
             ImGui::SameLine();
@@ -247,6 +267,10 @@ namespace atto {
         ImGui::SetNextItemWidth( 100.0f );
         ImGui::SliderFloat( "##size_mdl", &thumbnailSize, 40.0f, 200.0f );
 
+        // Search bar
+        ImGui::SetNextItemWidth( -1.0f );
+        ImGui::InputTextWithHint( "##mdl_search", "Search...", modelSearch, sizeof( modelSearch ) );
+
         ImGui::Separator();
 
         // Scrollable grid region
@@ -264,34 +288,48 @@ namespace atto {
         const ImVec2 uv0( 0, 1 );
         const ImVec2 uv1( 1, 0 );
 
-        // Folders first
+        // Build lowercase search string
+        const bool mdlFiltering = modelSearch[ 0 ] != '\0';
+        std::string mdlSearchLower = modelSearch;
+        for ( char & c : mdlSearchLower ) { c = (char)tolower( (unsigned char)c ); }
+
+        // Folders first (hidden while searching)
         ImTextureID folderTexID = (ImTextureID)(intptr_t)( folderIcon ? folderIcon->GetHandle() : 0 );
 
-        for ( i32 i = 0; i < (i32)modelFolders.size(); i++ ) {
-            ImGui::PushID( i );
+        if ( !mdlFiltering ) {
+            for ( i32 i = 0; i < (i32)modelFolders.size(); i++ ) {
+                ImGui::PushID( i );
 
-            if ( ImGui::ImageButton( "##mfolder", folderTexID, thumbSize, uv0, uv1 ) ) {
-                modelCurrentDir = modelFolders[i].path;
-                RefreshModels();
+                if ( ImGui::ImageButton( "##mfolder", folderTexID, thumbSize, uv0, uv1 ) ) {
+                    modelCurrentDir = modelFolders[i].path;
+                    RefreshModels();
+                    ImGui::PopID();
+                    break;
+                }
+
+                if ( ImGui::IsItemHovered() ) {
+                    ImGui::BeginTooltip();
+                    ImGui::TextUnformatted( modelFolders[i].path.c_str() );
+                    ImGui::EndTooltip();
+                }
+
+                ImGui::TextUnformatted( modelFolders[i].name.c_str() );
+                ImGui::NextColumn();
                 ImGui::PopID();
-                break;
             }
-
-            if ( ImGui::IsItemHovered() ) {
-                ImGui::BeginTooltip();
-                ImGui::TextUnformatted( modelFolders[i].path.c_str() );
-                ImGui::EndTooltip();
-            }
-
-            ImGui::TextUnformatted( modelFolders[i].name.c_str() );
-            ImGui::NextColumn();
-            ImGui::PopID();
         }
 
         // Models
         ImTextureID fallbackTexID = (ImTextureID)(intptr_t)( modelIcon ? modelIcon->GetHandle() : 0 );
 
         for ( i32 i = 0; i < (i32)models.size(); i++ ) {
+            if ( mdlFiltering ) {
+                std::string nameLower = models[i].filename;
+                for ( char & c : nameLower ) { c = (char)tolower( (unsigned char)c ); }
+                if ( nameLower.find( mdlSearchLower ) == std::string::npos ) {
+                    continue;
+                }
+            }
             ImGui::PushID( (i32)modelFolders.size() + i );
 
             const ModelEntry & m = models[i];
@@ -316,6 +354,13 @@ namespace atto {
                     modelSelectionMade = true;
                 }
                 ImGui::PopStyleColor( 3 );
+            }
+
+            // Drag source for dropping models into the viewport
+            if ( ImGui::BeginDragDropSource( ImGuiDragDropFlags_SourceAllowNullID | ImGuiDragDropFlags_SourceNoDisableHover ) ) {
+                ImGui::SetDragDropPayload( "MODEL_ASSET", m.path.c_str(), m.path.size() + 1 );
+                ImGui::Text( "%s", m.filename.c_str() );
+                ImGui::EndDragDropSource();
             }
 
             if ( ImGui::IsItemHovered() ) {

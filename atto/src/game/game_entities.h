@@ -133,6 +133,8 @@ namespace atto {
 
         void Serialize( Serializer & serializer ) override;
 
+        void SetModel( const StaticModel * m ) { model = m; }
+
     private:
         const StaticModel * model = nullptr;
     };

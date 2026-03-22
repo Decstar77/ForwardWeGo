@@ -48,11 +48,13 @@ namespace atto {
         std::vector<FolderEntry>  texFolders;
         std::vector<TextureEntry> textures;
         std::string               texCurrentDir;
+        char                      texSearch[ 128 ] = {};
 
         // Model tab state
         std::vector<FolderEntry>  modelFolders;
         std::vector<ModelEntry>   models;
         std::string               modelCurrentDir;
+        char                      modelSearch[ 128 ] = {};
 
         std::unique_ptr<ThumbnailBaker> thumbnailBaker;
 
