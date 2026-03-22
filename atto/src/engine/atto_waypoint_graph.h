@@ -2,6 +2,7 @@
 
 #include "atto_core.h"
 #include "atto_math.h"
+#include "atto_assets.h"
 #include "atto_containers.h"
 
 #include <vector>
@@ -45,7 +46,8 @@ namespace atto {
         // inclusive. Returns empty if no path exists.
         std::vector<i32>        FindPath( i32 startIndex, i32 goalIndex );
 
-        void                    DebugDraw( Renderer & renderer ) const;
+        void                    Serialize( Serializer & serializer );
+        void                    DebugDraw( Renderer & renderer, i32 selectedNodeIndex, Vec3 selectedNodeColor ) const;
 
     private:
         std::vector<WaypointNode> nodes;

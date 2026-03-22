@@ -24,7 +24,8 @@ namespace atto {
         None,
         Brush,
         Entity,
-        PlayerStart
+        PlayerStart,
+        NavGraph
     };
 
     enum class EditorGizmoMode {
@@ -108,6 +109,7 @@ namespace atto {
         i32  BrushPickOrtho( Vec3 worldPos ) const;
         i32  BrushPick3D( Vec2 screenPos ) const;
         i32  EntityPick3D( Vec2 screenPos ) const;
+        i32  NavNodePick3D( Vec2 screenPos ) const;
         bool BrushTryStartEdgeDrag( Vec3 worldClickPos );
         void BrushUpdateEdgeDrag( Vec3 worldMousePos );
         void BrushStartMoveDrag( Vec3 worldClickPos );
@@ -155,6 +157,10 @@ namespace atto {
         i32              selectedEntityIndex = -1;   // primary (last clicked), shown in inspector
         std::vector<i32> selectedEntityIndices;      // full multi-selection set
         BrushDragState   brushDrag;
+
+        // NavGraph editing state
+        i32              selectedNavNodeIndex = -1;
+        bool             navConnectMode = false;    // when true, next viewport click connects to selected node
 
         // Snap
         bool snapEnabled = true;

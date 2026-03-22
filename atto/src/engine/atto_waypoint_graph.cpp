@@ -195,13 +195,79 @@ namespace atto {
         return path;
     }
 
-    void WaypointGraph::DebugDraw( Renderer & renderer ) const {
+    void WaypointGraph::Serialize( Serializer & serializer ) {
+        // Collect flat arrays for nodes and edges (save each undirected edge once: B > A)
+        std::vector<Vec3> positions;
+        std::vector<i32>  edgeNodeA;
+        std::vector<i32>  edgeNodeB;
+        std::vector<f32>  edgeCost;
+        std::vector<bool> edgeEnabled;
+
+        if ( serializer.IsSaving() ) {
+            for ( const WaypointNode & node : nodes ) {
+                positions.push_back( node.position );
+            }
+            for ( const WaypointNode & node : nodes ) {
+                for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
+                    const WaypointEdge & edge = node.edges[ e ];
+                    if ( edge.nodeBIndex > node.index ) {
+                        edgeNodeA.push_back( node.index );
+                        edgeNodeB.push_back( edge.nodeBIndex );
+                        edgeCost.push_back( edge.cost );
+                        edgeEnabled.push_back( edge.enabled );
+                    }
+                }
+            }
+        }
+
+        serializer( "positions",    positions );
+        serializer( "edgeNodeA",    edgeNodeA );
+        serializer( "edgeNodeB",    edgeNodeB );
+        serializer( "edgeCost",     edgeCost );
+        serializer( "edgeEnabled",  edgeEnabled );
+
+        if ( !serializer.IsSaving() ) {
+            nodes.clear();
+            for ( const Vec3 & pos : positions ) {
+                AddWaypoint( pos );
+            }
+            for ( i32 i = 0; i < (i32)edgeNodeA.size(); i++ ) {
+                ConnectWaypoints( edgeNodeA[ i ], edgeNodeB[ i ] );
+
+                // Restore custom cost and enabled on both directions
+                f32  cost    = ( i < (i32)edgeCost.size() )    ? edgeCost[ i ]    : 0.0f;
+                bool enabled = ( i < (i32)edgeEnabled.size() )  ? edgeEnabled[ i ] : true;
+
+                auto applyEdge = [&]( i32 from, i32 to ) {
+                    WaypointNode & n = nodes[ from ];
+                    for ( i32 e = 0; e < n.edges.GetCount(); e++ ) {
+                        if ( n.edges[ e ].nodeBIndex == to ) {
+                            n.edges[ e ].cost    = cost;
+                            n.edges[ e ].enabled = enabled;
+                            break;
+                        }
+                    }
+                };
+                applyEdge( edgeNodeA[ i ], edgeNodeB[ i ] );
+                applyEdge( edgeNodeB[ i ], edgeNodeA[ i ] );
+            }
+        }
+    }
+
+    void WaypointGraph::DebugDraw( Renderer & renderer, i32 selectedNodeIndex, Vec3 selectedNodeColor ) const {
         for ( const WaypointNode & node : nodes ) {
             const f32  r = 0.15f;
             const Vec3 & p = node.position;
-            renderer.DebugLine( p - Vec3( r, 0, 0 ), p + Vec3( r, 0, 0 ), Vec3( 0.2f, 0.8f, 0.2f ) );
-            renderer.DebugLine( p - Vec3( 0, r, 0 ), p + Vec3( 0, r, 0 ), Vec3( 0.2f, 0.8f, 0.2f ) );
-            renderer.DebugLine( p - Vec3( 0, 0, r ), p + Vec3( 0, 0, r ), Vec3( 0.2f, 0.8f, 0.2f ) );
+
+            Vec3 color = Vec3( 0.2f, 0.8f, 0.2f );
+            if ( selectedNodeIndex == node.index ) {
+                color = selectedNodeColor;
+            }
+
+            Sphere sphere;
+            sphere.center = p;
+            sphere.radius = r;
+            renderer.DebugSphere( sphere, color );
 
             for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
                 const WaypointEdge & edge = node.edges[ e ];

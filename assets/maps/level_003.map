@@ -377,6 +377,41 @@
             "Waypoints": []
         }
     ],
+    "navGraph": {
+        "edgeCost": [
+            4.0,
+            4.0
+        ],
+        "edgeEnabled": [
+            true,
+            true
+        ],
+        "edgeNodeA": [
+            0,
+            1
+        ],
+        "edgeNodeB": [
+            1,
+            2
+        ],
+        "positions": [
+            [
+                -4.0,
+                1.0,
+                -11.0
+            ],
+            [
+                0.0,
+                1.0,
+                -11.0
+            ],
+            [
+                4.0,
+                1.0,
+                -11.0
+            ]
+        ]
+    },
     "playerStart": {
         "spawnOri": [
             1.0,

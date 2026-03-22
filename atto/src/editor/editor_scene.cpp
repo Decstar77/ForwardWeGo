@@ -66,6 +66,14 @@ namespace atto {
                 selectedEntityIndex = -1;
                 selectedEntityIndices.clear();
             }
+            else if ( selectionMode == EditorSelectionMode::NavGraph ) {
+                if ( navConnectMode ) {
+                    navConnectMode = false;
+                }
+                else {
+                    selectedNavNodeIndex = -1;
+                }
+            }
         }
 
         if ( Engine::Get().IsCloseRequested() ) {
@@ -96,6 +104,7 @@ namespace atto {
             if ( input.IsKeyPressed( Key::Num1 ) && !alt ) { selectionMode = EditorSelectionMode::Brush; }
             if ( input.IsKeyPressed( Key::Num2 ) && !alt ) { selectionMode = EditorSelectionMode::Entity; }
             if ( input.IsKeyPressed( Key::Num3 ) && !alt ) { selectionMode = EditorSelectionMode::PlayerStart; }
+            if ( input.IsKeyPressed( Key::Num4 ) && !alt ) { selectionMode = EditorSelectionMode::NavGraph; navConnectMode = false; }
 
             if ( input.IsKeyPressed( Key::W ) ) { gizmoMode = EditorGizmoMode::Translate; }
             if ( input.IsKeyPressed( Key::E ) ) { gizmoMode = EditorGizmoMode::Rotate; }
@@ -125,6 +134,71 @@ namespace atto {
         }
 
         bool imguiWantsMouse = ImGui::GetIO().WantCaptureMouse || ( ImGuizmo::IsOver() && ImGuizmo::IsUsing() );
+
+        if ( selectionMode == EditorSelectionMode::NavGraph && !imguiWantsMouse && input.IsMouseButtonPressed( MouseButton::Left ) ) {
+            Vec2 mousePos = input.GetMousePosition();
+            i32 picked = NavNodePick3D( mousePos );
+
+            if ( navConnectMode ) {
+                // Connect/disconnect the picked node with the selected one
+                if ( picked >= 0 && picked != selectedNavNodeIndex && selectedNavNodeIndex >= 0 ) {
+                    Snapshot();
+                    WaypointGraph & graph = map.GetNavGraph();
+                    const WaypointNode & selNode = graph.GetWaypoint( selectedNavNodeIndex );
+                    bool alreadyConnected = false;
+                    for ( i32 e = 0; e < selNode.edges.GetCount(); e++ ) {
+                        if ( selNode.edges[ e ].nodeBIndex == picked ) { alreadyConnected = true; break; }
+                    }
+                    if ( alreadyConnected ) {
+                        graph.DisconnectWaypoints( selectedNavNodeIndex, picked );
+                    }
+                    else {
+                        graph.ConnectWaypoints( selectedNavNodeIndex, picked );
+                    }
+                    unsavedChanges = true;
+                }
+                navConnectMode = false;
+            }
+            else if ( shift ) {
+                // Shift+click: add a new node at the world hit point
+                Vec2i windowSize = Engine::Get().GetWindowSize();
+                f32 ndcX = 2.0f * mousePos.x / static_cast<f32>( windowSize.x ) - 1.0f;
+                f32 ndcY = 1.0f - 2.0f * mousePos.y / static_cast<f32>( windowSize.y );
+                Mat4 vp = ( viewMode == EditorViewMode::Cam3D )
+                    ? flyCamera.GetViewProjectionMatrix() : GetOrthoViewProjectionMatrix();
+                Mat4 invVP = glm::inverse( vp );
+                Vec4 nearNDC = invVP * Vec4( ndcX, ndcY, -1.0f, 1.0f );
+                Vec4 farNDC  = invVP * Vec4( ndcX, ndcY,  1.0f, 1.0f );
+                Vec3 rayOrigin = Vec3( nearNDC ) / nearNDC.w;
+                Vec3 rayDir    = Normalize( Vec3( farNDC ) / farNDC.w - rayOrigin );
+
+                Vec3 spawnPos;
+                MapRaycastResult hitResult;
+                if ( map.Raycast( rayOrigin, rayDir, hitResult ) && hitResult.distance < 1e20f ) {
+                    spawnPos = rayOrigin + rayDir * hitResult.distance;
+                }
+                else {
+                    spawnPos = ( viewMode == EditorViewMode::Cam3D )
+                        ? flyCamera.GetPosition() + flyCamera.GetForward() * 5.0f
+                        : ScreenToWorldOrtho( mousePos );
+                }
+                if ( snapEnabled ) {
+                    spawnPos.x = SnapValue( spawnPos.x );
+                    spawnPos.y = SnapValue( spawnPos.y );
+                    spawnPos.z = SnapValue( spawnPos.z );
+                }
+
+                Snapshot();
+                map.GetNavGraph().AddWaypoint( spawnPos );
+                selectedNavNodeIndex = map.GetNavGraph().GetNodeCount() - 1;
+                unsavedChanges = true;
+            }
+            else {
+                // Plain click: select node (or deselect if nothing hit)
+                selectedNavNodeIndex = picked;
+            }
+        }
+
         if ( selectionMode == EditorSelectionMode::Entity && !imguiWantsMouse && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             i32 picked = EntityPick3D( input.GetMousePosition() );
             bool shift  = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
@@ -305,6 +379,11 @@ namespace atto {
 
         map.Render( renderer, 0.0, selectedBrushIndex );
 
+        if ( selectionMode == EditorSelectionMode::NavGraph ) {
+            // Highlight the selected node: yellow normally, orange when in connect mode
+            map.GetNavGraph().DebugDraw( renderer, selectedNavNodeIndex, navConnectMode ? Vec3( 1.0f, 0.5f, 0.0f ) : Vec3( 1.0f, 1.0f, 0.0f ) );
+        }
+
         if ( selectionMode == EditorSelectionMode::PlayerStart ) {
             const PlayerStart & playerStart = map.GetPlayerStart();
             Vec3 capsuleColor = map.IsPlayerStartColliding() ? Vec3( 1.0f, 0.0f, 0.0f ) : Vec3( 0.0f, 1.0f, 0.0f );
@@ -382,6 +461,40 @@ namespace atto {
                     nullptr,
                     snapEnabled ? translateSnap : nullptr ) ) {
                     ps.spawnPos = Vec3( gizmoMatrix[3] );
+                    unsavedChanges = true;
+                }
+            }
+            else if ( selectionMode == EditorSelectionMode::NavGraph && selectedNavNodeIndex >= 0 && selectedNavNodeIndex < map.GetNavGraph().GetNodeCount() ) {
+                WaypointNode & node = map.GetNavGraph().GetWaypoint( selectedNavNodeIndex );
+                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), node.position );
+
+                if ( ImGuizmo::Manipulate(
+                    glm::value_ptr( view ),
+                    glm::value_ptr( proj ),
+                    ImGuizmo::TRANSLATE,
+                    ImGuizmo::WORLD,
+                    glm::value_ptr( gizmoMatrix ),
+                    nullptr,
+                    snapEnabled ? translateSnap : nullptr ) ) {
+                    node.position = Vec3( gizmoMatrix[ 3 ] );
+                    // Update edge distances for all edges incident to this node
+                    WaypointGraph & graph = map.GetNavGraph();
+                    for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
+                        WaypointEdge & edge = node.edges[ e ];
+                        const Vec3 & otherPos = graph.GetWaypoint( edge.nodeBIndex ).position;
+                        f32 newDist = Distance( node.position, otherPos );
+                        edge.distance = newDist;
+                        edge.cost     = newDist;
+                        // Mirror on the reverse edge
+                        WaypointNode & other = graph.GetWaypoint( edge.nodeBIndex );
+                        for ( i32 re = 0; re < other.edges.GetCount(); re++ ) {
+                            if ( other.edges[ re ].nodeBIndex == selectedNavNodeIndex ) {
+                                other.edges[ re ].distance = newDist;
+                                other.edges[ re ].cost     = newDist;
+                                break;
+                            }
+                        }
+                    }
                     unsavedChanges = true;
                 }
             }
@@ -645,6 +758,39 @@ namespace atto {
             f32 dist = 0.0f;
             if ( ent->RayTest( rayOrigin, rayDir, dist ) && dist < bestDist ) {
                 bestDist  = dist;
+                bestIndex = i;
+            }
+        }
+
+        return bestIndex;
+    }
+
+    i32 EditorScene::NavNodePick3D( Vec2 screenPos ) const {
+        const WaypointGraph & graph = map.GetNavGraph();
+        if ( graph.GetNodeCount() == 0 ) { return -1; }
+
+        Vec2i windowSize = Engine::Get().GetWindowSize();
+        f32 ndcX = 2.0f * screenPos.x / static_cast<f32>( windowSize.x ) - 1.0f;
+        f32 ndcY = 1.0f - 2.0f * screenPos.y / static_cast<f32>( windowSize.y );
+
+        Mat4 vp = ( viewMode == EditorViewMode::Cam3D ) ? flyCamera.GetViewProjectionMatrix() : GetOrthoViewProjectionMatrix();
+        Mat4 invVP = glm::inverse( vp );
+        Vec4 nearNDC = invVP * Vec4( ndcX, ndcY, -1.0f, 1.0f );
+        Vec4 farNDC  = invVP * Vec4( ndcX, ndcY,  1.0f, 1.0f );
+        Vec3 rayOrigin = Vec3( nearNDC ) / nearNDC.w;
+        Vec3 rayDir    = Normalize( Vec3( farNDC ) / farNDC.w - rayOrigin );
+
+        constexpr f32 pickRadius = 0.4f;
+        i32 bestIndex = -1;
+        f32 bestAlong = 1e30f;
+
+        for ( i32 i = 0; i < graph.GetNodeCount(); i++ ) {
+            const Vec3 toNode = graph.GetWaypoint( i ).position - rayOrigin;
+            f32 along = Dot( toNode, rayDir );
+            if ( along < 0.0f ) { continue; }
+            Vec3 perp = toNode - rayDir * along;
+            if ( Dot( perp, perp ) <= pickRadius * pickRadius && along < bestAlong ) {
+                bestAlong = along;
                 bestIndex = i;
             }
         }
@@ -949,8 +1095,13 @@ namespace atto {
         i32 sm = static_cast<i32>(selectionMode);
         ImGui::RadioButton( "Brush (1)", &sm, static_cast<i32>(EditorSelectionMode::Brush) ); ImGui::SameLine();
         ImGui::RadioButton( "Entity (2)", &sm, static_cast<i32>(EditorSelectionMode::Entity) ); ImGui::SameLine();
-        ImGui::RadioButton( "Player (3)", &sm, static_cast<i32>(EditorSelectionMode::PlayerStart) );
-        selectionMode = static_cast<EditorSelectionMode>(sm);
+        ImGui::RadioButton( "Player (3)", &sm, static_cast<i32>(EditorSelectionMode::PlayerStart) ); ImGui::SameLine();
+        ImGui::RadioButton( "NavGraph (4)", &sm, static_cast<i32>(EditorSelectionMode::NavGraph) );
+        EditorSelectionMode newMode = static_cast<EditorSelectionMode>(sm);
+        if ( newMode != selectionMode && newMode != EditorSelectionMode::NavGraph ) {
+            navConnectMode = false;
+        }
+        selectionMode = newMode;
 
         ImGui::Separator();
 
@@ -1190,6 +1341,127 @@ namespace atto {
                 ImGui::TextColored( ImVec4( 1, 0, 0, 1 ), "WARNING: Colliding with brush!" );
             }
         }
+        else if ( selectionMode == EditorSelectionMode::NavGraph ) {
+            WaypointGraph & graph = map.GetNavGraph();
+            const i32 nodeCount = graph.GetNodeCount();
+
+            ImGui::Text( "Nav Graph  (%d nodes)", nodeCount );
+            ImGui::Spacing();
+
+            // Add node button
+            if ( ImGui::Button( "+ Add Node" ) ) {
+                Vec3 spawnPos = ( viewMode == EditorViewMode::Cam3D )
+                    ? flyCamera.GetPosition() + flyCamera.GetForward() * 5.0f
+                    : orthoTarget;
+                if ( snapEnabled ) {
+                    spawnPos.x = SnapValue( spawnPos.x );
+                    spawnPos.y = SnapValue( spawnPos.y );
+                    spawnPos.z = SnapValue( spawnPos.z );
+                }
+                Snapshot();
+                graph.AddWaypoint( spawnPos );
+                selectedNavNodeIndex = graph.GetNodeCount() - 1;
+                unsavedChanges = true;
+            }
+
+            ImGui::SameLine();
+            ImGui::TextDisabled( "or Shift+Click in viewport" );
+
+            ImGui::Separator();
+
+            // Scrollable node list
+            ImGui::BeginChild( "##nav_node_list", ImVec2( 0, 120 ), true );
+            for ( i32 i = 0; i < nodeCount; i++ ) {
+                char label[32];
+                snprintf( label, sizeof( label ), "Node %d", i );
+                if ( ImGui::Selectable( label, selectedNavNodeIndex == i ) ) {
+                    selectedNavNodeIndex = i;
+                    navConnectMode = false;
+                }
+            }
+            ImGui::EndChild();
+
+            ImGui::Separator();
+
+            if ( selectedNavNodeIndex >= 0 && selectedNavNodeIndex < nodeCount ) {
+                WaypointNode & node = graph.GetWaypoint( selectedNavNodeIndex );
+
+                ImGui::Text( "Node %d", selectedNavNodeIndex );
+                ImGui::Spacing();
+
+                if ( ImGui::DragFloat3( "Position", &node.position.x, 0.1f ) ) {
+                    // Recompute edge distances after manual position edit
+                    for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
+                        WaypointEdge & edge = node.edges[ e ];
+                        f32 newDist = Distance( node.position, graph.GetWaypoint( edge.nodeBIndex ).position );
+                        edge.distance = newDist;
+                        edge.cost     = newDist;
+                        WaypointNode & other = graph.GetWaypoint( edge.nodeBIndex );
+                        for ( i32 re = 0; re < other.edges.GetCount(); re++ ) {
+                            if ( other.edges[ re ].nodeBIndex == selectedNavNodeIndex ) {
+                                other.edges[ re ].distance = newDist;
+                                other.edges[ re ].cost     = newDist;
+                                break;
+                            }
+                        }
+                    }
+                    unsavedChanges = true;
+                }
+
+                ImGui::Spacing();
+
+                // Connect mode
+                if ( navConnectMode ) {
+                    ImGui::TextColored( ImVec4( 1.0f, 0.5f, 0.0f, 1.0f ), "Click a node to connect/disconnect..." );
+                    if ( ImGui::Button( "Cancel" ) ) {
+                        navConnectMode = false;
+                    }
+                }
+                else {
+                    if ( ImGui::Button( "Connect to Node..." ) ) {
+                        navConnectMode = true;
+                    }
+                }
+
+                ImGui::Spacing();
+                ImGui::Text( "Connections: %d", node.edges.GetCount() );
+                ImGui::Separator();
+
+                for ( i32 e = node.edges.GetCount() - 1; e >= 0; e-- ) {
+                    WaypointEdge & edge = node.edges[ e ];
+                    ImGui::PushID( e );
+
+                    ImGui::Checkbox( "##en", &edge.enabled );
+                    ImGui::SameLine();
+                    ImGui::Text( "-> Node %d  (%.2f m)", edge.nodeBIndex, edge.distance );
+                    ImGui::SameLine();
+                    if ( ImGui::SmallButton( "X" ) ) {
+                        Snapshot();
+                        graph.DisconnectWaypoints( selectedNavNodeIndex, edge.nodeBIndex );
+                        unsavedChanges = true;
+                        ImGui::PopID();
+                        break;
+                    }
+
+                    ImGui::PopID();
+                }
+
+                ImGui::Spacing();
+                if ( ImGui::Button( "Delete Node" ) ) {
+                    Snapshot();
+                    graph.RemoveNode( selectedNavNodeIndex );
+                    selectedNavNodeIndex = Min( selectedNavNodeIndex, graph.GetNodeCount() - 1 );
+                    navConnectMode = false;
+                    unsavedChanges = true;
+                }
+            }
+            else {
+                selectedNavNodeIndex = -1;
+                ImGui::TextDisabled( "No node selected." );
+                ImGui::TextDisabled( "Click a node to select it." );
+                ImGui::TextDisabled( "Shift+Click to add a new node." );
+            }
+        }
 
         ImGui::End();
     }
@@ -1206,6 +1478,8 @@ namespace atto {
         selectedBrushIndex = -1;
         selectedEntityIndex = -1;
         selectedEntityIndices.clear();
+        selectedNavNodeIndex = -1;
+        navConnectMode = false;
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
         undoStack.clear();
@@ -1259,6 +1533,8 @@ namespace atto {
         selectedBrushIndex = -1;
         selectedEntityIndex = -1;
         selectedEntityIndices.clear();
+        selectedNavNodeIndex = -1;
+        navConnectMode = false;
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
         undoStack.clear();
@@ -1389,6 +1665,16 @@ namespace atto {
             selectedEntityIndices.clear();
             selectedEntityIndex = -1;
             unsavedChanges = true;
+        }
+        else if ( selectionMode == EditorSelectionMode::NavGraph && selectedNavNodeIndex >= 0 ) {
+            WaypointGraph & graph = map.GetNavGraph();
+            if ( selectedNavNodeIndex < graph.GetNodeCount() ) {
+                Snapshot();
+                graph.RemoveNode( selectedNavNodeIndex );
+                selectedNavNodeIndex = Min( selectedNavNodeIndex, graph.GetNodeCount() - 1 );
+                navConnectMode = false;
+                unsavedChanges = true;
+            }
         }
     }
 

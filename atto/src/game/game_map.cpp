@@ -34,6 +34,8 @@ namespace atto {
 
         playerStart.spawnPos = Vec3( 0.0f, 0.0f, 3.0f );
         playerStart.spawnOri = Mat3( 1 );
+
+        navGraph.Clear();
     }
 
     void GameMap::Initialize() {
@@ -295,6 +297,7 @@ namespace atto {
     void GameMap::Serialize( Serializer & serializer ) {
         serializer( "playerStart", playerStart );
         serializer( "brushes", brushes );
+        serializer( "navGraph", navGraph );
 
         serializer( "entities", entities, [this]( Serializer & sub ) -> std::unique_ptr<Entity>
             {
