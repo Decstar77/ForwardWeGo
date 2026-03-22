@@ -16,6 +16,7 @@
 #include "atto_audio.h"
 #include "atto_containers.h"
 #include "atto_renderer.h"
+#include "atto_class_factory.h"
 
 struct GLFWwindow;
 

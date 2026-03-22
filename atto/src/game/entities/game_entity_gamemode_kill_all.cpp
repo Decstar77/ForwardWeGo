@@ -2,6 +2,8 @@
 #include "../game_map.h"
 
 namespace atto {
+    ATTO_REGISTER_CLASS(  Entity, Entity_GameMode_KillAllEntities, EntityType::GameMode_KillAllEntities )
+
     Entity_GameMode_KillAllEntities::Entity_GameMode_KillAllEntities() {
         type = EntityType::GameMode_KillAllEntities;
     }

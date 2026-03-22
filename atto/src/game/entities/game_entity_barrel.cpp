@@ -1,11 +1,11 @@
-//
-// Created by porte on 3/22/2026.
-//
-
 #include "game_entity_barrel.h"
 #include "../game_map.h"
 
+#include "engine/atto_class_factory.h"
+
 namespace atto {
+    ATTO_REGISTER_CLASS( Entity, Entity_Barrel , EntityType::Barrel )
+
     Entity_Barrel::Entity_Barrel() {
         type = EntityType::Barrel;
     }

@@ -41,6 +41,8 @@
 
 #include "fpm/fixed.hpp"
 
+#define Stringify( x ) #x
+
 // Fixed-size types
 namespace atto {
     using b8 = int8_t;

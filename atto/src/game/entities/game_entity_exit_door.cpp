@@ -1,6 +1,8 @@
 #include "game_entity_exit_door.h"
 
 namespace atto {
+    ATTO_REGISTER_CLASS(  Entity, Entity_ExitDoor, EntityType::ExitDoor )
+
     Entity_ExitDoor::Entity_ExitDoor() {
         type = EntityType::ExitDoor;
     }

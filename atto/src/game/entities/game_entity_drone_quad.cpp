@@ -2,6 +2,8 @@
 #include "../game_map.h"
 
 namespace atto {
+    ATTO_REGISTER_CLASS(  Entity, Entity_DroneQuad, EntityType::Drone_QUAD )
+
     // -------------------------------------------------------
     //  Tuning constants
     // -------------------------------------------------------

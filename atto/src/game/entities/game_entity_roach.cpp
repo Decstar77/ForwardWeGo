@@ -7,6 +7,8 @@
 #include "game/game_map.h"
 
 namespace atto {
+    ATTO_REGISTER_CLASS(  Entity, Entity_Roach, EntityType::Roach )
+
     Entity_Roach::Entity_Roach() {
         type = EntityType::Roach;
     }

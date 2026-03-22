@@ -1,6 +1,8 @@
 #include "game_entity_prop.h"
 
 namespace atto {
+    ATTO_REGISTER_CLASS(  Entity, Entity_Prop, EntityType::Prop )
+
     Entity_Prop::Entity_Prop() {
         type = EntityType::Prop;
     }
