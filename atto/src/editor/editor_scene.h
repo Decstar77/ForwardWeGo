@@ -52,7 +52,7 @@ namespace atto {
         Vec3 moveOffset = Vec3( 0.0f );
     };
 
-    class EditorScene : public Scene<EditorScene> {
+    class EditorScene : public SceneInterface {
     public:
         static const char * GetSceneNameStatic() { return "Editor"; }
         const char * GetSceneName() override { return GetSceneNameStatic(); }

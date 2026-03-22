@@ -6,7 +6,7 @@
 
 namespace atto {
 
-    class GameMapScene : public Scene<GameMapScene> {
+    class GameMapScene : public SceneInterface {
     public:
         static const char * GetSceneNameStatic() { return "GameMapScene"; }
         const char * GetSceneName() override { return GetSceneNameStatic(); }

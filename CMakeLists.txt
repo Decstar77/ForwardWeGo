@@ -162,6 +162,7 @@ else()
         -fno-rtti
         -Wall
         -Wno-unused-parameter
+        -Wno-unused-local-typedefs
     )
 endif()
 

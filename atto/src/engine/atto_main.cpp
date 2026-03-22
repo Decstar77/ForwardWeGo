@@ -17,6 +17,7 @@ int main() {
         return -1;
     }
 
+    RegisterAllScenes();
     engine.Run( "Editor" );
 
     engine.Shutdown();

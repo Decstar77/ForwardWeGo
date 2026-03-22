@@ -100,8 +100,8 @@ namespace atto {
 
         LOG_INFO( "Old working directory: %s", std::filesystem::current_path().string().c_str() );
         // Change the current working directory to "assets"
-        std::filesystem::current_path( "../" );
-        LOG_INFO( "New working directory: %s", std::filesystem::current_path().string().c_str() );
+        //std::filesystem::current_path( "../" );
+        //LOG_INFO( "New working directory: %s", std::filesystem::current_path().string().c_str() );
 #endif
 
         // Set window icon

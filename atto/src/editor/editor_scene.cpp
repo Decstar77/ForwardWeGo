@@ -38,7 +38,6 @@ namespace atto {
         initialized = true;
 
         ImGui::CreateContext();
-        ImGuiIO & io = ImGui::GetIO();
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();

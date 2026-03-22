@@ -18,7 +18,7 @@ namespace atto {
     // Assimp helpers
     // =========================================================================
 
-    static inline Mat4 AiMat4ToGlm( const aiMatrix4x4 & m ) {
+    static inline Mat4 AiMat4ToGlm(const aiMatrix4x4 & m ) {
         return Mat4(
             m.a1, m.b1, m.c1, m.d1,
             m.a2, m.b2, m.c2, m.d2,

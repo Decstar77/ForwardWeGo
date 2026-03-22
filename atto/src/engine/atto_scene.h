@@ -5,37 +5,35 @@ namespace atto {
     class Renderer;
     class SceneInterface;
 
-    class SceneRegistryEntry {
-    public:
-        virtual std::unique_ptr<SceneInterface> CreateNewScene() const = 0;
-        virtual const char *                    GetSceneName() const = 0;
-    };
-
     class SceneRegistry {
     public:
-        inline static void RegisterScene( const SceneRegistryEntry * scene ) { scenes.push_back( scene ); }
-        inline static std::unique_ptr<SceneInterface> CreateNew( const char * name ) {
-            for ( const auto & s : scenes ) {
-                if ( strcmp( s->GetSceneName(), name ) == 0 ) {
-                    return s->CreateNewScene();
+        template<typename T>
+        static void Register() {
+            Entry entry;
+            entry.name = T::GetSceneNameStatic();
+            entry.create = []() -> std::unique_ptr<SceneInterface> { return std::make_unique<T>(); };
+            GetEntries().push_back( entry );
+        }
+
+        static std::unique_ptr<SceneInterface> CreateNew( const char * name ) {
+            for ( const auto & e : GetEntries() ) {
+                if ( strcmp( e.name, name ) == 0 ) {
+                    return e.create();
                 }
             }
             return nullptr;
         }
-        
+
     private:
-        inline static std::vector< const SceneRegistryEntry * > scenes;
-    };
+        struct Entry {
+            const char * name;
+            std::unique_ptr<SceneInterface>( *create )();
+        };
 
-    template<typename _type_>
-    class SceneRegistryTyped : public SceneRegistryEntry {
-    public:
-        SceneRegistryTyped() { 
-            SceneRegistry::RegisterScene( this ); 
+        static std::vector<Entry> & GetEntries() {
+            static std::vector<Entry> entries;
+            return entries;
         }
-
-        virtual std::unique_ptr<SceneInterface> CreateNewScene() const override { return std::make_unique<_type_>(); }
-        virtual const char *                    GetSceneName() const { return _type_::GetSceneNameStatic(); }
     };
 
     class SceneInterface {
@@ -53,9 +51,5 @@ namespace atto {
         virtual const char * GetSceneName() = 0;
     };
 
-    template<typename _type_>
-    class Scene : public SceneInterface {
-    private:
-        inline static SceneRegistryTyped<_type_> registryInstance;
-    };
+    void RegisterAllScenes();
 }

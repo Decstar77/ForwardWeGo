@@ -1,3 +1,4 @@
+#pragma once
 #include "engine/atto_engine.h"
 #include "engine/atto_assets.h"
 #include "engine/atto_waypoint_graph.h"
