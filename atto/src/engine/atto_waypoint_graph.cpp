@@ -128,7 +128,7 @@ namespace atto {
         return best;
     }
 
-    std::vector<i32> WaypointGraph::FindPath( i32 startIndex, i32 goalIndex ) {
+    std::vector<i32> WaypointGraph::FindPath( i32 startIndex, i32 goalIndex ) const {
         const i32 n = GetNodeCount();
         if ( startIndex < 0 || startIndex >= n ) { return {}; }
         if ( goalIndex  < 0 || goalIndex  >= n ) { return {}; }

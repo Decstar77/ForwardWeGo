@@ -764,6 +764,29 @@ namespace atto {
         }
     }
 
+    void Renderer::DebugBox( const Box & box, const Vec3 & color ) {
+        Vec3 corners[8];
+        box.GetCorners( corners );
+
+        // Bottom face (corners 0,1,3,2 share -Y local)
+        DebugLine( corners[0], corners[1], color );
+        DebugLine( corners[1], corners[3], color );
+        DebugLine( corners[3], corners[2], color );
+        DebugLine( corners[2], corners[0], color );
+
+        // Top face (corners 4,5,7,6 share +Y local)
+        DebugLine( corners[4], corners[5], color );
+        DebugLine( corners[5], corners[7], color );
+        DebugLine( corners[7], corners[6], color );
+        DebugLine( corners[6], corners[4], color );
+
+        // Vertical edges
+        DebugLine( corners[0], corners[4], color );
+        DebugLine( corners[1], corners[5], color );
+        DebugLine( corners[2], corners[6], color );
+        DebugLine( corners[3], corners[7], color );
+    }
+
     void Renderer::FlushDebugLines() {
         if ( debugLineVerts.empty() ) {
             return;

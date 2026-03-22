@@ -54,6 +54,7 @@ namespace atto {
         void DebugSphere( const Sphere & sphere, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
         void DebugAlignedBox( const AlignedBox & box, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
         void DebugCapsule( const Capsule & cap, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
+        void DebugBox( const Box & box, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
 
     private:
         void FlushDebugLines();

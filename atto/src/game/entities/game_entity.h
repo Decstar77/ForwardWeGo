@@ -11,6 +11,7 @@ namespace atto {
         ExitDoor,
         GameMode_KillAllEntities,
         Prop,
+        Roach,
 
         EntityTypeCount
     };
@@ -25,7 +26,8 @@ namespace atto {
         EntityType::Drone_QUAD,
         EntityType::ExitDoor,
         EntityType::GameMode_KillAllEntities,
-        EntityType::Prop
+        EntityType::Prop,
+        EntityType::Roach,
     };
 
     inline static const char * EntityTypeNames[] = {
@@ -34,7 +36,8 @@ namespace atto {
         "Drone_QUAD",
         "ExitDoor",
         "GameMode_KillAllEntities",
-        "Prop"
+        "Prop",
+        "Roach"
     };
 
     static_assert(EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch");
@@ -55,14 +58,16 @@ namespace atto {
 
     class Entity {
     public:
+        virtual ~Entity() = default;
+
         // ================ Getters =============== //
         EntityType      GetType() const { return type; }
         void            SetPosition( const Vec3 & pos ) { position = pos; }
         void            SetOrientation( const Mat3 & orient ) { orientation = orient; }
-        const Vec3 & GetPosition() const { return position; }
-        const Mat3 & GetOrientation() const { return orientation; }
+        const Vec3 &    GetPosition() const { return position; }
+        const Mat3 &    GetOrientation() const { return orientation; }
         void            SetMap( GameMap * map ) { this->map = map; }
-        GameMap * GetMap() const { return map; }
+        GameMap *       GetMap() const { return map; }
         SpawnId         GetSpawnId() const { return spawnId; }
         void            SetSpawnId( SpawnId id ) { spawnId = id; }
         bool            IsPendingDestroy() const { return pendingDestroy; }
@@ -78,6 +83,7 @@ namespace atto {
 
         // ================ Physics =============== //
         virtual AlignedBox  GetBounds() const { return {}; }
+        virtual Box         GetCollider() const { return {}; }
         virtual bool        RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const { return false; }
 
         // ================ Serialization =============== //
@@ -88,6 +94,7 @@ namespace atto {
 
         // ================ Debug =============== //
         virtual void        DebugDrawBounds( Renderer & renderer ) {}
+        virtual void        DebugDrawCollider( Renderer & renderer ) {};
 
     protected:
         EntityType type = EntityType::None;

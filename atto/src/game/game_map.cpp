@@ -1,5 +1,7 @@
 #include "game_map.h"
 
+#include "entities/game_entity_roach.h"
+
 namespace atto {
 
     void PlayerStart::Serialize( Serializer & serializer ) {
@@ -39,11 +41,6 @@ namespace atto {
     }
 
     void GameMap::Initialize() {
-        // model.LoadFromFile( "assets/sm/SM_Env_Tree_02.fbx", 0.01f );
-        // texture.LoadFromFile( "assets/PolygonScifi_01_C.png" );
-
-        // CreateEntity( EntityType::Barrel );
-
         brushModels.resize( brushes.size() );
         brushTextures.resize( brushes.size(), nullptr );
         brushCollsion.resize( brushes.size() );
@@ -95,7 +92,13 @@ namespace atto {
 
         for ( auto & entity : entities ) {
             entity->OnRender( renderer );
-            //entity->DebugDrawBounds( renderer );
+
+            if ( Engine::Get().GetInput().IsKeyDown( Key::Num5 )) {
+                entity->DebugDrawBounds( renderer );
+            }
+            if ( Engine::Get().GetInput().IsKeyDown( Key::Num6 )) {
+                entity->DebugDrawCollider( renderer );
+            }
         }
     }
 
@@ -106,6 +109,7 @@ namespace atto {
         case EntityType::Drone_QUAD:                entity = std::make_unique<Entity_DroneQuad>(); break;
         case EntityType::ExitDoor:                  entity = std::make_unique<Entity_ExitDoor>(); break;
         case EntityType::Prop:                      entity = std::make_unique<Entity_Prop>(); break;
+        case EntityType::Roach:                     entity = std::make_unique<Entity_Roach>(); break;
         case EntityType::GameMode_KillAllEntities:  entity = std::make_unique<Entity_GameMode_KillAllEntities>(); break;
         default:
             ATTO_ASSERT( false, "Unknown EntityType provided to GameMap::MakeEntity" );

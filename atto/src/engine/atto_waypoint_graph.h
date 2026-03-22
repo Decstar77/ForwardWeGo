@@ -44,7 +44,7 @@ namespace atto {
 
         // A* pathfinding. Returns an ordered list of node indices from start to goal,
         // inclusive. Returns empty if no path exists.
-        std::vector<i32>        FindPath( i32 startIndex, i32 goalIndex );
+        std::vector<i32>        FindPath( i32 startIndex, i32 goalIndex ) const;
 
         void                    Serialize( Serializer & serializer );
         void                    DebugDraw( Renderer & renderer, i32 selectedNodeIndex, Vec3 selectedNodeColor ) const;
