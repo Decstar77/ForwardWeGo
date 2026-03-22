@@ -1,5 +1,6 @@
 #include "engine/atto_engine.h"
 #include "engine/atto_assets.h"
+#include "engine/atto_waypoint_graph.h"
 
 #include "game_entities.h"
 
@@ -58,6 +59,10 @@ namespace atto {
         const Entity *  GetEntity( i32 index ) const { return entities[index].get(); }
         i32             GetEntityCount() const { return static_cast<i32>(entities.size()); }
 
+        // =========== NavGraph ===========
+        WaypointGraph & GetNavGraph() { return navGraph; }
+        const WaypointGraph & GetNavGraph() const { return navGraph; }
+
         // =========== Brushes ===========
         i32             AddBrush();
         void            RemoveBrush( i32 index );
@@ -77,6 +82,7 @@ namespace atto {
         SmallString path;
         PlayerStart playerStart;
 
+        WaypointGraph                           navGraph;
         std::vector<std::unique_ptr<Entity>>    entities;
         std::vector<Brush>                      brushes;
         std::vector<StaticModel>                brushModels;
