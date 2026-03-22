@@ -161,6 +161,7 @@ namespace atto {
         // NavGraph editing state
         i32              selectedNavNodeIndex = -1;
         bool             navConnectMode = false;    // when true, next viewport click connects to selected node
+        std::vector<i32> selectedNavNodeIndices;    // multi-selection set (shift+click)
 
         // Snap
         bool snapEnabled = true;

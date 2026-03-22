@@ -70,6 +70,9 @@ namespace atto {
                 if ( navConnectMode ) {
                     navConnectMode = false;
                 }
+                else if ( !selectedNavNodeIndices.empty() ) {
+                    selectedNavNodeIndices.clear();
+                }
                 else {
                     selectedNavNodeIndex = -1;
                 }
@@ -104,10 +107,32 @@ namespace atto {
             if ( input.IsKeyPressed( Key::Num1 ) && !alt ) { selectionMode = EditorSelectionMode::Brush; }
             if ( input.IsKeyPressed( Key::Num2 ) && !alt ) { selectionMode = EditorSelectionMode::Entity; }
             if ( input.IsKeyPressed( Key::Num3 ) && !alt ) { selectionMode = EditorSelectionMode::PlayerStart; }
-            if ( input.IsKeyPressed( Key::Num4 ) && !alt ) { selectionMode = EditorSelectionMode::NavGraph; navConnectMode = false; }
+            if ( input.IsKeyPressed( Key::Num4 ) && !alt ) { selectionMode = EditorSelectionMode::NavGraph; navConnectMode = false; selectedNavNodeIndices.clear(); }
 
             if ( input.IsKeyPressed( Key::W ) ) { gizmoMode = EditorGizmoMode::Translate; }
             if ( input.IsKeyPressed( Key::E ) ) { gizmoMode = EditorGizmoMode::Rotate; }
+
+            if ( selectionMode == EditorSelectionMode::NavGraph && !ctrl && input.IsKeyPressed( Key::C ) ) {
+                if ( selectedNavNodeIndices.size() >= 2 ) {
+                    Snapshot();
+                    WaypointGraph & graph = map.GetNavGraph();
+                    for ( i32 i = 0; i < (i32)selectedNavNodeIndices.size(); i++ ) {
+                        for ( i32 j = i + 1; j < (i32)selectedNavNodeIndices.size(); j++ ) {
+                            i32 a = selectedNavNodeIndices[ i ];
+                            i32 b = selectedNavNodeIndices[ j ];
+                            const WaypointNode & nodeA = graph.GetWaypoint( a );
+                            bool alreadyConnected = false;
+                            for ( i32 e = 0; e < nodeA.edges.GetCount(); e++ ) {
+                                if ( nodeA.edges[ e ].nodeBIndex == b ) { alreadyConnected = true; break; }
+                            }
+                            if ( !alreadyConnected ) {
+                                graph.ConnectWaypoints( a, b );
+                            }
+                        }
+                    }
+                    unsavedChanges = true;
+                }
+            }
         }
 
         if ( brushDrag.mode != BrushDragMode::None ) {
@@ -159,8 +184,8 @@ namespace atto {
                 }
                 navConnectMode = false;
             }
-            else if ( shift ) {
-                // Shift+click: add a new node at the world hit point
+            else if ( alt ) {
+                // Alt+click: add a new node at the world hit point via ray
                 Vec2i windowSize = Engine::Get().GetWindowSize();
                 f32 ndcX = 2.0f * mousePos.x / static_cast<f32>( windowSize.x ) - 1.0f;
                 f32 ndcY = 1.0f - 2.0f * mousePos.y / static_cast<f32>( windowSize.y );
@@ -191,11 +216,59 @@ namespace atto {
                 Snapshot();
                 map.GetNavGraph().AddWaypoint( spawnPos );
                 selectedNavNodeIndex = map.GetNavGraph().GetNodeCount() - 1;
+                selectedNavNodeIndices.clear();
                 unsavedChanges = true;
             }
+            else if ( shift ) {
+                // Shift+click: toggle node in multi-selection
+                if ( picked >= 0 ) {
+                    // Ensure the current primary is in the set before toggling
+                    if ( selectedNavNodeIndex >= 0 ) {
+                        auto pit = std::find( selectedNavNodeIndices.begin(), selectedNavNodeIndices.end(), selectedNavNodeIndex );
+                        if ( pit == selectedNavNodeIndices.end() ) {
+                            selectedNavNodeIndices.push_back( selectedNavNodeIndex );
+                        }
+                    }
+                    auto it = std::find( selectedNavNodeIndices.begin(), selectedNavNodeIndices.end(), picked );
+                    if ( it != selectedNavNodeIndices.end() ) {
+                        selectedNavNodeIndices.erase( it );
+                        if ( selectedNavNodeIndex == picked ) {
+                            selectedNavNodeIndex = selectedNavNodeIndices.empty() ? -1 : selectedNavNodeIndices.back();
+                        }
+                    }
+                    else {
+                        selectedNavNodeIndices.push_back( picked );
+                        selectedNavNodeIndex = picked;
+                    }
+                }
+            }
             else {
-                // Plain click: select node (or deselect if nothing hit)
-                selectedNavNodeIndex = picked;
+                if ( picked >= 0 ) {
+                    // Plain click on a node: select it, clear multi-selection
+                    selectedNavNodeIndex = picked;
+                    selectedNavNodeIndices.clear();
+                }
+                else if ( selectedNavNodeIndex >= 0 && ctrl ) {
+                    // Plain click on empty space with a node selected: spawn adjacent and connect
+                    WaypointGraph & graph = map.GetNavGraph();
+                    Vec3 spawnPos = graph.GetWaypoint( selectedNavNodeIndex ).position + Vec3( snapSize, 0.0f, 0.0f );
+                    if ( snapEnabled ) {
+                        spawnPos.x = SnapValue( spawnPos.x );
+                        spawnPos.y = SnapValue( spawnPos.y );
+                        spawnPos.z = SnapValue( spawnPos.z );
+                    }
+                    Snapshot();
+                    graph.AddWaypoint( spawnPos );
+                    i32 newIdx = graph.GetNodeCount() - 1;
+                    graph.ConnectWaypoints( selectedNavNodeIndex, newIdx );
+                    selectedNavNodeIndex = newIdx;
+                    selectedNavNodeIndices.clear();
+                    unsavedChanges = true;
+                }
+                else {
+                    selectedNavNodeIndex = -1;
+                    selectedNavNodeIndices.clear();
+                }
             }
         }
 
@@ -382,6 +455,32 @@ namespace atto {
         if ( selectionMode == EditorSelectionMode::NavGraph ) {
             // Highlight the selected node: yellow normally, orange when in connect mode
             map.GetNavGraph().DebugDraw( renderer, selectedNavNodeIndex, navConnectMode ? Vec3( 1.0f, 0.5f, 0.0f ) : Vec3( 1.0f, 1.0f, 0.0f ) );
+
+            const WaypointGraph & graph = map.GetNavGraph();
+
+            // Re-draw edges of a node in a highlight color (drawn on top of the default blue)
+            auto drawHighlightedEdges = [&]( i32 nodeIdx, Vec3 color ) {
+                if ( nodeIdx < 0 || nodeIdx >= graph.GetNodeCount() ) { return; }
+                const WaypointNode & node = graph.GetWaypoint( nodeIdx );
+                for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
+                    renderer.DebugLine( node.position, graph.GetWaypoint( node.edges[ e ].nodeBIndex ).position, color );
+                }
+            };
+
+            // Primary selected node: yellow edges (orange in connect mode)
+            Vec3 primaryColor = navConnectMode ? Vec3( 1.0f, 0.5f, 0.0f ) : Vec3( 1.0f, 1.0f, 0.0f );
+            drawHighlightedEdges( selectedNavNodeIndex, primaryColor );
+
+            // Multi-selected nodes: cyan spheres + cyan edges
+            for ( i32 idx : selectedNavNodeIndices ) {
+                if ( idx != selectedNavNodeIndex && idx < graph.GetNodeCount() ) {
+                    Sphere s;
+                    s.center = graph.GetWaypoint( idx ).position;
+                    s.radius = 0.18f;
+                    renderer.DebugSphere( s, Vec3( 0.0f, 1.0f, 1.0f ) );
+                    drawHighlightedEdges( idx, Vec3( 0.0f, 1.0f, 1.0f ) );
+                }
+            }
         }
 
         if ( selectionMode == EditorSelectionMode::PlayerStart ) {
@@ -780,7 +879,7 @@ namespace atto {
         Vec3 rayOrigin = Vec3( nearNDC ) / nearNDC.w;
         Vec3 rayDir    = Normalize( Vec3( farNDC ) / farNDC.w - rayOrigin );
 
-        constexpr f32 pickRadius = 0.4f;
+        constexpr f32 pickRadius = 0.15f;
         i32 bestIndex = -1;
         f32 bestAlong = 1e30f;
 
@@ -1365,7 +1464,7 @@ namespace atto {
             }
 
             ImGui::SameLine();
-            ImGui::TextDisabled( "or Shift+Click in viewport" );
+            ImGui::TextDisabled( "or Alt+Click in viewport" );
 
             ImGui::Separator();
 
@@ -1374,14 +1473,22 @@ namespace atto {
             for ( i32 i = 0; i < nodeCount; i++ ) {
                 char label[32];
                 snprintf( label, sizeof( label ), "Node %d", i );
-                if ( ImGui::Selectable( label, selectedNavNodeIndex == i ) ) {
+                bool inMultiSel = std::find( selectedNavNodeIndices.begin(), selectedNavNodeIndices.end(), i ) != selectedNavNodeIndices.end();
+                if ( ImGui::Selectable( label, selectedNavNodeIndex == i || inMultiSel ) ) {
                     selectedNavNodeIndex = i;
+                    selectedNavNodeIndices.clear();
                     navConnectMode = false;
                 }
             }
             ImGui::EndChild();
 
             ImGui::Separator();
+
+            if ( selectedNavNodeIndices.size() >= 2 ) {
+                ImGui::TextColored( ImVec4( 0.0f, 1.0f, 1.0f, 1.0f ), "%d nodes selected", (i32)selectedNavNodeIndices.size() );
+                ImGui::TextDisabled( "Press C to connect all to each other." );
+                ImGui::Spacing();
+            }
 
             if ( selectedNavNodeIndex >= 0 && selectedNavNodeIndex < nodeCount ) {
                 WaypointNode & node = graph.GetWaypoint( selectedNavNodeIndex );
@@ -1451,6 +1558,7 @@ namespace atto {
                     Snapshot();
                     graph.RemoveNode( selectedNavNodeIndex );
                     selectedNavNodeIndex = Min( selectedNavNodeIndex, graph.GetNodeCount() - 1 );
+                    selectedNavNodeIndices.clear();
                     navConnectMode = false;
                     unsavedChanges = true;
                 }
@@ -1459,7 +1567,9 @@ namespace atto {
                 selectedNavNodeIndex = -1;
                 ImGui::TextDisabled( "No node selected." );
                 ImGui::TextDisabled( "Click a node to select it." );
-                ImGui::TextDisabled( "Shift+Click to add a new node." );
+                ImGui::TextDisabled( "Click empty space (with selection) to chain a node." );
+                ImGui::TextDisabled( "Shift+Click to multi-select. C to connect all." );
+                ImGui::TextDisabled( "Alt+Click to add a node at cursor." );
             }
         }
 
@@ -1479,6 +1589,7 @@ namespace atto {
         selectedEntityIndex = -1;
         selectedEntityIndices.clear();
         selectedNavNodeIndex = -1;
+        selectedNavNodeIndices.clear();
         navConnectMode = false;
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
@@ -1534,6 +1645,7 @@ namespace atto {
         selectedEntityIndex = -1;
         selectedEntityIndices.clear();
         selectedNavNodeIndex = -1;
+        selectedNavNodeIndices.clear();
         navConnectMode = false;
         brushDrag.mode = BrushDragMode::None;
         unsavedChanges = false;
@@ -1672,6 +1784,7 @@ namespace atto {
                 Snapshot();
                 graph.RemoveNode( selectedNavNodeIndex );
                 selectedNavNodeIndex = Min( selectedNavNodeIndex, graph.GetNodeCount() - 1 );
+                selectedNavNodeIndices.clear();
                 navConnectMode = false;
                 unsavedChanges = true;
             }
