@@ -1,4 +1,6 @@
 .vs
+.idea
+.claude
 tmp
 x86_64
 # Assets are now tracked via Git LFS (see .gitattributes)
@@ -19,6 +21,9 @@ res
 *.vcxproj.user
 *.csproj
 build
+
+cmake-build-debug
+cmake-build-release
 
 imgui.ini
 editor_state.json
