@@ -58,11 +58,11 @@ namespace atto {
         if ( input.IsKeyDown( Key::A ) ) { camera.MoveRight( -speed );   isMoving = true; }
 
         // Weapon switching
-        if ( input.IsKeyPressed( Key::Num1 ) && activeWeapon != WeaponSlot::Knife ) {
+        if ( ( input.IsKeyPressed( Key::Num1 ) || input.IsKeyPressed( Key::Num3 ) ) && activeWeapon != WeaponSlot::Knife ) {
             activeWeapon = WeaponSlot::Knife;
             knife.OnEquip();
         }
-        if ( ( input.IsKeyPressed( Key::Num2 ) || input.IsKeyPressed( Key::Num3 ) )  && activeWeapon != WeaponSlot::Glock ) {
+        if ( input.IsKeyPressed( Key::Num2 )  && activeWeapon != WeaponSlot::Glock ) {
             activeWeapon = WeaponSlot::Glock;
             glock.OnEquip();
         }

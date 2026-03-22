@@ -195,9 +195,9 @@ namespace atto {
         f32 smoothPitch = 0.0f;
         f32 smoothRoll = 0.0f;
 
-        // Wander AI
-        std::vector<i32> wanderPath;
-        i32 wanderPathIndex = 0;
+        // Wander AI — smoothed path following
+        std::vector<Vec3> smoothedPath;
+        i32 smoothedPathIndex = 0;
     };
 
     class Entity_GameMode_KillAllEntities : public Entity {

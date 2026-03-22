@@ -170,8 +170,9 @@ namespace atto {
     // -------------------------------------------------------
     static constexpr f32 DroneMoveMaxSpeed = 4.0f;   // m/s top speed
     static constexpr f32 DroneMoveAccel = 8.0f;   // steering lerp rate (higher = snappier)
-    static constexpr f32 DroneSlowdownDist = 3.0f;   // distance at which braking begins
-    static constexpr f32 DroneArrivalDist = 0.12f;  // snap-to-target threshold
+    static constexpr f32 DroneSlowdownDist = 3.0f;   // distance at which braking begins (final target only)
+    static constexpr f32 DroneArrivalDist = 0.12f;  // snap-to-target threshold (final target)
+    static constexpr f32 DronePassThroughDist = 0.5f;  // advance to next point when this close to an intermediate
     static constexpr f32 DroneYawSpeed = 3.5f;   // max yaw turn rate (rad/s)
     static constexpr f32 DroneYawLerpRate = 6.0f;
     static constexpr f32 DronePitchLerpRate = 4.5f;
@@ -180,6 +181,7 @@ namespace atto {
     static constexpr f32 DroneBankFactor = 0.015f; // rad per (rad/s * m/s)
     static constexpr f32 DroneHoverAmpY = 0.035f; // metres of vertical bob
     static constexpr f32 DroneHoverFreqY = 1.7f;   // bob cycles per second
+    static constexpr i32 DronePathSubdivisions = 4; // Catmull-Rom samples per segment
 
     // -------------------------------------------------------
 
@@ -210,14 +212,7 @@ namespace atto {
             return;
         }
 
-        // Advance along the existing path if one is queued
-        if ( wanderPathIndex < (i32)wanderPath.size() ) {
-            MoveTo( navGraph.GetWaypoint( wanderPath[wanderPathIndex] ).position );
-            wanderPathIndex++;
-            return;
-        }
-
-        // Path exhausted — compute a new one to a random node
+        // Compute a new A* path to a random node
         i32 startNode = navGraph.FindNearestNode( basePosition );
         if ( startNode < 0 ) {
             return;
@@ -229,13 +224,47 @@ namespace atto {
             goalNode = ( goalNode + 1 ) % nodeCount;
         }
 
-        wanderPath = navGraph.FindPath( startNode, goalNode );
-        wanderPathIndex = 1;  // index 0 is the start node we're already at
-
-        if ( wanderPathIndex < (i32)wanderPath.size() ) {
-            MoveTo( navGraph.GetWaypoint( wanderPath[wanderPathIndex] ).position );
-            wanderPathIndex++;
+        std::vector<i32> path = navGraph.FindPath( startNode, goalNode );
+        if ( (i32)path.size() < 2 ) {
+            return;
         }
+
+        // Collect raw waypoint positions
+        std::vector<Vec3> rawPoints;
+        rawPoints.reserve( path.size() );
+        for ( i32 idx : path ) {
+            rawPoints.push_back( navGraph.GetWaypoint( idx ).position );
+        }
+
+        // Build Catmull-Rom smoothed path
+        smoothedPath.clear();
+        const i32 count = (i32)rawPoints.size();
+        for ( i32 i = 0; i < count - 1; i++ ) {
+            // For endpoints, reflect to create phantom control points
+            Vec3 p0 = ( i > 0 )         ? rawPoints[ i - 1 ] : 2.0f * rawPoints[ 0 ] - rawPoints[ 1 ];
+            Vec3 p1 = rawPoints[ i ];
+            Vec3 p2 = rawPoints[ i + 1 ];
+            Vec3 p3 = ( i + 2 < count ) ? rawPoints[ i + 2 ] : 2.0f * rawPoints[ count - 1 ] - rawPoints[ count - 2 ];
+
+            for ( i32 s = 0; s < DronePathSubdivisions; s++ ) {
+                f32 t  = (f32)s / (f32)DronePathSubdivisions;
+                f32 t2 = t * t;
+                f32 t3 = t2 * t;
+                Vec3 point = 0.5f * (
+                    ( 2.0f * p1 ) +
+                    ( -p0 + p2 ) * t +
+                    ( 2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3 ) * t2 +
+                    ( -p0 + 3.0f * p1 - 3.0f * p2 + p3 ) * t3
+                );
+                smoothedPath.push_back( point );
+            }
+        }
+        smoothedPath.push_back( rawPoints.back() );
+
+        // Start following from the first point beyond our current position
+        smoothedPathIndex = 1;
+        moveTarget = smoothedPath[ smoothedPathIndex ];
+        hasTarget = true;
     }
 
     void Entity_DroneQuad::OnUpdate( f32 dt ) {
@@ -249,16 +278,30 @@ namespace atto {
         if ( hasTarget ) {
             Vec3 toTarget = moveTarget - basePosition;
             f32  dist = Length( toTarget );
+            bool isFinalTarget = smoothedPathIndex >= (i32)smoothedPath.size();
 
-            if ( dist < DroneArrivalDist ) {
+            if ( isFinalTarget && dist < DroneArrivalDist ) {
+                // Final destination: stop
                 basePosition = moveTarget;
                 velocity = Vec3( 0.0f );
                 hasTarget = false;
             }
+            else if ( !isFinalTarget && dist < DronePassThroughDist ) {
+                // Intermediate point: advance to next without stopping
+                moveTarget = smoothedPath[ smoothedPathIndex ];
+                smoothedPathIndex++;
+            }
             else {
                 Vec3 dir = toTarget / dist;
-                // Smoothly ramp target speed down as we approach
-                f32  desiredSpeed = DroneMoveMaxSpeed * SmoothStep( 0.0f, DroneSlowdownDist, dist );
+                f32  desiredSpeed;
+                if ( isFinalTarget ) {
+                    // Brake only when approaching the final target
+                    desiredSpeed = DroneMoveMaxSpeed * SmoothStep( 0.0f, DroneSlowdownDist, dist );
+                }
+                else {
+                    // Cruise at full speed through intermediate points
+                    desiredSpeed = DroneMoveMaxSpeed;
+                }
                 Vec3 desiredVel = dir * desiredSpeed;
                 velocity = Lerp( velocity, desiredVel, Clamp( DroneMoveAccel * dt, 0.0f, 1.0f ) );
             }
