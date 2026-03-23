@@ -75,6 +75,14 @@ namespace atto {
         max = newMax;
     }
 
+    Vec3 AlignedBox::ClosestPoint( const Vec3 &point ) const {
+        return Vec3(
+            Clamp( point.x, min.x, max.x ),
+            Clamp( point.y, min.y, max.y ),
+            Clamp( point.z, min.z, max.z )
+        );
+    }
+
     bool Raycast::TestSphere( const Vec3 &rayOrigin, const Vec3 &rayDirection, const Sphere &sphere, f32 &dist ) {
         Vec3 oc = rayOrigin - sphere.center;
         f32 a = Dot( rayDirection, rayDirection );

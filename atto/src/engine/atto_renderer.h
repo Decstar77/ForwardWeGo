@@ -5,6 +5,7 @@
 #include "atto_shapes_3D.h"
 #include "atto_containers.h"
 #include "atto_ui.h"
+#include "atto_particles.h"
 #include "renderer/atto_render_model.h"
 #include "renderer/atto_render_material.h"
 
@@ -49,6 +50,9 @@ namespace atto {
         const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
         const Font * GetOrLoadFont( const char * path, f32 fontSize );
 
+        // Particle rendering (called by ParticleSystem::Render)
+        void RenderParticles( const ParticleSystem::Particle * particles, i32 count, const Vec3 & cameraPos, const Vec3 & cameraUp );
+
         // Debug line drawing
         void DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
         void DebugSphere( const Sphere & sphere, const Vec3 & color = Vec3( 0.0f, 1.0f, 0.0f ) );
@@ -84,6 +88,12 @@ namespace atto {
         u32 skyboxVAO = 0;
         u32 skyboxVBO = 0;
         u32 skyboxTexture = 0;
+
+        // Particle resources
+        struct ParticleVert { Vec3 pos; Vec2 uv; Vec4 color; };
+        Shader particleShader;
+        u32 particleVAO = 0;
+        u32 particleVBO = 0;
 
         // Debug line resources
         struct DebugLineVert { Vec3 pos; Vec3 color; };

@@ -74,14 +74,6 @@ namespace atto {
         return HasLineOfSightTo( playerPos );
     }
 
-    static Vec3 ClosestPointOnAlignedBox( const AlignedBox & box, const Vec3 & point ) {
-        return Vec3(
-            Clamp( point.x, box.min.x, box.max.x ),
-            Clamp( point.y, box.min.y, box.max.y ),
-            Clamp( point.z, box.min.z, box.max.z )
-        );
-    }
-
     Vec3 Entity_Roach::Avoidance( Vec3 currentDirection, f32 dt ) {
         Vec3 steer( 0.0f );
 
@@ -123,7 +115,7 @@ namespace atto {
             const Brush & brush = map->GetBrush( i );
             AlignedBox box = AlignedBox::FromCenterSize( brush.center, brush.halfExtents * 2.0f );
 
-            Vec3 closest = ClosestPointOnAlignedBox( box, position );
+            Vec3 closest = box.ClosestPoint( position );
             Vec3 toWall = closest - position;
             toWall.y = 0.0f;
             f32 dist = Length( toWall );

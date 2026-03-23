@@ -154,6 +154,26 @@ namespace atto {
         glEnableVertexAttribArray( 0 );
         glBindVertexArray( 0 );
 
+        if ( !particleShader.CreateFromFiles( "assets/shaders/particle.vert", "assets/shaders/particle.frag" ) ) {
+            LOG_ERROR( "Failed to create particle shader" );
+            return false;
+        }
+
+        glGenVertexArrays( 1, &particleVAO );
+        glGenBuffers( 1, &particleVBO );
+        glBindVertexArray( particleVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, particleVBO );
+        // pos (vec3)
+        glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( ParticleVert ), (void *)0 );
+        glEnableVertexAttribArray( 0 );
+        // uv (vec2)
+        glVertexAttribPointer( 1, 2, GL_FLOAT, GL_FALSE, sizeof( ParticleVert ), (void *)offsetof( ParticleVert, uv ) );
+        glEnableVertexAttribArray( 1 );
+        // color (vec4)
+        glVertexAttribPointer( 2, 4, GL_FLOAT, GL_FALSE, sizeof( ParticleVert ), (void *)offsetof( ParticleVert, color ) );
+        glEnableVertexAttribArray( 2 );
+        glBindVertexArray( 0 );
+
         glEnable( GL_DEPTH_TEST );
 
         LOG_INFO( "Renderer initialized" );
@@ -215,6 +235,9 @@ namespace atto {
         if ( textVAO != 0 ) { glDeleteVertexArrays( 1, &textVAO ); textVAO = 0; }
         if ( textVBO != 0 ) { glDeleteBuffers( 1, &textVBO );      textVBO = 0; }
 
+        if ( particleVAO != 0 ) { glDeleteVertexArrays( 1, &particleVAO ); particleVAO = 0; }
+        if ( particleVBO != 0 ) { glDeleteBuffers( 1, &particleVBO );      particleVBO = 0; }
+
         flatColorShader.Destroy();
         modelLitShader.Destroy();
         modelUnlitShader.Destroy();
@@ -222,6 +245,7 @@ namespace atto {
         spriteShader.Destroy();
         textShader.Destroy();
         skyboxShader.Destroy();
+        particleShader.Destroy();
 
         LOG_INFO( "Renderer shutdown" );
     }
@@ -785,6 +809,90 @@ namespace atto {
         DebugLine( corners[1], corners[5], color );
         DebugLine( corners[2], corners[6], color );
         DebugLine( corners[3], corners[7], color );
+    }
+
+    void Renderer::RenderParticles( const ParticleSystem::Particle * particles, i32 count, const Vec3 & cameraPos, const Vec3 & cameraUp ) {
+        if ( count <= 0 ) {
+            return;
+        }
+
+        static std::vector<ParticleVert> verts;
+        verts.clear();
+        verts.reserve( count * 6 );
+
+        for ( i32 i = 0; i < count; i++ ) {
+            const auto & p = particles[i];
+
+            f32 t = 1.0f - (p.lifetime / p.maxLifetime);
+            f32 size = Lerp( p.startSize, p.endSize, t ) * 0.5f;
+            Vec4 color = Vec4(
+                Lerp( p.startColor.r, p.endColor.r, t ),
+                Lerp( p.startColor.g, p.endColor.g, t ),
+                Lerp( p.startColor.b, p.endColor.b, t ),
+                Lerp( p.startColor.a, p.endColor.a, t )
+            );
+
+            // Billboard: face camera
+            Vec3 toCamera = Normalize( cameraPos - p.position );
+            Vec3 right = Normalize( Cross( cameraUp, toCamera ) ) * size;
+            Vec3 up = Normalize( Cross( toCamera, right ) ) * size;
+
+            Vec3 bl = p.position - right - up;
+            Vec3 br = p.position + right - up;
+            Vec3 tr = p.position + right + up;
+            Vec3 tl = p.position - right + up;
+
+            verts.push_back( { bl, Vec2( 0.0f, 0.0f ), color } );
+            verts.push_back( { br, Vec2( 1.0f, 0.0f ), color } );
+            verts.push_back( { tr, Vec2( 1.0f, 1.0f ), color } );
+            verts.push_back( { bl, Vec2( 0.0f, 0.0f ), color } );
+            verts.push_back( { tr, Vec2( 1.0f, 1.0f ), color } );
+            verts.push_back( { tl, Vec2( 0.0f, 1.0f ), color } );
+        }
+
+        glDepthMask( GL_FALSE );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        particleShader.Bind();
+        particleShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+
+        glBindVertexArray( particleVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, particleVBO );
+        glBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)( verts.size() * sizeof( ParticleVert ) ), verts.data(), GL_DYNAMIC_DRAW );
+
+        // Batch draw by texture
+        i32 batchStart = 0;
+        const Texture * currentTexture = particles[0].texture;
+
+        for ( i32 i = 0; i <= count; i++ ) {
+            const Texture * tex = (i < count) ? particles[i].texture : nullptr;
+
+            if ( i == count || tex != currentTexture ) {
+                // Set texture for the batch
+                if ( currentTexture != nullptr && currentTexture->IsValid() ) {
+                    particleShader.SetInt( "uHasTexture", 1 );
+                    particleShader.SetInt( "uTexture", 0 );
+                    currentTexture->Bind( 0 );
+                }
+                else {
+                    particleShader.SetInt( "uHasTexture", 0 );
+                }
+
+                i32 vertStart = batchStart * 6;
+                i32 vertCount = (i - batchStart) * 6;
+                glDrawArrays( GL_TRIANGLES, vertStart, vertCount );
+
+                batchStart = i;
+                currentTexture = tex;
+            }
+        }
+
+        glBindVertexArray( 0 );
+        particleShader.Unbind();
+
+        glDepthMask( GL_TRUE );
+        glDisable( GL_BLEND );
     }
 
     void Renderer::FlushDebugLines() {

@@ -106,9 +106,12 @@ namespace atto {
             if ( input.IsKeyPressed( Key::Num1 ) && !alt ) { selectionMode = EditorSelectionMode::Brush; }
             if ( input.IsKeyPressed( Key::Num2 ) && !alt ) { selectionMode = EditorSelectionMode::Entity; selectedBrushIndex = -1; }
             if ( input.IsKeyPressed( Key::Num3 ) && !alt ) { selectionMode = EditorSelectionMode::PlayerStart; selectedBrushIndex = -1; }
-            if ( input.IsKeyPressed( Key::Num4 ) && !alt ) { selectionMode = EditorSelectionMode::NavGraph; navConnectMode = false; selectedNavNodeIndices.clear(); selectedBrushIndex = -1; }
+            if ( input.IsKeyPressed( Key::Num4 ) && !alt ) { selectionMode = EditorSelectionMode::NavGraph; navConnectMode = false; selectedNavNodeIndices.clear(); selectedBrushIndex = -1; navBoxSelecting = false; }
 
-            if ( input.IsKeyPressed( Key::W ) ) { gizmoMode = EditorGizmoMode::Translate; }
+            if ( input.IsKeyPressed( Key::W ) ) {
+                if ( selectionMode == EditorSelectionMode::NavGraph ) { navGizmoEnabled = !navGizmoEnabled; }
+                else { gizmoMode = EditorGizmoMode::Translate; }
+            }
             if ( input.IsKeyPressed( Key::E ) ) { gizmoMode = EditorGizmoMode::Rotate; }
 
             if ( selectionMode == EditorSelectionMode::NavGraph && !ctrl && input.IsKeyPressed( Key::C ) ) {
@@ -265,9 +268,49 @@ namespace atto {
                     unsavedChanges = true;
                 }
                 else {
+                    if ( viewMode != EditorViewMode::Cam3D ) {
+                        navBoxSelecting = true;
+                        navBoxStart     = mousePos;
+                        navBoxCurrent   = mousePos;
+                    }
+                    else {
+                        selectedNavNodeIndex = -1;
+                        selectedNavNodeIndices.clear();
+                    }
+                }
+            }
+        }
+
+        if ( selectionMode == EditorSelectionMode::NavGraph && navBoxSelecting ) {
+            navBoxCurrent = input.GetMousePosition();
+            if ( input.IsMouseButtonReleased( MouseButton::Left ) ) {
+                f32 x0 = std::min( navBoxStart.x, navBoxCurrent.x );
+                f32 y0 = std::min( navBoxStart.y, navBoxCurrent.y );
+                f32 x1 = std::max( navBoxStart.x, navBoxCurrent.x );
+                f32 y1 = std::max( navBoxStart.y, navBoxCurrent.y );
+
+                if ( (x1 - x0) < 4.0f && (y1 - y0) < 4.0f ) {
+                    // Tiny drag — treat as deselect click
                     selectedNavNodeIndex = -1;
                     selectedNavNodeIndices.clear();
                 }
+                else {
+                    Vec2i windowSize = Engine::Get().GetWindowSize();
+                    Mat4 vp = GetOrthoViewProjectionMatrix();
+                    WaypointGraph & graph = map.GetNavGraph();
+                    selectedNavNodeIndices.clear();
+                    for ( i32 i = 0; i < graph.GetNodeCount(); i++ ) {
+                        const Vec3 & pos = graph.GetWaypoint( i ).position;
+                        Vec4 clip = vp * Vec4( pos, 1.0f );
+                        f32 sx = ( clip.x / clip.w + 1.0f ) * 0.5f * static_cast<f32>( windowSize.x );
+                        f32 sy = ( 1.0f - clip.y / clip.w ) * 0.5f * static_cast<f32>( windowSize.y );
+                        if ( sx >= x0 && sx <= x1 && sy >= y0 && sy <= y1 ) {
+                            selectedNavNodeIndices.push_back( i );
+                        }
+                    }
+                    selectedNavNodeIndex = selectedNavNodeIndices.empty() ? -1 : selectedNavNodeIndices.back();
+                }
+                navBoxSelecting = false;
             }
         }
 
@@ -562,7 +605,7 @@ namespace atto {
                     unsavedChanges = true;
                 }
             }
-            else if ( selectionMode == EditorSelectionMode::NavGraph && selectedNavNodeIndex >= 0 && selectedNavNodeIndex < map.GetNavGraph().GetNodeCount() ) {
+            else if ( selectionMode == EditorSelectionMode::NavGraph && navGizmoEnabled && selectedNavNodeIndex >= 0 && selectedNavNodeIndex < map.GetNavGraph().GetNodeCount() ) {
                 WaypointGraph & graph = map.GetNavGraph();
 
                 // Use multi-selection if populated, otherwise just the primary node
@@ -1242,6 +1285,16 @@ namespace atto {
             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav );
         ImGui::Text( "View: %s", modeLabels[static_cast<i32>(viewMode)] );
         ImGui::End();
+
+        if ( navBoxSelecting ) {
+            f32 x0 = std::min( navBoxStart.x, navBoxCurrent.x );
+            f32 y0 = std::min( navBoxStart.y, navBoxCurrent.y );
+            f32 x1 = std::max( navBoxStart.x, navBoxCurrent.x );
+            f32 y1 = std::max( navBoxStart.y, navBoxCurrent.y );
+            ImDrawList * dl = ImGui::GetBackgroundDrawList();
+            dl->AddRectFilled( ImVec2( x0, y0 ), ImVec2( x1, y1 ), IM_COL32( 100, 200, 255, 30 ) );
+            dl->AddRect(       ImVec2( x0, y0 ), ImVec2( x1, y1 ), IM_COL32( 100, 200, 255, 200 ) );
+        }
     }
 
     void EditorScene::DrawInspectorPanel() {
@@ -1850,14 +1903,22 @@ namespace atto {
         }
         else if ( selectionMode == EditorSelectionMode::NavGraph && selectedNavNodeIndex >= 0 ) {
             WaypointGraph & graph = map.GetNavGraph();
-            if ( selectedNavNodeIndex < graph.GetNodeCount() ) {
-                Snapshot();
-                graph.RemoveNode( selectedNavNodeIndex );
-                selectedNavNodeIndex = Min( selectedNavNodeIndex, graph.GetNodeCount() - 1 );
-                selectedNavNodeIndices.clear();
-                navConnectMode = false;
-                unsavedChanges = true;
+            // Build the full set to delete: multi-selection if populated, else just the primary
+            std::vector<i32> toDelete = selectedNavNodeIndices.empty()
+                ? std::vector<i32>{ selectedNavNodeIndex }
+                : selectedNavNodeIndices;
+            // Remove highest indices first so earlier indices stay valid
+            std::sort( toDelete.begin(), toDelete.end(), std::greater<i32>() );
+            Snapshot();
+            for ( i32 idx : toDelete ) {
+                if ( idx >= 0 && idx < graph.GetNodeCount() ) {
+                    graph.RemoveNode( idx );
+                }
             }
+            selectedNavNodeIndices.clear();
+            selectedNavNodeIndex = Min( selectedNavNodeIndex, graph.GetNodeCount() - 1 );
+            navConnectMode = false;
+            unsavedChanges = true;
         }
     }
 
