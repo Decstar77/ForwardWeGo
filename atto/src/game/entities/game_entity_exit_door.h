@@ -17,11 +17,12 @@ namespace atto {
         void DebugDrawBounds( Renderer & renderer ) override;
 
         bool IsOpen() const { return isOpen; }
-        void SetOpen( bool open ) { isOpen = open; }
-        
+        void SetOpen( bool open );
+
     private:
         bool isOpen = false;
         const StaticModel * modelClosed = nullptr;
         const StaticModel * modelOpen = nullptr;
+        SoundCollection     doorSound;
     };
 }

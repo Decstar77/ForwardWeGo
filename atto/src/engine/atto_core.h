@@ -32,11 +32,15 @@
 
 // Assertions
 #if ATTO_DEBUG
-#define ATTO_ASSERT(condition, message) assert((condition) && (message))
-#define INVALID_CODE_PATH ATTO_ASSERT(false, "Invalid code path");
+#define ATTO_ASSERT(condition, message) \
+    do { if (!(condition)) { \
+        fprintf(stderr, "Assertion failed: %s\n  Message: %s\n  File: %s\n  Line: %d\n", #condition, message, __FILE__, __LINE__); \
+        __debugbreak(); \
+    } } while(0)
+#define INVALID_CODE_PATH ATTO_ASSERT(false, "Invalid code path")
 #else
 #define ATTO_ASSERT(condition, message) ((void)0)
-#define INVALID_CODE_PATH 
+#define INVALID_CODE_PATH
 #endif
 
 #include "fpm/fixed.hpp"

@@ -32,7 +32,7 @@ namespace atto {
 
         // =========== Not sure ===========
         const char * GetPath() const { return path.GetCStr(); }
-        void SetPath( const char * path ) { this->path = SmallString::FromLiteral( path ); }
+        void SetPath( const char * path ) { this->path = LargeString::FromLiteral( path ); }
         bool Raycast( const Vec3 & start, const Vec3 & direction, MapRaycastResult & result );
 
         // =========== Player ===========
@@ -80,7 +80,7 @@ namespace atto {
         i32             GetBrushCount() const { return static_cast<i32>(brushes.size()); }
 
     private:
-        SmallString path;
+        LargeString                             path;
         PlayerStart                             playerStart;
 
         Vec3                                    playerPosition = Vec3( 0.0f );

@@ -11,6 +11,10 @@ namespace atto {
         Renderer & renderer = Engine::Get().GetRenderer();
         modelClosed = renderer.GetOrLoadStaticModel( "assets/models/sm-declan/SM_Bld_Section_Door_06_Closed.obj" );
         modelOpen = renderer.GetOrLoadStaticModel( "assets/models/sm-declan/SM_Bld_Section_Door_06_Open.obj" );
+        doorSound.Initialize();
+        doorSound.LoadSounds( {
+            "door/main-door-open.wav"
+        } );
     }
 
     void Entity_ExitDoor::OnUpdate( f32 dt ) {
@@ -47,5 +51,12 @@ namespace atto {
     void Entity_ExitDoor::DebugDrawBounds( Renderer & renderer ) {
         AlignedBox bounds = GetBounds();
         renderer.DebugAlignedBox( bounds );
+    }
+
+    void Entity_ExitDoor::SetOpen( bool open ) {
+        if ( isOpen != open ) {
+            isOpen = open;
+            doorSound.PlayAt( position, 10 );
+        }
     }
 }

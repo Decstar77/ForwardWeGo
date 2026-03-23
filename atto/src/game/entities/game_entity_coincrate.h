@@ -15,7 +15,8 @@ namespace atto {
 
     private:
         const StaticModel * model = nullptr;
-        i32 health = 100;
+        i32                 health = 100;
+        SoundCollection     destroySound;
     };
 }
 

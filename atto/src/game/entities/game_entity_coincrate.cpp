@@ -12,6 +12,12 @@ namespace atto {
     void Entity_CoinCrate::OnSpawn() {
         Entity::OnSpawn();
         model = Engine::Get().GetRenderer().GetOrLoadStaticModel( "assets/models/sm/SM_Prop_Crate_02.obj" );
+        destroySound.Initialize();
+        destroySound.LoadSounds( {
+            //"impacts/metal_sheet.wav"
+            "resources/coins1.wav",
+            "resources/coins2.wav"
+        } );
     }
 
     void Entity_CoinCrate::OnRender( Renderer &renderer ) {
@@ -37,6 +43,7 @@ namespace atto {
         health -= damage;
         if ( health <= 0 ) {
             map->DestroyEntity( this );
+            destroySound.PlayAt( position );
         }
         return TakeDamageResult::Success_HP;
     }
