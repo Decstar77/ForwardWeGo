@@ -343,7 +343,32 @@ namespace atto {
             }
         }
 
-        if ( selectionMode == EditorSelectionMode::Brush && !imguiWantsMouse && brushDrag.mode == BrushDragMode::None && input.IsMouseButtonPressed( MouseButton::Left ) ) {
+        // Texture eyedropper: Alt+Middle = pick, Middle = apply
+        if ( selectionMode == EditorSelectionMode::Brush && !imguiWantsMouse && input.IsMouseButtonPressed( MouseButton::Middle ) ) {
+            Vec2 mousePos = input.GetMousePosition();
+            i32 picked = ( viewMode != EditorViewMode::Cam3D )
+                ? BrushPickOrtho( ScreenToWorldOrtho( mousePos ) )
+                : BrushPick3D( mousePos );
+
+            if ( alt ) {
+                // Alt+Middle click: pick texture from brush under mouse
+                if ( picked >= 0 ) {
+                    pickedBrushTexturePath = map.GetBrush( picked ).texturePath;
+                }
+            }
+            else if ( !pickedBrushTexturePath.empty() && picked >= 0 ) {
+                // Middle click: apply picked texture to brush under mouse
+                Snapshot();
+                map.GetBrush( picked ).texturePath = pickedBrushTexturePath;
+                map.RebuildBrushModel( picked );
+                map.RebuildBrushTexture( picked );
+                unsavedChanges = true;
+            }
+        }
+
+        if ( selectionMode == EditorSelectionMode::Brush
+            && !imguiWantsMouse && brushDrag.mode == BrushDragMode::None
+            && input.IsMouseButtonPressed( MouseButton::Left ) ) {
             Vec2 mousePos = input.GetMousePosition();
 
             if ( viewMode != EditorViewMode::Cam3D ) {
@@ -351,13 +376,19 @@ namespace atto {
 
                 i32 picked = BrushPickOrtho( worldPos );
                 if ( picked >= 0 ) {
-                    selectedBrushIndex = picked;
-                    BrushStartMoveDrag( worldPos );
+                    if ( input.IsKeyDown( Key::LeftShift ) ) {
+                        selectedBrushIndex = picked;
+                    }
+                    if ( selectedBrushIndex == picked ) {
+                        BrushStartMoveDrag( worldPos );
+                    } else if ( selectedBrushIndex >= 0 && BrushTryStartEdgeDrag( worldPos ) ) {
+                        // Edge drag started on selected brush
+                    }
                 }
                 else if ( selectedBrushIndex >= 0 && BrushTryStartEdgeDrag( worldPos ) ) {
                     // Edge drag started on selected brush
                 }
-                else if ( selectedBrushIndex >= 0 ) {
+                else if ( selectedBrushIndex >= 0 && input.IsKeyDown( Key::LeftShift ) ) {
                     selectedBrushIndex = -1;
                 }
                 else {
@@ -419,15 +450,25 @@ namespace atto {
             }
 
             f32 scroll = input.GetScrollDelta();
-            if ( scroll != 0.0f ) {
+            if ( scroll != 0.0f && !imguiWantsMouse ) {
                 orthoSize *= (scroll > 0.0f) ? 0.9f : 1.1f;
                 orthoSize = Clamp( orthoSize, 0.1f, 1000.0f );
             }
         }
 
+        if ( input.IsKeyPressed( Key::F1 ) ) { snapSize = 1.0f; }
+        if ( input.IsKeyPressed( Key::F2 ) ) { snapSize = 0.5f; }
+        if ( input.IsKeyPressed( Key::F3 ) ) { snapSize = 0.25f; }
+        if ( input.IsKeyPressed( Key::F4 ) ) { snapEnabled = false; }
+
         if ( input.IsKeyPressed( Key::F5 ) ) {
             SaveEditorState();
-            Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
+            if ( unsavedChanges == true ) {
+                showUnsavedChangesDialog = true;
+                pendingAction = UnsavedChangesAction::Play;
+            } else {
+                Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
+            }
         }
     }
 
@@ -1740,9 +1781,14 @@ namespace atto {
     void EditorScene::SaveEditorState() {
         JsonSerializer s( true );
         s( "MapPath",     currentMapPath );
+        s( "SelectionMode", reinterpret_cast<i32 &>( selectionMode ) );
         s( "ViewMode",    reinterpret_cast<i32 &>( viewMode ) );
+        s( "RenderMode",    reinterpret_cast<i32 &>( renderMode ) );
         s( "OrthoTarget", orthoTarget );
         s( "OrthoSize",   orthoSize );
+        s( "Snap", snapEnabled );
+        s( "SnapSize",   snapSize );
+
         Vec3 camPos   = flyCamera.GetPosition();
         f32  camYaw   = flyCamera.GetYaw();
         f32  camPitch = flyCamera.GetPitch();
@@ -2014,6 +2060,10 @@ namespace atto {
             unsavedChanges = false;
             LoadMapFromFile( pendingOpenPath );
             pendingOpenPath.clear();
+            break;
+        case UnsavedChangesAction::Play:
+            unsavedChanges = false;
+            Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
             break;
         default: break;
         }

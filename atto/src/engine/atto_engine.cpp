@@ -107,7 +107,7 @@ namespace atto {
         // Set window icon
         {
             int w, h, channels;
-            unsigned char* pixels = stbi_load("assets/textures/ai-gen/gothgirl-square.png", &w, &h, &channels, 4);
+            unsigned char* pixels = stbi_load("assets/textures/ai-gen/doggo.png", &w, &h, &channels, 4);
             if (pixels) {
                 GLFWimage icon;
                 icon.width = w;

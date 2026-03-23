@@ -141,7 +141,7 @@ namespace atto {
             footstepTimer += deltaTime;
             if ( footstepTimer >= footstepInterval ) {
                 footstepTimer -= footstepInterval;
-                sndFootsteps.Play( 0.5f );
+                sndFootsteps.Play( 1.0f );
             }
         }
         else {

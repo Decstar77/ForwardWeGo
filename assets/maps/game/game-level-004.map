@@ -1,0 +1,764 @@
+{
+    "brushes": [
+        {
+            "item": {
+                "center": [
+                    -12.5,
+                    -0.5,
+                    -13.0
+                ],
+                "halfExtents": [
+                    16.5,
+                    0.5,
+                    15.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Light/texture_08.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -5.0,
+                    3.0,
+                    -5.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    5.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -7.0,
+                    3.0,
+                    -11.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -9.0,
+                    3.0,
+                    -13.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    5.0,
+                    3.0,
+                    -9.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    11.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -5.0,
+                    3.0,
+                    -19.0
+                ],
+                "halfExtents": [
+                    9.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -15.0,
+                    3.0,
+                    -8.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -17.0,
+                    3.0,
+                    -10.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -19.0,
+                    3.0,
+                    -12.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -13.0,
+                    3.0,
+                    -6.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -12.5,
+                    3.0,
+                    2.5
+                ],
+                "halfExtents": [
+                    1.5,
+                    4.0,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -21.0,
+                    3.0,
+                    -14.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -23.0,
+                    3.0,
+                    -18.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    4.0,
+                    3.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -20.0,
+                    3.0,
+                    -21.5
+                ],
+                "halfExtents": [
+                    2.0,
+                    4.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    0.0,
+                    3.0,
+                    1.0
+                ],
+                "halfExtents": [
+                    4.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -9.0,
+                    3.0,
+                    6.0
+                ],
+                "halfExtents": [
+                    4.0,
+                    4.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -5.5,
+                    3.0,
+                    2.5
+                ],
+                "halfExtents": [
+                    1.5,
+                    4.0,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        }
+    ],
+    "entities": [
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.9999995231628418,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                -0.9999995231628418
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "SpawnId": 14353295783029886837,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Door_01.obj"
+        },
+        {
+            "Orientation": [
+                -0.9999997019767761,
+                0.0,
+                -0.0004883110523223877,
+                0.0,
+                1.0,
+                0.0,
+                0.0004883110523223877,
+                0.0,
+                -0.9999997019767761
+            ],
+            "Position": [
+                -9.0,
+                0.0,
+                1.1384201049804688
+            ],
+            "SpawnId": 870851736796973674,
+            "Type": "ExitDoor"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -7.0,
+                0.0,
+                0.0
+            ],
+            "RemainingEntities": [
+                6885942867846166075
+            ],
+            "SpawnId": 2291127974717498537,
+            "Type": "GameMode_KillAllEntities"
+        },
+        {
+            "Orientation": [
+                0.8694997429847717,
+                0.0,
+                -0.4939334988594055,
+                0.0,
+                1.0,
+                0.0,
+                0.4939334988594055,
+                0.0,
+                0.8694997429847717
+            ],
+            "Position": [
+                -21.164121627807617,
+                0.0,
+                -19.835878372192383
+            ],
+            "SpawnId": 6885942867846166075,
+            "Type": "CoinCrate"
+        },
+        {
+            "MapName": "assets/maps/level_003.map",
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "PortalSize": 2.0,
+            "Position": [
+                -9.0,
+                1.0,
+                3.0
+            ],
+            "SpawnId": 7839798364442487216,
+            "Type": "Portal"
+        },
+        {
+            "Collision": false,
+            "Orientation": [
+                5.960464477539063e-08,
+                0.0,
+                0.9999999403953552,
+                0.0,
+                1.0,
+                0.0,
+                -0.9999999403953552,
+                0.0,
+                5.960464477539063e-08
+            ],
+            "Position": [
+                -0.25,
+                0.0,
+                -15.0
+            ],
+            "SpawnId": 11013403931728925903,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Orientation": [
+                -5.960462345910855e-08,
+                0.0,
+                0.9999998211860657,
+                0.0,
+                1.0,
+                0.0,
+                -0.9999998211860657,
+                0.0,
+                -5.960462345910855e-08
+            ],
+            "Position": [
+                1.25,
+                0.0,
+                -15.75
+            ],
+            "SpawnId": 16493845027977623069,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                3.25,
+                0.0,
+                -15.75
+            ],
+            "SpawnId": 13841256351490054627,
+            "Type": "CoinCrate"
+        },
+        {
+            "Collision": false,
+            "Orientation": [
+                0.9999998211860657,
+                0.0,
+                5.960462345910855e-08,
+                0.0,
+                1.0,
+                0.0,
+                -5.960462345910855e-08,
+                0.0,
+                0.9999998211860657
+            ],
+            "Position": [
+                -15.25,
+                0.0,
+                -18.0
+            ],
+            "SpawnId": 7883398826827284632,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Collision": false,
+            "Orientation": [
+                0.00048823654651641846,
+                0.0,
+                -0.9999991059303284,
+                0.0,
+                1.0,
+                0.0,
+                0.9999991059303284,
+                0.0,
+                0.00048823654651641846
+            ],
+            "Position": [
+                -12.25,
+                0.0,
+                -3.0
+            ],
+            "SpawnId": 2010338561735115898,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -6.506711959838867,
+                0.0,
+                -9.529382705688477
+            ],
+            "SpawnId": 3078250216297566663,
+            "Type": "CoinCrate"
+        },
+        {
+            "Orientation": [
+                0.7646967172622681,
+                0.0,
+                0.6443902254104614,
+                0.0,
+                1.0,
+                0.0,
+                -0.6443902254104614,
+                0.0,
+                0.7646967172622681
+            ],
+            "Position": [
+                -19.01527214050293,
+                0.0,
+                -20.28135108947754
+            ],
+            "SpawnId": 18222419339305874057,
+            "Type": "CoinCrate"
+        },
+        {
+            "Orientation": [
+                -0.999999463558197,
+                0.0,
+                7.450580596923828e-08,
+                0.0,
+                1.0,
+                0.0,
+                -7.450580596923828e-08,
+                0.0,
+                -0.999999463558197
+            ],
+            "Position": [
+                -11.0,
+                0.0,
+                -13.0
+            ],
+            "SpawnId": 15965369258096621253,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                0.9999993443489075,
+                0.0,
+                4.470348358154297e-08,
+                0.0,
+                1.0,
+                0.0,
+                -4.470348358154297e-08,
+                0.0,
+                0.9999993443489075
+            ],
+            "Position": [
+                -17.0,
+                0.0,
+                -20.0
+            ],
+            "SpawnId": 1518809896523118547,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                0.9999993443489075,
+                0.0,
+                4.470348358154297e-08,
+                0.0,
+                1.0,
+                0.0,
+                -4.470348358154297e-08,
+                0.0,
+                0.9999993443489075
+            ],
+            "Position": [
+                -15.0,
+                0.0,
+                -20.0
+            ],
+            "SpawnId": 5552391442805664377,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                0.9999993443489075,
+                0.0,
+                4.470348358154297e-08,
+                0.0,
+                1.0,
+                0.0,
+                -4.470348358154297e-08,
+                0.0,
+                0.9999993443489075
+            ],
+            "Position": [
+                -16.0,
+                0.0,
+                -21.0
+            ],
+            "SpawnId": 12796741996490793316,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                8.940696716308594e-08,
+                0.0,
+                -0.9999993443489075,
+                0.0,
+                1.0,
+                0.0,
+                0.9999993443489075,
+                0.0,
+                8.940696716308594e-08
+            ],
+            "Position": [
+                -15.0,
+                0.0,
+                -3.0
+            ],
+            "SpawnId": 12257017602677035349,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                8.940696716308594e-08,
+                0.0,
+                -0.9999993443489075,
+                0.0,
+                1.0,
+                0.0,
+                0.9999993443489075,
+                0.0,
+                8.940696716308594e-08
+            ],
+            "Position": [
+                -15.0,
+                0.0,
+                -2.0
+            ],
+            "SpawnId": 13404527748807097889,
+            "Type": "Roach"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.9758732318878174,
+                0.0,
+                0.21833869814872742,
+                0.0,
+                1.0,
+                0.0,
+                -0.21833869814872742,
+                0.0,
+                0.9758732318878174
+            ],
+            "Position": [
+                -9.160255432128906,
+                0.0,
+                -11.507476806640625
+            ],
+            "SpawnId": 425334600973121248,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Env_Tree_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.5870487093925476,
+                0.0,
+                -0.8095515966415405,
+                0.0,
+                1.0,
+                0.0,
+                0.8095515966415405,
+                0.0,
+                0.5870487093925476
+            ],
+            "Position": [
+                -8.480768203735352,
+                0.0,
+                -10.358977317810059
+            ],
+            "SpawnId": 13409226059143180339,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Env_Tree_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.9726932644844055,
+                0.0,
+                0.23209448158740997,
+                0.0,
+                1.0,
+                0.0,
+                -0.23209448158740997,
+                0.0,
+                0.9726932644844055
+            ],
+            "Position": [
+                -21.39767837524414,
+                0.0,
+                -19.078096389770508
+            ],
+            "SpawnId": 17643540052090952592,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Plant_Vase_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.9001598954200745,
+                0.0,
+                -0.43555986881256104,
+                0.0,
+                1.0,
+                0.0,
+                0.43555986881256104,
+                0.0,
+                0.9001598954200745
+            ],
+            "Position": [
+                -20.035491943359375,
+                0.0,
+                -20.413558959960938
+            ],
+            "SpawnId": 4502146464798964011,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Plant_Vase_02.obj"
+        }
+    ],
+    "navGraph": {
+        "edgeCost": [],
+        "edgeEnabled": [],
+        "edgeNodeA": [],
+        "edgeNodeB": [],
+        "positions": []
+    },
+    "playerStart": {
+        "spawnOri": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "spawnPos": [
+            0.0,
+            0.0,
+            -2.0
+        ]
+    }
+}

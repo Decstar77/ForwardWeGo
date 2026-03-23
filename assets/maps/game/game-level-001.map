@@ -187,6 +187,27 @@
             ],
             "SpawnId": 7839798364442487216,
             "Type": "Portal"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                4.0,
+                12.0,
+                4.0
+            ],
+            "SpawnId": 11912498139043486822,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Bld_Section_Door_05.obj"
         }
     ],
     "navGraph": {

@@ -207,6 +207,19 @@ namespace atto {
                 ImGui::Image( texID, thumbSize, uv0, uv1 );
             }
 
+            if ( ImGui::BeginPopupContextItem( "##tex_ctx" ) ) {
+                if ( ImGui::MenuItem( "Copy Relative Path" ) ) {
+                    std::string relPath = textures[i].path;
+                    for ( char & ch : relPath ) { if ( ch == '\\' ) ch = '/'; }
+                    ImGui::SetClipboardText( relPath.c_str() );
+                }
+                if ( ImGui::MenuItem( "Copy Absolute Path" ) ) {
+                    std::string absPath = fs::absolute( textures[i].path ).string();
+                    ImGui::SetClipboardText( absPath.c_str() );
+                }
+                ImGui::EndPopup();
+            }
+
             if ( ImGui::IsItemHovered() ) {
                 ImGui::BeginTooltip();
                 ImGui::TextUnformatted( textures[i].path.c_str() );
@@ -361,6 +374,19 @@ namespace atto {
                 ImGui::SetDragDropPayload( "MODEL_ASSET", m.path.c_str(), m.path.size() + 1 );
                 ImGui::Text( "%s", m.filename.c_str() );
                 ImGui::EndDragDropSource();
+            }
+
+            if ( ImGui::BeginPopupContextItem( "##mdl_ctx" ) ) {
+                if ( ImGui::MenuItem( "Copy Relative Path" ) ) {
+                    std::string relPath = m.path;
+                    for ( char & ch : relPath ) { if ( ch == '\\' ) ch = '/'; }
+                    ImGui::SetClipboardText( relPath.c_str() );
+                }
+                if ( ImGui::MenuItem( "Copy Absolute Path" ) ) {
+                    std::string absPath = fs::absolute( m.path ).string();
+                    ImGui::SetClipboardText( absPath.c_str() );
+                }
+                ImGui::EndPopup();
             }
 
             if ( ImGui::IsItemHovered() ) {

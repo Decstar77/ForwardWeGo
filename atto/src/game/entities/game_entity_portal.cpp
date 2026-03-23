@@ -63,11 +63,15 @@ namespace atto {
         const AlignedBox warpArea = GetBounds();
         const Vec3 playerPos = map->GetPlayerPosition();
         const Vec3 closePoint = warpArea.ClosestPoint( playerPos );
-        const f32 dist = Distance(  playerPos, closePoint );
+        const f32 dist = Distance( playerPos, closePoint );
         const f32 threshold = 0.5f;
         if ( dist < threshold ) {
-            sndPortalTavel.Play();
-            Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
+            if ( mapName.empty() == false ) {
+                sndPortalTavel.Play( 0.5f );
+                Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
+            } else {
+                LOG_WARN( "Map portal has no map set" );
+            }
         }
     }
 
@@ -106,7 +110,7 @@ namespace atto {
     void Entity_Portal::Activate() {
         if ( active == false ) {
             active = true;
-            sndInstancePortalHum = sndPortalHum.PlayAt( position, 1.0f, true );
+            sndInstancePortalHum = sndPortalHum.PlayAt( position, 0.5f, true );
         }
     }
 

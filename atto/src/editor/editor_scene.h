@@ -86,7 +86,7 @@ namespace atto {
         void SaveMapToFile( const std::string & path );
 
         // Unsaved changes dialog
-        enum class UnsavedChangesAction { None, Exit, NewMap, OpenMap };
+        enum class UnsavedChangesAction { None, Exit, NewMap, OpenMap, Play };
         void DrawUnsavedChangesDialog();
         void ConfirmUnsavedAction();
         void TryExit();
@@ -154,6 +154,9 @@ namespace atto {
         bool                           hasNavClipboard = false;
         std::vector<Vec3>              navClipboardPositions;
         std::vector<std::pair<i32,i32>> navClipboardEdges; // local index pairs within clipboard
+
+        // Texture eyedropper (Alt+Middle click picks, Middle click applies)
+        std::string      pickedBrushTexturePath;
 
         // Selection state
         i32              selectedBrushIndex = -1;

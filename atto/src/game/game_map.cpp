@@ -84,7 +84,7 @@ namespace atto {
             if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
-            Vec3 color = (i == selectedBrush) ? Vec3( 1.0f, 2.8f, 1.0f ) : Vec3( 1.0f, 1.0f, 1.0f );
+            Vec3 color = (i == selectedBrush) ? Vec3( 0.5f, 1.0f, 0.5f ) : Vec3( 1.0f, 1.0f, 1.0f );
             for ( i32 j = 0; j < brushModels[i].GetMeshCount(); j++ ) {
                 brushModels[i].GetMesh( j ).GetMaterial().albedo = color;
                 brushModels[i].GetMesh( j ).GetMaterial().albedoTexture = brushTextures[i];
@@ -104,7 +104,6 @@ namespace atto {
         }
 
         particleSystem.Render( renderer, playerPosition, playerCameraUp );
-
     }
 
     std::unique_ptr<Entity> GameMap::MakeEntity( EntityType type ) {
@@ -218,7 +217,7 @@ namespace atto {
         for ( i32 iter = 0; iter < 2; iter++ ) {
             for ( i32 i = 0; i < static_cast<i32>( entities.size() ); i++ ) {
                 Entity * entity = entities[i].get();
-                if ( entity ) {
+                if ( entity && entity->IsCollidable() == true ) {
                     AlignedBox bounds = entity->GetBounds();
                     SweepResult result;
                     if ( CollisionSweep::CapsuleAlignedBox( cap, bounds, result ) ) {
@@ -267,7 +266,7 @@ namespace atto {
 
         for ( i32 i = 0; i < static_cast<i32>( entities.size() ); i++ ) {
             Entity * entity = entities[i].get();
-            if ( entity ) {
+            if ( entity && entity->IsCollidable() == true ) {
                 AlignedBox bounds = entity->GetBounds();
                 f32 distance = FLT_MAX;
                 Vec3 normal = Vec3( 0.0f );

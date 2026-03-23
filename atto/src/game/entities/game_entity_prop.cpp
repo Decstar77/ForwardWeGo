@@ -47,5 +47,6 @@ namespace atto {
     void Entity_Prop::Serialize( Serializer & serializer ) {
         Entity::Serialize( serializer );
         serializer( "model", model );
+        serializer( "Collision", isCollidable );
     }
 }

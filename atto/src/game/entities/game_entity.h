@@ -108,6 +108,9 @@ namespace atto {
         virtual Box         GetCollider() const { return {}; }
         virtual bool        RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const { return false; }
 
+        bool                IsCollidable() const { return isCollidable; }
+        void                SetCollidable( const bool isCollidable ) { this->isCollidable = isCollidable; }
+
         // ================ Serialization =============== //
         virtual void        Serialize( Serializer & serializer );
 
@@ -125,6 +128,7 @@ namespace atto {
         Vec3 position = Vec3( 0.0f, 0.0f, 0.0f );
         Mat3 orientation = Mat3( 1 );
         bool pendingDestroy = false;
+        bool isCollidable = true;
     };
 }
 

@@ -7,7 +7,7 @@ int main() {
     Engine & engine = Engine::Get();
 
     EngineConfig config;
-    config.windowTitle = "Foward We Go";
+    config.windowTitle = "Forward We Go";
     config.windowWidth = 1280;
     config.windowHeight = 720;
     config.vsync = true;
@@ -37,12 +37,17 @@ Gameplay:
 - Explosive barrel
 - Chest
 - Level hazard
-- Roach attack sound
+- Portal effect
 
 Editor:
 - SpawnID selection
 - Scroll effects both asset browser scroll and ortho views
 - Right click on asset and say "Copy relative/absolute path"
+- Brush additions;
+    - Alt + middle click on a brush copies in the that brush's texture into some temporary variable. ( Raycast, has nothing to do with the current brush selection )
+    - Middle click on a brush, applies that texture that was copied to the brush under the mouse.
+
+- Triangle selection
 
 Engine:
 - Animation blending

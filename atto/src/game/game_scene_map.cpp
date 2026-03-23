@@ -1,5 +1,5 @@
 #include "game_scene_map.h"
-
+#include "game/game_global_state.h"
 
 namespace atto {
 
@@ -65,6 +65,8 @@ namespace atto {
 
         renderer.SetViewport( 0, 0, camera.GetViewportWidth(), camera.GetViewportHeight() );
         renderer.SetViewProjectionMatrix( camera.GetViewProjectionMatrix() );
+
+        renderer.UseUnlitShader();
         map.Render( renderer, 0.0, -1 );
 
         renderer.RenderSkybox( camera.GetViewMatrix(), camera.GetProjectionMatrix() );
@@ -88,6 +90,19 @@ namespace atto {
         char fpsText[ 32 ];
         snprintf( fpsText, sizeof( fpsText ), "FPS: %.0f", fps );
         ui.DrawText( hudFont, 20, 20, fpsText );
+
+        // Coins — top right
+        {
+            char coinText[ 32 ];
+            snprintf( coinText, sizeof( coinText ), "%d", GameGlobalState::Get().GetPlayerCoins() );
+            Vec2 textSize = UICanvas::MeasureText( hudFont, coinText );
+            f32 textX = ui.GetWidth() - 20.0f;
+            f32 topY  = 20.0f;
+            f32 iconX = textX - textSize.x - 20.0f;
+            ui.DrawSprite( coinTexture, iconX, topY + textSize.y * 0.5f, 28, 28 );
+            ui.DrawText( hudFont, textX, topY, coinText, Vec4( 1.0f, 0.85f, 0.0f, 1.0f ),
+                         UIAlignH::Right, UIAlignV::Top );
+        }
 
         // Health — bottom left
         {
