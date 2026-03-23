@@ -33,7 +33,6 @@ Gameplay:
 - Animation blending
 - ReservationTable
 - player reload bug
-- remove player ADS
 - Coins for next run
 - Explosive barrel
 - Chest
