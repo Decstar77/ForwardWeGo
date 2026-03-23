@@ -15,12 +15,14 @@ namespace atto {
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
         bool IsAttacking() const { return isAttacking; }
+        bool ConsumeHit() { bool h = didHitEntity; didHitEntity = false; return h; }
 
     private:
         AnimatedModel   model;
         Animator        animator;
-        bool            isAttacking = false;
-        bool            isEquipped  = true;
+        bool            isAttacking  = false;
+        bool            isEquipped   = true;
+        bool            didHitEntity = false;
 
         SoundCollection sndEquip;
         SoundCollection sndSwing1;
@@ -39,6 +41,7 @@ namespace atto {
         bool IsAttacking() const { return isAttacking; }
         i32  GetAmmo()     const { return ammo; }
         i32  GetMaxAmmo()  const { return MaxAmmo; }
+        bool ConsumeHit() { bool h = didHitEntity; didHitEntity = false; return h; }
 
         void SpawnParticles( FPSCamera & camera, GameMap & map );
 
@@ -54,6 +57,7 @@ namespace atto {
         bool            isAttacking      = false;
         bool            isEquipped       = false;
         bool            isReloading      = false;
+        bool            didHitEntity     = false;
         bool            isADS            = false;
         bool            reloadSnd1Played = false;
         bool            reloadSnd2Played = false;

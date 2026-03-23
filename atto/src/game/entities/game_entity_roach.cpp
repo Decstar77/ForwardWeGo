@@ -7,6 +7,7 @@
 #include "game/game_map.h"
 
 namespace atto {
+
     ATTO_REGISTER_CLASS(  Entity, Entity_Roach, EntityType::Roach )
 
     Entity_Roach::Entity_Roach() {
@@ -15,13 +16,23 @@ namespace atto {
 
     void Entity_Roach::OnSpawn() {
         model = Engine::Get().GetRenderer().GetOrLoadStaticModel( "assets/models/sm/SM_Prop_DeadZub_01.obj" );
+
+        sndAttack.Initialize();
+        sndAttack.LoadSounds( {
+            "roach/attack.wav"
+        } );
+
+        sndWalk.Initialize();
+        sndWalk.LoadSounds( {
+            "roach/walk.wav"
+        });
     }
 
     static constexpr f32 RoachMoveSpeed       = 1.8f;  // m/s
     static constexpr f32 RoachArrivalDist     = 0.65; // snap to waypoint when this close
     static constexpr f32 RoachYawSpeed        = 6.0f;  // rad/s max turn rate
     static constexpr f32 RoachDetectionRange  = 10.0f; // player detection radius
-    static constexpr f32 RoachAttackRange     = 1.5f;  // melee range
+    static constexpr f32 RoachAttackRange     = 2.0f;  // melee range
     static constexpr f32 RoachAttackRangeHyst = 2.0f;  // disengage above this
     static constexpr f32 RoachAttackRate      = 1.0f;  // seconds between hits
     static constexpr i32 RoachAttackDamage    = 10;
@@ -58,7 +69,7 @@ namespace atto {
         Vec3 dir = toTarget / dist;
         Vec3 rayStart = position + dir * 0.3f;
 
-        MapRaycastResult hit;
+        MapRaycastResult hit = {};
         if ( map->Raycast( rayStart, dir, hit ) ) {
             if ( hit.entity == nullptr && hit.distance < dist - 0.3f ) {
                 return false;
@@ -154,7 +165,6 @@ namespace atto {
                     lostSightTimer = 0.0f;
                     if ( distToPlayer <= RoachAttackRange ) {
                         state = RoachState::Attack;
-                        attackCooldown = 0.0f;
                         hasTarget = false;
                         path.clear();
                     } else {
@@ -184,6 +194,7 @@ namespace atto {
                     if ( attackCooldown <= 0.0f ) {
                         map->DamagePlayer( RoachAttackDamage );
                         attackCooldown = RoachAttackRate;
+                        sndAttack.PlayAt( position, 10.0f );
                     }
                 }
             } break;
@@ -272,6 +283,12 @@ namespace atto {
                     moveDir = moveDir / moveDirLen;
                 }
                 position += moveDir * RoachMoveSpeed * dt;
+
+                walkSoundTimer -= dt;
+                if ( walkSoundTimer <= 0.0f ) {
+                    sndWalk.PlayAt( position, 20.0f );
+                    walkSoundTimer = 1.0f;
+                }
 
                 const f32 targetYaw = atan2f( moveDir.x, moveDir.z );
                 const f32 yawDiff = NormalizeAngle( targetYaw - facingYaw );

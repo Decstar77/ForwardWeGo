@@ -20,7 +20,14 @@
 #include <cstdlib>
 #include <format>
 
+#include "engine/atto_engine.h"
+
 namespace atto {
+
+    void SoundCollection::Initialize() {
+        Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+    }
+
     void SoundCollection::Initialize( AudioSystem * audioSystem, RNG * rng ) {
         this->audioSystem = audioSystem;
         this->rng = rng;
@@ -40,8 +47,16 @@ namespace atto {
         ATTO_ASSERT( audioSystem != nullptr, "Audio system is null" );
         ATTO_ASSERT( rng != nullptr, "RNG is null" );
 
-        i32 idx = rng->Signed32( 0, (i32)buffers.size() - 1 );
+        const i32 idx = rng->Signed32( 0, static_cast< i32 >( buffers.size() ) - 1 );
         audioSystem->PlaySound( buffers[idx], volume );
+    }
+
+    void SoundCollection::PlayAt( Vec3 position, f32 volume ) {
+        ATTO_ASSERT( audioSystem != nullptr, "Audio system is null" );
+        ATTO_ASSERT( rng != nullptr, "RNG is null" );
+
+        const i32 idx = rng->Signed32( 0, static_cast< i32 >( buffers.size() ) - 1 );
+        audioSystem->PlaySoundAt( buffers[idx], position, volume );
     }
 
     // Helper to check OpenAL errors

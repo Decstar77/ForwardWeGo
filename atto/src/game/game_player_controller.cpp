@@ -39,6 +39,10 @@ namespace atto {
     }
 
     void PlayerController::OnUpdate( f32 deltaTime, GameMap & map ) {
+        if ( hitMarkerTimer > 0.0f ) {
+            hitMarkerTimer = Max( hitMarkerTimer - deltaTime, 0.0f );
+        }
+
         Input & input = Engine::Get().GetInput();
 
         if ( input.IsCursorCaptured() == false ) {
@@ -100,9 +104,11 @@ namespace atto {
 
         if ( activeWeapon == WeaponSlot::Knife ) {
             knife.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
+            if ( knife.ConsumeHit() ) { ShowHitMarker(); }
         }
         else {
             glock.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
+            if ( glock.ConsumeHit() ) { ShowHitMarker(); }
         }
 
         // Apply eye height (handles crouch smoothly)

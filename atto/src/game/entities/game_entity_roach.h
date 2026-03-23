@@ -52,6 +52,10 @@ namespace atto {
         f32 rePathTimer = 0.0f;
         f32 attackCooldown = 0.0f;
         f32 drawRed = 0.0f;
+
+        SoundCollection sndWalk;
+        SoundCollection sndAttack;
+        f32 walkSoundTimer = 0.0f;
     };
 }
 

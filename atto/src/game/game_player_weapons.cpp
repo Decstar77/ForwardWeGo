@@ -108,7 +108,9 @@ namespace atto {
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    result.entity->TakeDamage( 34 );
+                    if ( result.entity->TakeDamage( 34 ) == TakeDamageResult::Success_HP ) {
+                        didHitEntity = true;
+                    }
                     sndHitMetal1.Play( 0.5f );
                 }
             }
@@ -122,7 +124,9 @@ namespace atto {
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    result.entity->TakeDamage( 55 );
+                    if ( result.entity->TakeDamage( 55 ) == TakeDamageResult::Success_HP ) {
+                        didHitEntity = true;
+                    }
                     sndHitMetal2.Play( 0.5f );
                 }
             }
@@ -320,6 +324,7 @@ namespace atto {
                         LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
                         if ( result.entity->TakeDamage( 25 ) == TakeDamageResult::Success_HP ) {
                             sndHit.Play();
+                            didHitEntity = true;
                         }
                     }
 

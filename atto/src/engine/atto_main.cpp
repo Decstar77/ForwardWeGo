@@ -35,7 +35,11 @@ Gameplay:
 - ReservationTable
 - HUD rework
 - player reload bug
-- player shooting damage only applied mid way, and should shoot faster.
+- Coins for next run
+- Explosive barrel
+- Chest
+- Level hazard
+- Roach attack sound
 
 Editor:
 

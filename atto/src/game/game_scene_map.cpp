@@ -16,6 +16,7 @@ namespace atto {
         player.OnStart( map.GetPlayerStart().spawnPos );
 
         crosshairTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair008.png" );
+        hitMarkerTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair/crosshair086.png" );
         hudFont          = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 26.0f );
         hudFontSmall     = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 20.0f );
 
@@ -35,7 +36,15 @@ namespace atto {
 
         fps = fps * 0.9f + ( 1.0f / deltaTime ) * 0.1f;
 
+        const Vec3 oldPlayerPos = player.GetCamera().GetPosition();
         player.OnUpdate( deltaTime, map );
+        const Vec3 newPlayerPos = player.GetCamera().GetPosition();
+        const Vec3 playerVelocity = newPlayerPos - oldPlayerPos;
+
+        // Feed the player position and rotation into the audio system
+        Engine::Get().GetAudioSystem().SetListenerPosition( player.GetCamera().GetPosition() );
+        Engine::Get().GetAudioSystem().SetListenerOrientation( player.GetCamera().GetForward(), player.GetCamera().GetUp() );
+        Engine::Get().GetAudioSystem().SetListenerVelocity( playerVelocity );
 
         // Feed player position to the map so entities (AI) can query it
         map.SetPlayerPosition( player.GetCamera().GetPosition() );
@@ -71,6 +80,13 @@ namespace atto {
             UIConstraint::FromPreset( UIAnchorPreset::Center ),
             crosshairTexture, 32, 32
         );
+
+        if ( player.GetHitMarkerAlpha() > 0.0f ) {
+            ui.Sprite(
+                UIConstraint::FromPreset( UIAnchorPreset::Center ),
+                hitMarkerTexture, 48, 48
+            );
+        }
 
         char fpsText[ 32 ];
         snprintf( fpsText, sizeof( fpsText ), "FPS: %.0f", fps );
