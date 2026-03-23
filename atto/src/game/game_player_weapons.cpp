@@ -249,8 +249,9 @@ namespace atto {
 
     void PlayerWeaponGlock::OnEquip() {
         animator.PlayAnimation( model, "Armature|Glock_Draw_Anim", false );
-        isAttacking = false;
-        isEquipped  = false;
+        isAttacking  = false;
+        isEquipped   = false;
+        reloadQueued = false;
         sndEquip.Play();
     }
 
@@ -380,12 +381,18 @@ namespace atto {
         }
 
         // R to reload manually — not while ADS
-        if ( input.IsKeyPressed( Key::R ) && !isADS && isIdleWalkOrRun && !isReloading && ammo < MaxAmmo ) {
-            animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
-            isReloading      = true;
-            reloadSnd1Played = false;
-            reloadSnd2Played = false;
-            reloadSnd3Played = false;
+        if ( input.IsKeyPressed( Key::R ) && !isADS && !isReloading && ammo < MaxAmmo ) {
+            if ( isIdleWalkOrRun ) {
+                animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
+                isReloading      = true;
+                reloadQueued     = false;
+                reloadSnd1Played = false;
+                reloadSnd2Played = false;
+                reloadSnd3Played = false;
+            }
+            else if ( isFiring ) {
+                reloadQueued = true;
+            }
         }
 
         // Reload sound cues
@@ -420,13 +427,24 @@ namespace atto {
             animator.PlayAnimation( model, returnAnim, true );
         }
 
-        // ADS fire finished — return to ADS if RMB still held, else hip
+        // ADS fire finished — start queued reload, return to ADS, or return to hip
         if ( curAnim == "Armature|Glock_ADS_Fire_Anim" && animator.IsFinished() ) {
             isAttacking = false;
-            if ( input.IsMouseButtonDown( MouseButton::Right ) ) {
+            if ( reloadQueued && ammo < MaxAmmo ) {
+                isADS = false;
+                animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
+                isReloading      = true;
+                reloadQueued     = false;
+                reloadSnd1Played = false;
+                reloadSnd2Played = false;
+                reloadSnd3Played = false;
+            }
+            else if ( input.IsMouseButtonDown( MouseButton::Right ) ) {
+                reloadQueued = false;
                 animator.PlayAnimation( model, "Armature|Glock_ADS_Anim", true );
             }
             else {
+                reloadQueued = false;
                 isADS = false;
                 const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                         : isSprinting ? "Armature|Glock_Run_Anim"
@@ -435,13 +453,24 @@ namespace atto {
             }
         }
 
-        // Hip fire finished — return to locomotion
+        // Hip fire finished — start queued reload or return to locomotion
         if ( curAnim == "Armature|Glock_Fire_Anim" && animator.IsFinished() ) {
             isAttacking = false;
-            const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
-                                    : isSprinting ? "Armature|Glock_Run_Anim"
-                                    :               "Armature|Glock_Walk_Anim";
-            animator.PlayAnimation( model, returnAnim, true );
+            if ( reloadQueued && ammo < MaxAmmo ) {
+                animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
+                isReloading      = true;
+                reloadQueued     = false;
+                reloadSnd1Played = false;
+                reloadSnd2Played = false;
+                reloadSnd3Played = false;
+            }
+            else {
+                reloadQueued = false;
+                const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
+                                        : isSprinting ? "Armature|Glock_Run_Anim"
+                                        :               "Armature|Glock_Walk_Anim";
+                animator.PlayAnimation( model, returnAnim, true );
+            }
         }
 
         // Locomotion transitions — only when fully in hip-fire mode

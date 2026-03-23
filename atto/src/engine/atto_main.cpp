@@ -32,9 +32,8 @@ Gameplay:
 - Entity id's
 - Animation blending
 - ReservationTable
-- HUD rework
 - player reload bug
-- if the player presses reload while shooting ( near the end of the animation ) it should queue the reload once the animation is finished.
+- remove player ADS
 - Coins for next run
 - Explosive barrel
 - Chest
@@ -44,7 +43,6 @@ Gameplay:
 Editor:
 
 Engine:
-- Rework the UI system to be imtermeidate mode.
 - Animation blending
 
 Renderering:

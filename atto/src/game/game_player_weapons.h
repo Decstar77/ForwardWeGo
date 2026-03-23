@@ -59,6 +59,7 @@ namespace atto {
         bool            isReloading      = false;
         bool            didHitEntity     = false;
         bool            isADS            = false;
+        bool            reloadQueued     = false;
         bool            reloadSnd1Played = false;
         bool            reloadSnd2Played = false;
         bool            reloadSnd3Played = false;
