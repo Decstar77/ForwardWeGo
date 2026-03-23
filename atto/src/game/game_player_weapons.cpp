@@ -166,6 +166,10 @@ namespace atto {
     // =========================================================================
 
     void PlayerWeaponGlock::OnStart() {
+        particleTextureSmoke = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Smoke_01.png" );
+        particleTextureTrace1 = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/kenny/trace_06.png" );
+        particleTextureTrace2 = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/kenny/trace_07.png" );
+
         model.LoadFromFile( "assets/player/arms/glock.glb" );
         animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
         isEquipped = true;
@@ -281,6 +285,7 @@ namespace atto {
             if ( ammo > 0 ) {
                 animator.PlayAnimation( model, "Armature|Glock_ADS_Fire_Anim", false );
                 isAttacking = true;
+                SpawnParticles( camera, map );
             }
             else {
                 sndDry.Play();
@@ -292,6 +297,7 @@ namespace atto {
             if ( ammo > 0 ) {
                 animator.PlayAnimation( model, "Armature|Glock_Fire_Anim", false );
                 isAttacking = true;
+                SpawnParticles( camera, map );
             }
             else {
                 sndDry.Play();
@@ -401,4 +407,53 @@ namespace atto {
         renderer.RenderAnimatedModel( model, animator, armsMatrix );
     }
 
+    void PlayerWeaponGlock::SpawnParticles( FPSCamera & camera, GameMap & map ) {
+        Vec3 forward = camera.GetForward();
+        Vec3 right   = camera.GetRight();
+        Vec3 up      = camera.GetUp();
+
+        // Muzzle position: slightly forward and down-right from the camera
+        Vec3 muzzlePos = camera.GetPosition()
+                       + forward * 0.4f
+                       + right   * 0.1f
+                       + up      * -0.08f;
+
+        ParticleSystem & ps = map.GetParticleSystem();
+
+        // Muzzle smoke puff — expands and fades out
+        ParticleParms smoke;
+        smoke.position         = muzzlePos;
+        smoke.positionVariance = Vec3( 0.02f );
+        smoke.velocity         = forward * 1.5f + up * 0.4f;
+        smoke.velocityVariance = Vec3( 0.3f, 0.3f, 0.3f );
+        smoke.gravity          = Vec3( 0.0f, 0.2f, 0.0f );
+        smoke.drag             = 3.0f;
+        smoke.lifetime         = 0.4f;
+        smoke.lifetimeVariance = 0.15f;
+        smoke.startSize        = 0.04f;
+        smoke.endSize          = 0.15f;
+        smoke.startColor       = Color( 0.9f, 0.85f, 0.7f, 0.6f );
+        smoke.endColor         = Color( 0.5f, 0.5f, 0.5f, 0.0f );
+        smoke.texture          = particleTextureSmoke;
+        smoke.count            = 6;
+        ps.Emit( smoke );
+
+        // Hot sparks — fast, small, bright
+        ParticleParms sparks;
+        sparks.position         = muzzlePos + forward * 0.05f;
+        sparks.positionVariance = Vec3( 0.01f );
+        sparks.velocity         = forward * 4.0f + up * 1.0f;
+        sparks.velocityVariance = Vec3( 1.5f, 1.0f, 1.5f );
+        sparks.gravity          = Vec3( 0.0f, -3.0f, 0.0f );
+        sparks.drag             = 1.0f;
+        sparks.lifetime         = 0.15f;
+        sparks.lifetimeVariance = 0.08f;
+        sparks.startSize        = 0.03f;
+        sparks.endSize          = 0.005f;
+        sparks.startColor       = Color( 1.0f, 0.9f, 0.4f, 1.0f );
+        sparks.endColor         = Color( 1.0f, 0.3f, 0.0f, 0.0f );
+        sparks.texture          = nullptr;
+        sparks.count            = 4;
+        ps.Emit( sparks );
+    }
 }

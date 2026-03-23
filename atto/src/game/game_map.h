@@ -51,6 +51,7 @@ namespace atto {
         bool                 IsPlayerStartColliding() const;
 
         void                 SetPlayerPosition( const Vec3 & pos ) { playerPosition = pos; }
+        void                 SetPlayerCameraUp( const Vec3 & up ) { playerCameraUp = up; }
         Vec3                 GetPlayerPosition() const { return playerPosition; }
         void                 DamagePlayer( i32 damage ) { playerDamagePending += damage; }
         i32                  FlushPlayerDamage() { i32 d = playerDamagePending; playerDamagePending = 0; return d; }
@@ -69,6 +70,10 @@ namespace atto {
         WaypointGraph & GetNavGraph() { return navGraph; }
         const WaypointGraph & GetNavGraph() const { return navGraph; }
 
+        // =========== Particles ===========
+        ParticleSystem & GetParticleSystem() { return particleSystem; }
+        const ParticleSystem & GetParticleSystem() const { return particleSystem; }
+
         // =========== Brushes ===========
         i32             AddBrush();
         void            RemoveBrush( i32 index );
@@ -86,11 +91,15 @@ namespace atto {
 
     private:
         SmallString path;
-        PlayerStart playerStart;
-        Vec3        playerPosition = Vec3( 0.0f );
-        i32         playerDamagePending = 0;
+        PlayerStart                             playerStart;
+
+        Vec3                                    playerPosition = Vec3( 0.0f );
+        Vec3                                    playerCameraUp = Vec3( 0.0f );
+        i32                                     playerDamagePending = 0;
 
         WaypointGraph                           navGraph;
+        ParticleSystem                          particleSystem;
+
         std::vector<std::unique_ptr<Entity>>    entities;
         std::vector<Brush>                      brushes;
         std::vector<StaticModel>                brushModels;

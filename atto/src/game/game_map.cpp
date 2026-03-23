@@ -65,6 +65,8 @@ namespace atto {
         }
 
         FlushDestroyedEntities();
+
+        particleSystem.Update( dt );
     }
 
     void GameMap::FlushDestroyedEntities() {
@@ -100,6 +102,9 @@ namespace atto {
                 entity->DebugDrawCollider( renderer );
             }
         }
+
+        particleSystem.Render( renderer, playerPosition, playerCameraUp );
+
     }
 
     std::unique_ptr<Entity> GameMap::MakeEntity( EntityType type ) {

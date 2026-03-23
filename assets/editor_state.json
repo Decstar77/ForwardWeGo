@@ -1,17 +1,17 @@
 {
-    "CamPitch": -1.2745609283447266,
+    "CamPitch": -1.4770193099975586,
     "CamPos": [
-        1.8748137950897217,
-        6.666158676147461,
-        -6.145166873931885
+        3.660163640975952,
+        5.693301677703857,
+        -5.946781635284424
     ],
-    "CamYaw": -72.32669830322266,
-    "MapPath": "C:\\Projects\\2026\\ForwardWeGo\\assets\\maps\\level_003.map",
+    "CamYaw": -71.85372161865234,
+    "MapPath": "C:\\Projects\\2026\\ForwardWeGo\\assets\\maps\\level_002.map",
     "OrthoSize": 9.838799476623535,
     "OrthoTarget": [
         -0.3860456943511963,
         0.0,
         -7.938106060028076
     ],
-    "ViewMode": 2
+    "ViewMode": 3
 }

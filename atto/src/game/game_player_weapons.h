@@ -40,9 +40,15 @@ namespace atto {
         i32  GetAmmo()     const { return ammo; }
         i32  GetMaxAmmo()  const { return MaxAmmo; }
 
+        void SpawnParticles( FPSCamera & camera, GameMap & map );
+
     private:
         AnimatedModel   model;
         Animator        animator;
+        const Texture * particleTextureSmoke = nullptr;
+        const Texture * particleTextureTrace1 = nullptr;
+        const Texture * particleTextureTrace2 = nullptr;
+
         static constexpr i32 MaxAmmo = 12;
 
         bool            isAttacking      = false;
