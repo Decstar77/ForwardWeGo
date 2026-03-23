@@ -4,6 +4,13 @@
 namespace atto {
     class GameMap;
 
+    enum class TakeDamageResult {
+        DoesNotTakeDamage,
+        Success_HP,
+        Success_Shielded,
+        Immune,
+    };
+
     enum class EntityType {
         None = 0,
         Barrel,
@@ -99,7 +106,7 @@ namespace atto {
         virtual void        Serialize( Serializer & serializer );
 
         // ================ Gameplay =============== //
-        virtual void        TakeDamage( i32 damage ) {}
+        virtual TakeDamageResult TakeDamage( i32 damage ) { return TakeDamageResult::DoesNotTakeDamage; }
 
         // ================ Debug =============== //
         virtual void        DebugDrawBounds( Renderer & renderer ) {}

@@ -66,6 +66,7 @@ namespace atto {
         SoundCollection sndCock;
         SoundCollection sndRemoveMag;
         SoundCollection sndInsertMag;
+        SoundCollection sndHit;
     };
 
 }

@@ -29,7 +29,7 @@ namespace atto {
             Engine::Get().TransitionToScene( "Editor", map.GetPath() );
         }
 
-        if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::S ) ) {
+        if ( input.IsKeyDown( Key::LeftControl ) && input.IsKeyPressed( Key::M ) ) {
             Engine::Get().GetAudioSystem().ToggleMuted();
         }
 

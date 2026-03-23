@@ -31,15 +31,15 @@ TODO:
 
 Gameplay:
 - Entity id's
-- Hit particles
-- Muzzle particles
 - Animation blending
-- HUD
+- ReservationTable
+- HUD rework
+- player reload bug
+- player shooting damage only applied mid way, and should shoot faster.
 
 Editor:
 
 Renderering:
-- Add textures on brushes and materials
 - Shadows
 - Particles
 - MSAA

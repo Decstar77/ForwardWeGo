@@ -3,21 +3,10 @@
 #include "engine/atto_assets.h"
 #include "engine/atto_waypoint_graph.h"
 
+#include "game_player_controller.h"
 #include "game_entities.h"
 
 namespace atto {
-
-    constexpr f32 PlayerHeight = 1.8f;
-    constexpr f32 PlayerEyeHeight = 1.7f;
-
-    struct PlayerStart {
-        Vec3 spawnPos;
-        Mat3 spawnOri;
-
-        void Serialize( Serializer & serializer );
-
-        inline Capsule GetCapsule() const { return Capsule::FromTips( spawnPos, Vec3( spawnPos.x, spawnPos.y + PlayerHeight, spawnPos.z ), 0.4f ); }
-    };
 
     struct MapRaycastResult {
         Entity *    entity;

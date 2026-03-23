@@ -24,7 +24,7 @@ namespace atto {
         bool RayTest( const Vec3 &start, const Vec3 &dir, f32 &dist ) const override;
         void Serialize( Serializer &serializer ) override;
 
-        void TakeDamage( i32 damage ) override;
+        TakeDamageResult TakeDamage( i32 damage ) override;
 
         void DebugDrawBounds( Renderer &renderer ) override;
         void DebugDrawCollider( Renderer & renderer ) override;

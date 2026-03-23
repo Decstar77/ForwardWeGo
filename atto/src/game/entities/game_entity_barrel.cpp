@@ -47,10 +47,12 @@ namespace atto {
         renderer.DebugAlignedBox( bounds );
     }
 
-    void Entity_Barrel::TakeDamage( i32 damage ) {
+    TakeDamageResult Entity_Barrel::TakeDamage( i32 damage ) {
         health -= damage;
         if ( health <= 0 ) {
             map->DestroyEntity( this );
         }
+        
+        return TakeDamageResult::Success_HP;
     };
 } // atto

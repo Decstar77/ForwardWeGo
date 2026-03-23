@@ -5,6 +5,19 @@
 
 namespace atto {
 
+    constexpr f32 PlayerStandingHeight   = 1.8f;
+    constexpr f32 PlayerEyeHeight        = 1.7f;
+    constexpr f32 PlayerCrouchHeight     = 1.0f;
+    constexpr f32 PlayerCrouchEyeHeight  = 0.9f;
+
+    struct PlayerStart {
+        Vec3 spawnPos;
+        Mat3 spawnOri;
+
+        void Serialize( Serializer & serializer );
+        Capsule GetCapsule() const;
+    };
+
     class GameMap;
 
     enum class WeaponSlot { Knife, Glock };
@@ -28,12 +41,15 @@ namespace atto {
 
     private:
         FPSCamera           camera;
-        Capsule             playerCapsule;
+        Capsule             playerCapsule = {};
         PlayerWeaponKnife   knife;
         PlayerWeaponGlock   glock;
         WeaponSlot          activeWeapon = WeaponSlot::Knife;
 
         i32                 health           = 100;
+        bool                isCrouching      = false;
+        f32                 currentEyeHeight = PlayerEyeHeight;
+        f32                 currentHeight    = PlayerStandingHeight;
         SoundCollection     sndFootsteps;
         f32                 footstepTimer    = 0.0f;
         f32                 footstepInterval = 0.6f;

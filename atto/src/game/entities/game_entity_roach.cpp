@@ -328,11 +328,13 @@ namespace atto {
         Entity::Serialize( serializer );
     }
 
-    void Entity_Roach::TakeDamage( i32 damage ) {
+    TakeDamageResult Entity_Roach::TakeDamage( i32 damage ) {
         health -= damage;
         if ( health <= 0 ) {
             map->DestroyEntity( this );
         }
+
+        return TakeDamageResult::Success_HP;
     }
 
     void Entity_Roach::DebugDrawBounds( Renderer &renderer ) {

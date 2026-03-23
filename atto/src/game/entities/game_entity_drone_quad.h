@@ -22,7 +22,7 @@ namespace atto {
         AlignedBox GetBounds() const override;
         bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
         void DebugDrawBounds( Renderer & renderer ) override;
-        void TakeDamage( i32 damage ) override;
+        TakeDamageResult TakeDamage( i32 damage ) override;
 
         void MoveTo( const Vec3 & target );
 

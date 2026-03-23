@@ -3,12 +3,6 @@
 #include "entities/game_entity_roach.h"
 
 namespace atto {
-
-    void PlayerStart::Serialize( Serializer & serializer ) {
-        serializer( "spawnPos", spawnPos );
-        serializer( "spawnOri", spawnOri );
-    }
-
     GameMap::GameMap() {
         playerStart.spawnPos = Vec3( 0.0f, 0.0f, 3.0f );
         playerStart.spawnOri = Mat3( 1 );

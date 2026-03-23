@@ -2,6 +2,14 @@
 #include "game_map.h"
 
 namespace atto {
+    void PlayerStart::Serialize( Serializer & serializer ) {
+        serializer( "spawnPos", spawnPos );
+        serializer( "spawnOri", spawnOri );
+    }
+
+    Capsule PlayerStart::GetCapsule() const {
+        return Capsule::FromTips( spawnPos, Vec3( spawnPos.x, spawnPos.y + PlayerStandingHeight, spawnPos.z ), 0.4f );
+    }
 
     void PlayerController::OnStart( const Vec3 & position ) {
         Vec2i windowSize = Engine::Get().GetWindowSize();
@@ -48,8 +56,31 @@ namespace atto {
         constexpr f32 FootstepIntervalWalk   = 0.6f;
         constexpr f32 FootstepIntervalSprint = 0.35f;
 
+        // Crouch toggle
+        if ( input.IsKeyDown( Key::LeftControl ) ) {
+            isCrouching = true;
+        } else {
+            isCrouching = false;
+        }
+
+
         bool isSprinting = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
-        f32  speed       = camera.GetMoveSpeed() * ( isSprinting ? SprintSpeedMultiplier : 1.0f ) * deltaTime;
+
+        // Stand up when sprinting
+        if ( isSprinting && isCrouching ) {
+            isCrouching = false;
+        }
+
+        // Smoothly interpolate eye height and capsule height
+        constexpr f32 CrouchSpeed        = 10.0f;
+        constexpr f32 CrouchSpeedMult    = 0.5f;
+        f32 targetEyeHeight = isCrouching ? PlayerCrouchEyeHeight : PlayerEyeHeight;
+        f32 targetHeight    = isCrouching ? PlayerCrouchHeight    : PlayerStandingHeight;
+        currentEyeHeight    = currentEyeHeight + (targetEyeHeight - currentEyeHeight) * Min( CrouchSpeed * deltaTime, 1.0f );
+        currentHeight       = currentHeight    + (targetHeight    - currentHeight)    * Min( CrouchSpeed * deltaTime, 1.0f );
+
+        f32 speedMult = isSprinting ? SprintSpeedMultiplier : ( isCrouching ? CrouchSpeedMult : 1.0f );
+        f32  speed    = camera.GetMoveSpeed() * speedMult * deltaTime;
 
         bool isMoving = false;
         if ( input.IsKeyDown( Key::W ) ) { camera.MoveForward( speed );  isMoving = true; }
@@ -74,20 +105,25 @@ namespace atto {
             glock.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
         }
 
+        // Apply eye height (handles crouch smoothly)
+        Vec3 camPos = camera.GetPosition();
+        camPos.y = currentEyeHeight;
+        camera.SetPosition( camPos );
+
         Vec3 playerPos = camera.GetPosition();
         playerPos.y    = 0.0f;
-        playerCapsule  = Capsule::FromTips( playerPos, playerPos + Vec3( 0, PlayerHeight, 0 ), 0.3f );
+        playerCapsule  = Capsule::FromTips( playerPos, playerPos + Vec3( 0, currentHeight, 0 ), 0.3f );
 
         Vec3 correction = map.ResolvePlayerCollision( playerCapsule );
         correction.y    = 0.0f;
         if ( correction.x != 0.0f || correction.z != 0.0f ) {
-            Vec3 camPos = camera.GetPosition();
+            camPos      = camera.GetPosition();
             camPos     += correction;
             camera.SetPosition( camPos );
 
             playerPos     = camPos;
             playerPos.y   = 0.0f;
-            playerCapsule = Capsule::FromTips( playerPos, playerPos + Vec3( 0, PlayerHeight, 0 ), 0.3f );
+            playerCapsule = Capsule::FromTips( playerPos, playerPos + Vec3( 0, currentHeight, 0 ), 0.3f );
         }
 
         footstepInterval = isSprinting ? FootstepIntervalSprint : FootstepIntervalWalk;

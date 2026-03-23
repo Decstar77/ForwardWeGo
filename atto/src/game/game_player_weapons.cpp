@@ -232,6 +232,15 @@ namespace atto {
             "glock/gun_pistol_dry_fire_05.wav",
             "glock/gun_pistol_dry_fire_06.wav",
         } );
+
+        sndHit.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndHit.LoadSounds( {
+            "bullet-hits/basic_hit_01.wav",
+            "bullet-hits/basic_hit_02.wav",
+            "bullet-hits/basic_hit_03.wav",
+            "bullet-hits/basic_hit_04.wav",
+            "bullet-hits/basic_hit_05.wav",
+        } );
     }
 
     void PlayerWeaponGlock::OnEquip() {
@@ -264,6 +273,7 @@ namespace atto {
                                || curAnim == "Armature|Glock_Walk_Anim"
                                || curAnim == "Armature|Glock_Run_Anim" );
         bool isADSIdle = ( curAnim == "Armature|Glock_ADS_Anim" );
+        bool isFiring = ( curAnim == "Armature|Glock_Fire_Anim" || curAnim == "Armature|Glock_ADS_Fire_Anim" );
 
         // Enter ADS — RMB held while in a normal locomotion state
         if ( input.IsMouseButtonDown( MouseButton::Right ) && !isADS && isIdleWalkOrRun && !isSprinting && !isReloading && !isAttacking ) {
@@ -293,10 +303,70 @@ namespace atto {
         }
 
         // Fire — hip
-        if ( input.IsMouseButtonPressed( MouseButton::Left ) && !isADS && isIdleWalkOrRun && !isSprinting && !isReloading ) {
+        if ( input.IsMouseButtonPressed( MouseButton::Left )
+            && !isADS
+            && ( ( isIdleWalkOrRun && !isSprinting ) || ( isFiring && animator.GetPercentComplete() >= 0.125 ) )
+            && !isReloading ) {
             if ( ammo > 0 ) {
                 animator.PlayAnimation( model, "Armature|Glock_Fire_Anim", false );
                 isAttacking = true;
+
+                ammo--;
+                sndShoot.Play( 0.2f );
+
+                MapRaycastResult result;
+                if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
+                    if ( result.entity && result.distance <= 50.0f ) {
+                        LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
+                        if ( result.entity->TakeDamage( 25 ) == TakeDamageResult::Success_HP ) {
+                            sndHit.Play();
+                        }
+                    }
+
+                    // Impact particles at hit point
+                    Vec3 hitPoint = camera.GetPosition() + camera.GetForward() * result.distance;
+                    Vec3 hitNormal = result.normal;
+                    ParticleSystem & ps = map.GetParticleSystem();
+
+                    // Impact sparks — velocity-aligned streaks that scatter off the surface
+                    ParticleParms impactSparks;
+                    impactSparks.position         = hitPoint + hitNormal * 0.02f;
+                    impactSparks.positionVariance = Vec3( 0.01f );
+                    impactSparks.velocity         = hitNormal * 2.0f;
+                    impactSparks.velocityVariance = Vec3( 2.5f, 2.5f, 2.5f );
+                    impactSparks.gravity          = Vec3( 0.0f, -6.0f, 0.0f );
+                    impactSparks.drag             = 2.0f;
+                    impactSparks.lifetime         = 0.2f;
+                    impactSparks.lifetimeVariance = 0.1f;
+                    impactSparks.startSize        = 0.04f * 10;
+                    impactSparks.endSize          = 0.005f * 10;
+                    impactSparks.startColor       = Color( 1.0f, 0.5f, 0.1f, 1.0f );
+                    impactSparks.endColor         = Color( 0.8f, 0.15f, 0.0f, 0.0f );
+                    impactSparks.texture          = particleTextureTrace1;
+                    impactSparks.velocityAligned  = true;
+                    impactSparks.stretchFactor    = 2.5f;
+                    impactSparks.count            = 5;
+                    ps.Emit( impactSparks );
+
+                    // Impact dust/debris — slower, larger, fades out
+                    ParticleParms impactDust;
+                    impactDust.position         = hitPoint + hitNormal * 0.01f;
+                    impactDust.positionVariance = Vec3( 0.03f );
+                    impactDust.velocity         = hitNormal * 0.8f;
+                    impactDust.velocityVariance = Vec3( 0.5f, 0.5f, 0.5f );
+                    impactDust.gravity          = Vec3( 0.0f, 0.3f, 0.0f );
+                    impactDust.drag             = 4.0f;
+                    impactDust.lifetime         = 0.5f;
+                    impactDust.lifetimeVariance = 0.2f;
+                    impactDust.startSize        = 0.03f * 10;
+                    impactDust.endSize          = 0.12f * 10;
+                    impactDust.startColor       = Color( 0.9f, 0.85f, 0.7f, 0.6f );
+                    impactDust.endColor         = Color( 0.5f, 0.5f, 0.5f, 0.0f );
+                    impactDust.texture          = particleTextureTrace2;
+                    impactDust.count            = 3;
+                    ps.Emit( impactDust );
+                }
+
                 SpawnParticles( camera, map );
             }
             else {
@@ -331,61 +401,8 @@ namespace atto {
         }
 
         // Hit detection at 65% — both hip and ADS fire
-        bool isFiring = ( curAnim == "Armature|Glock_Fire_Anim" || curAnim == "Armature|Glock_ADS_Fire_Anim" );
-        if ( isFiring && animator.GetPercentComplete() > 0.65f && isAttacking ) {
+        if ( isFiring && animator.GetPercentComplete() >= 1.0f && isAttacking ) {
             isAttacking = false;
-            ammo--;
-            MapRaycastResult result;
-            if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
-                if ( result.entity && result.distance <= 50.0f ) {
-                    LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    result.entity->TakeDamage( 25 );
-                }
-
-                // Impact particles at hit point
-                Vec3 hitPoint = camera.GetPosition() + camera.GetForward() * result.distance;
-                Vec3 hitNormal = result.normal;
-                ParticleSystem & ps = map.GetParticleSystem();
-
-                // Impact sparks — velocity-aligned streaks that scatter off the surface
-                ParticleParms impactSparks;
-                impactSparks.position         = hitPoint + hitNormal * 0.02f;
-                impactSparks.positionVariance = Vec3( 0.01f );
-                impactSparks.velocity         = hitNormal * 2.0f;
-                impactSparks.velocityVariance = Vec3( 2.5f, 2.5f, 2.5f );
-                impactSparks.gravity          = Vec3( 0.0f, -6.0f, 0.0f );
-                impactSparks.drag             = 2.0f;
-                impactSparks.lifetime         = 0.2f;
-                impactSparks.lifetimeVariance = 0.1f;
-                impactSparks.startSize        = 0.04f * 10;
-                impactSparks.endSize          = 0.005f * 10;
-                impactSparks.startColor       = Color( 1.0f, 0.5f, 0.1f, 1.0f );
-                impactSparks.endColor         = Color( 0.8f, 0.15f, 0.0f, 0.0f );
-                impactSparks.texture          = particleTextureTrace1;
-                impactSparks.velocityAligned  = true;
-                impactSparks.stretchFactor    = 2.5f;
-                impactSparks.count            = 5;
-                ps.Emit( impactSparks );
-
-                // Impact dust/debris — slower, larger, fades out
-                ParticleParms impactDust;
-                impactDust.position         = hitPoint + hitNormal * 0.01f;
-                impactDust.positionVariance = Vec3( 0.03f );
-                impactDust.velocity         = hitNormal * 0.8f;
-                impactDust.velocityVariance = Vec3( 0.5f, 0.5f, 0.5f );
-                impactDust.gravity          = Vec3( 0.0f, 0.3f, 0.0f );
-                impactDust.drag             = 4.0f;
-                impactDust.lifetime         = 0.5f;
-                impactDust.lifetimeVariance = 0.2f;
-                impactDust.startSize        = 0.03f * 10;
-                impactDust.endSize          = 0.12f * 10;
-                impactDust.startColor       = Color( 0.9f, 0.85f, 0.7f, 0.6f );
-                impactDust.endColor         = Color( 0.5f, 0.5f, 0.5f, 0.0f );
-                impactDust.texture          = particleTextureTrace2;
-                impactDust.count            = 3;
-                ps.Emit( impactDust );
-            }
-            sndShoot.Play( 0.2f );
         }
 
         // Reload complete
