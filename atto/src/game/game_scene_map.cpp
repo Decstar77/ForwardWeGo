@@ -126,6 +126,8 @@ namespace atto {
         );
 
         ui.End( renderer );
+
+        renderer.RenderDamageVignette( player.GetDamageVignetteAlpha() );
     }
 
     void GameMapScene::OnShutdown() {

@@ -42,6 +42,9 @@ namespace atto {
         if ( hitMarkerTimer > 0.0f ) {
             hitMarkerTimer = Max( hitMarkerTimer - deltaTime, 0.0f );
         }
+        if ( damageVignetteTimer > 0.0f ) {
+            damageVignetteTimer = Max( damageVignetteTimer - deltaTime, 0.0f );
+        }
 
         Input & input = Engine::Get().GetInput();
 
@@ -151,6 +154,7 @@ namespace atto {
         if ( health < 0 ) {
             health = 0;
         }
+        damageVignetteTimer = DamageVignetteDuration;
         LOG_INFO( "Player took %d damage, health: %d", damage, health );
     }
 

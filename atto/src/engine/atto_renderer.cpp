@@ -104,6 +104,11 @@ namespace atto {
             return false;
         }
 
+        if ( !damageVignetteShader.CreateFromFiles( "assets/shaders/damage_vignette.vert", "assets/shaders/damage_vignette.frag" ) ) {
+            LOG_ERROR( "Failed to create damage vignette shader" );
+            return false;
+        }
+
         if ( !textShader.CreateFromFiles( "assets/shaders/text.vert", "assets/shaders/text.frag" ) ) {
             LOG_ERROR( "Failed to create text shader" );
             return false;
@@ -448,6 +453,28 @@ namespace atto {
         glBindVertexArray( 0 );
 
         spriteShader.Unbind();
+
+        glDisable( GL_BLEND );
+        glEnable( GL_DEPTH_TEST );
+    }
+
+    void Renderer::RenderDamageVignette( f32 alpha ) {
+        if ( alpha <= 0.0f ) {
+            return;
+        }
+
+        glDisable( GL_DEPTH_TEST );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        damageVignetteShader.Bind();
+        damageVignetteShader.SetFloat( "uAlpha", alpha );
+
+        glBindVertexArray( spriteVAO );
+        glDrawArrays( GL_TRIANGLES, 0, 6 );
+        glBindVertexArray( 0 );
+
+        damageVignetteShader.Unbind();
 
         glDisable( GL_BLEND );
         glEnable( GL_DEPTH_TEST );

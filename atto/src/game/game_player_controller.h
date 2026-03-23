@@ -42,6 +42,8 @@ namespace atto {
         void                ShowHitMarker() { hitMarkerTimer = HitMarkerDuration; }
         f32                 GetHitMarkerAlpha() const { return hitMarkerTimer > 0.0f ? hitMarkerTimer / HitMarkerDuration : 0.0f; }
 
+        f32                 GetDamageVignetteAlpha() const { return damageVignetteTimer > 0.0f ? damageVignetteTimer / DamageVignetteDuration : 0.0f; }
+
     private:
         FPSCamera           camera;
         Capsule             playerCapsule = {};
@@ -52,6 +54,8 @@ namespace atto {
         i32                 health           = 100;
         static constexpr f32 HitMarkerDuration = 0.2f;
         f32                 hitMarkerTimer   = 0.0f;
+        static constexpr f32 DamageVignetteDuration = 0.6f;
+        f32                 damageVignetteTimer = 0.0f;
         bool                isCrouching      = false;
         f32                 currentEyeHeight = PlayerEyeHeight;
         f32                 currentHeight    = PlayerStandingHeight;

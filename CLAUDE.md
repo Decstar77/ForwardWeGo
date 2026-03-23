@@ -7,23 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ForwardWeGo is a C++20 3D game engine with an integrated editor for creating 3D FPS Rouge like.
 It uses OpenGL 3.x for rendering, ImGui for the editor UI, and a brush-based level design system.
 
-## Build Commands
-
-**Generate Visual Studio 2022 solution:**
-```bash
-premake5.exe vs2022
-```
-This outputs `build/atto.sln`.
-
-**Build the project:**
-Open `build/atto.sln` in Visual Studio 2022 and build the `atto` project (Debug|x64 or Release|x64).
-
-**Run:**
-```bash
-.\bin\x86_64\atto_game.exe
-```
-
-No automated test suite or lint tooling — the compiler (MSVC v143, warnings-as-errors at Level 3) is the primary quality gate.
+## Build system
+- Cmake
 
 ## Architecture
 
@@ -71,7 +56,3 @@ bin/             # Build output
 - Multi-processor compilation enabled
 - Linked: `opengl32`, `openal32`, `assimp-vc143-mt`, `Dbghelp`, `ws2_32`, `winmm`
 - Warnings suppressed: C4100 (unreferenced param), C4201 (nameless struct), C4702 (unreachable code)
-
-
-## Build system
-- Cmake

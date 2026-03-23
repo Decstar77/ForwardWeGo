@@ -43,6 +43,9 @@ namespace atto {
         // 2D sprite rendering (NDC center + pixel size relative to viewport)
         void RenderSprite( const Texture * texture, Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH );
 
+        // Fullscreen red damage vignette overlay (alpha 0..1)
+        void RenderDamageVignette( f32 alpha );
+
         // Text rendering — screen-space pixels, (0,0) at top-left
         void DrawText( const Font * font, const char * text, f32 x, f32 y, Vec4 color, i32 viewportW, i32 viewportH );
 
@@ -82,6 +85,9 @@ namespace atto {
         Shader spriteShader;
         u32    spriteVAO = 0;
         u32    spriteVBO = 0;
+
+        // Damage vignette
+        Shader damageVignetteShader;
 
         // Skybox resources
         Shader skyboxShader;

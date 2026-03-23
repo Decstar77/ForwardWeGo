@@ -28,13 +28,13 @@ int main() {
 
 /*
 TODO:
-
 Gameplay:
 - Entity id's
 - Animation blending
 - ReservationTable
 - HUD rework
 - player reload bug
+- if the player presses reload while shooting ( near the end of the animation ) it should queue the reload once the animation is finished.
 - Coins for next run
 - Explosive barrel
 - Chest
@@ -43,16 +43,18 @@ Gameplay:
 
 Editor:
 
+Engine:
+- Rework the UI system to be imtermeidate mode.
+- Animation blending
+
 Renderering:
 - Shadows
-- Particles
 - MSAA
 - SSAO
 - Image based lighting
 - Light maps
 - Light probes
 - ? PBR ?
-- Animation blends ?
 
 https://www.fab.com/listings/8580e72a-1ac7-42b0-b76e-0ebbe0a922a8
 */
