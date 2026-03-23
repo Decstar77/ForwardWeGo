@@ -33,12 +33,12 @@ namespace atto {
         this->rng = rng;
     }
 
-    void SoundCollection::LoadSounds( const std::vector<const char *> & names ) {
+    void SoundCollection::LoadSounds( const std::vector<const char *> & names, bool mono ) {
         ATTO_ASSERT( audioSystem != nullptr, "Audio system is null" );
         ATTO_ASSERT( rng != nullptr, "RNG is null" );
 
         for ( const char * name : names ) {
-            buffers.push_back( audioSystem->GetOrLoadSound( std::format( "assets/sounds/{}", name ).c_str() ) );
+            buffers.push_back( audioSystem->GetOrLoadSound( std::format( "assets/sounds/{}", name ).c_str(), mono ) );
             this->names.push_back( std::string( name ) );
         }
     }
@@ -216,7 +216,7 @@ namespace atto {
         LOG_INFO( "AudioSystem shutdown" );
     }
 
-    AudioBuffer * AudioSystem::LoadWAV( const char * path ) {
+    AudioBuffer * AudioSystem::LoadWAV( const char * path, bool mono ) {
         if ( !initialized ) {
             LOG_ERROR( "AudioSystem not initialized" );
             return nullptr;
@@ -232,6 +232,58 @@ namespace atto {
         i32 channels = audioFile.getNumChannels();
         i32 sampleRate = static_cast<i32>(audioFile.getSampleRate());
         i32 numSamples = audioFile.getNumSamplesPerChannel();
+
+        // Downmix stereo to mono if requested (required for OpenAL 3D spatialization)
+        if ( mono && channels == 2 ) {
+            i16 * samples = static_cast<i16 *>(malloc( numSamples * sizeof( i16 ) ));
+            if ( !samples ) {
+                LOG_ERROR( "Failed to allocate memory for audio samples" );
+                return nullptr;
+            }
+
+            for ( i32 i = 0; i < numSamples; ++i ) {
+                f32 mixed = ( audioFile.samples[0][i] + audioFile.samples[1][i] ) * 0.5f;
+                mixed = mixed < -1.0f ? -1.0f : (mixed > 1.0f ? 1.0f : mixed);
+                samples[i] = static_cast<i16>( mixed * 32767.0f );
+            }
+
+            channels = 1;
+
+            // Find a free buffer slot
+            u32 bufferIndex = 0;
+            bool found = false;
+            for ( u32 i = 1; i < MAX_BUFFERS; ++i ) {
+                u32 idx = (nextBufferIndex + i) % MAX_BUFFERS;
+                if ( idx == 0 ) idx = 1;
+                if ( buffers[idx].alBuffer == 0 ) {
+                    bufferIndex = idx;
+                    found = true;
+                    break;
+                }
+            }
+
+            if ( !found ) {
+                LOG_ERROR( "No free audio buffer slots available" );
+                free( samples );
+                return nullptr;
+            }
+
+            AudioBuffer * handle = &buffers[bufferIndex];
+            handle->name = std::string( path ) + ":mono";
+            bool success = CreateBuffer( handle, samples, numSamples, 1, sampleRate );
+            free( samples );
+
+            if ( !success ) {
+                return nullptr;
+            }
+
+            nextBufferIndex = bufferIndex;
+
+            LOG_DEBUG( "Loaded WAV (downmixed to mono): %s (%.2fs, %dHz)",
+                path, buffers[bufferIndex].duration, sampleRate );
+
+            return handle;
+        }
 
         // Convert float samples to i16
         i32 totalSamples = numSamples * channels;
@@ -287,7 +339,7 @@ namespace atto {
         return handle;
     }
 
-    AudioBuffer * AudioSystem::LoadOGG( const char * path ) {
+    AudioBuffer * AudioSystem::LoadOGG( const char * path, bool mono ) {
         if ( !initialized ) {
             LOG_ERROR( "AudioSystem not initialized" );
             return nullptr;
@@ -302,6 +354,30 @@ namespace atto {
         if ( numSamples <= 0 ) {
             LOG_ERROR( "Failed to load OGG file: %s", path );
             return nullptr;
+        }
+
+        // Downmix stereo to mono if requested (required for OpenAL 3D spatialization)
+        i32 finalChannels = channels;
+        i32 finalTotalSamples = numSamples * channels;
+        i16 * finalSamples = samples;
+        i16 * monoSamples = nullptr;
+
+        if ( mono && channels == 2 ) {
+            monoSamples = static_cast<i16 *>(malloc( numSamples * sizeof( i16 ) ));
+            if ( !monoSamples ) {
+                LOG_ERROR( "Failed to allocate memory for mono downmix" );
+                free( samples );
+                return nullptr;
+            }
+
+            for ( i32 i = 0; i < numSamples; ++i ) {
+                i32 mixed = ( static_cast<i32>(samples[i * 2]) + static_cast<i32>(samples[i * 2 + 1]) ) / 2;
+                monoSamples[i] = static_cast<i16>( mixed );
+            }
+
+            finalChannels = 1;
+            finalTotalSamples = numSamples;
+            finalSamples = monoSamples;
         }
 
         // Find a free buffer slot
@@ -320,14 +396,15 @@ namespace atto {
         if ( !found ) {
             LOG_ERROR( "No free audio buffer slots available" );
             free( samples );
+            free( monoSamples );
             return nullptr;
         }
 
         AudioBuffer * handle = &buffers[bufferIndex];
-        handle->name = path;
-        i32 totalSamples = numSamples * channels;
-        bool success = CreateBuffer( handle, samples, totalSamples, channels, sampleRate );
+        handle->name = mono ? std::string( path ) + ":mono" : std::string( path );
+        bool success = CreateBuffer( handle, finalSamples, finalTotalSamples, finalChannels, sampleRate );
         free( samples );
+        free( monoSamples );
 
         if ( !success ) {
             return nullptr;
@@ -335,8 +412,14 @@ namespace atto {
 
         nextBufferIndex = bufferIndex;
 
-        LOG_DEBUG( "Loaded OGG: %s (%.2fs, %dHz, %dch)",
-            path, buffers[bufferIndex].duration, sampleRate, channels );
+        if ( mono && channels == 2 ) {
+            LOG_DEBUG( "Loaded OGG (downmixed to mono): %s (%.2fs, %dHz)",
+                path, buffers[bufferIndex].duration, sampleRate );
+        }
+        else {
+            LOG_DEBUG( "Loaded OGG: %s (%.2fs, %dHz, %dch)",
+                path, buffers[bufferIndex].duration, sampleRate, channels );
+        }
 
         return handle;
     }
@@ -356,20 +439,20 @@ namespace atto {
         return *a == *b;
     }
 
-    AudioBuffer * AudioSystem::LoadSound( const char * path ) {
+    AudioBuffer * AudioSystem::LoadSound( const char * path, bool mono ) {
         // Check file extension
         const char * ext = strrchr( path, '.' );
         if ( ext ) {
             if ( StrEqualsIgnoreCase( ext, ".ogg" ) ) {
-                return LoadOGG( path );
+                return LoadOGG( path, mono );
             }
             else if ( StrEqualsIgnoreCase( ext, ".wav" ) ) {
-                return LoadWAV( path );
+                return LoadWAV( path, mono );
             }
         }
 
         // Default to WAV
-        return LoadWAV( path );
+        return LoadWAV( path, mono );
     }
 
     bool AudioSystem::CreateBuffer( AudioBuffer * handle, const i16 * data, i32 sampleCount, i32 channels, i32 sampleRate ) {
@@ -429,8 +512,8 @@ namespace atto {
         buffer->duration = 0.0f;
     }
 
-    AudioBuffer * AudioSystem::GetOrLoadSound( const char * path ) {
-        AudioBuffer * buffer = GetOrLoadSoundHandle( path );
+    AudioBuffer * AudioSystem::GetOrLoadSound( const char * path, bool mono ) {
+        AudioBuffer * buffer = GetOrLoadSoundHandle( path, mono );
         return buffer;
     }
 
@@ -445,16 +528,19 @@ namespace atto {
         return nullptr;
     }
 
-    AudioBuffer * AudioSystem::GetOrLoadSoundHandle( const char * path ) {
+    AudioBuffer * AudioSystem::GetOrLoadSoundHandle( const char * path, bool mono ) {
+        // Cache key includes ":mono" suffix when downmixed
+        std::string cacheKey = mono ? std::string( path ) + ":mono" : std::string( path );
+
         // Search for existing buffer with this name
         for ( u32 i = 1; i < MAX_BUFFERS; ++i ) {
-            if ( buffers[i].alBuffer != 0 && buffers[i].name == path ) {
+            if ( buffers[i].alBuffer != 0 && buffers[i].name == cacheKey ) {
                 return &buffers[i];
             }
         }
 
         // Not found, load it
-        AudioBuffer * handle = LoadSound( path );
+        AudioBuffer * handle = LoadSound( path, mono );
 
         return handle;
     }

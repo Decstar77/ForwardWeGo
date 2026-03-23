@@ -38,7 +38,7 @@ namespace atto {
     public:
         void Initialize();
         void Initialize( AudioSystem * audioSystem, RNG * rng );
-        void LoadSounds( const std::vector<const char *> & names );
+        void LoadSounds( const std::vector<const char *> & names, bool mono = false );
         AudioSourceHandle Play( f32 volume = 1.0f, bool loop = false );
         AudioSourceHandle PlayAt( Vec3 position, f32 volume = 1.0f, bool loop = false );
 
@@ -90,14 +90,15 @@ namespace atto {
         void                ToggleMuted() { mute = !mute; }
 
         // Buffer management - load sound data
-        AudioBuffer *       LoadWAV( const char * path );
-        AudioBuffer *       LoadOGG( const char * path );
-        AudioBuffer *       LoadSound( const char * path );  // Auto-detects format
+        // When mono=true, stereo files are downmixed to mono (required for 3D positional audio)
+        AudioBuffer *       LoadWAV( const char * path, bool mono = false );
+        AudioBuffer *       LoadOGG( const char * path, bool mono = false );
+        AudioBuffer *       LoadSound( const char * path, bool mono = false );  // Auto-detects format
         void                DestroyBuffer( AudioBuffer * buffer  );
 
-        AudioBuffer *       GetOrLoadSound( const char * path );
+        AudioBuffer *       GetOrLoadSound( const char * path, bool mono = false );
         AudioBuffer *       GetLoadedSound( const char * path ) const;
-        AudioBuffer *       GetOrLoadSoundHandle( const char * path );
+        AudioBuffer *       GetOrLoadSoundHandle( const char * path, bool mono = false );
 
         // Source management - create playback instances
         AudioSourceHandle   CreateSource();

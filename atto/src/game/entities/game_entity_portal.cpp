@@ -15,13 +15,11 @@ namespace atto {
         sndPortalHum.Initialize();
         sndPortalHum.LoadSounds( {
             "door/portal-hum02.wav"
-        } );
+        }, true );
         sndPortalTavel.Initialize();
         sndPortalTavel.LoadSounds( {
             "door/portal-travel.wav"
-        });
-
-        sndInstancePortalHum = sndPortalHum.PlayAt( position, 0.5f, true );
+        } );
     }
 
     void Entity_Portal::OnDespawn() {
@@ -29,7 +27,9 @@ namespace atto {
     }
 
     void Entity_Portal::OnUpdate( f32 dt ) {
-        //Engine::Get().GetAudioSystem().SetPosition( sndInstancePortalHum, position );
+        if ( active == false ) {
+            return;
+        }
 
         portalRotation += 1.5f * dt;
 
@@ -59,6 +59,16 @@ namespace atto {
 
             map->GetParticleSystem().Emit( parms );
         }
+
+        const AlignedBox warpArea = GetBounds();
+        const Vec3 playerPos = map->GetPlayerPosition();
+        const Vec3 closePoint = warpArea.ClosestPoint( playerPos );
+        const f32 dist = Distance(  playerPos, closePoint );
+        const f32 threshold = 0.5f;
+        if ( dist < threshold ) {
+            sndPortalTavel.Play();
+            Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
+        }
     }
 
     void Entity_Portal::OnRender( Renderer & renderer ) {
@@ -77,6 +87,7 @@ namespace atto {
     void Entity_Portal::Serialize( Serializer & serializer ) {
         Entity::Serialize( serializer );
         serializer( "PortalSize", portalSize );
+        serializer("MapName", mapName );
     }
 
     AlignedBox Entity_Portal::GetBounds() const {
@@ -91,4 +102,12 @@ namespace atto {
         AlignedBox bounds = GetBounds();
         return Raycast::TestAlignedBox( start, dir, bounds, dist );
     }
+
+    void Entity_Portal::Activate() {
+        if ( active == false ) {
+            active = true;
+            sndInstancePortalHum = sndPortalHum.PlayAt( position, 1.0f, true );
+        }
+    }
+
 }

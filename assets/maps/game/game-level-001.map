@@ -124,7 +124,6 @@
             "Type": "ExitDoor"
         },
         {
-            "MapName": "",
             "Orientation": [
                 1.0,
                 0.0,
@@ -168,6 +167,7 @@
             "Type": "CoinCrate"
         },
         {
+            "MapName": "assets/maps/level_003.map",
             "Orientation": [
                 1.0,
                 0.0,

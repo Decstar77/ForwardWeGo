@@ -14,13 +14,20 @@ namespace atto {
         AlignedBox      GetBounds() const override;
         bool            RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
 
+        void            Activate();
+
     private:
+        bool active = false;
+
+        std::string mapName = "";
+
         f32 portalRotation = 0.0f;
         f32 sparkTimer = 0.0f;
         f32 portalSize = 2.0f;
 
         const Texture * texturePortal = nullptr;
         const Texture * textureSparkle = nullptr;
+
         SoundCollection sndPortalHum;
         SoundCollection sndPortalTavel;
         AudioSourceHandle sndInstancePortalHum = {};

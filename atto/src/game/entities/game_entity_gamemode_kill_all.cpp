@@ -36,6 +36,11 @@ namespace atto {
                     Entity_ExitDoor * door = reinterpret_cast< Entity_ExitDoor * >( entity );
                     door->SetOpen( true );
                 }
+
+                if ( entity->GetType() == EntityType::Portal ) {
+                    Entity_Portal * portal = reinterpret_cast<Entity_Portal *>( entity );
+                    portal->Activate();
+                }
             }
             //Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
             //LOG_INFO( "Entity_GameMode_KillAllEntities :: Game over" );
@@ -50,7 +55,6 @@ namespace atto {
 
     void Entity_GameMode_KillAllEntities::Serialize( Serializer & serializer ) {
         Entity::Serialize( serializer );
-        serializer( "MapName", mapName );
         serializer( "RemainingEntities", remainingEntities );
     }
 }
