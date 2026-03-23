@@ -43,20 +43,20 @@ namespace atto {
         }
     }
 
-    void SoundCollection::Play( f32 volume ) {
+    AudioSourceHandle SoundCollection::Play( f32 volume, bool loop ) {
         ATTO_ASSERT( audioSystem != nullptr, "Audio system is null" );
         ATTO_ASSERT( rng != nullptr, "RNG is null" );
 
         const i32 idx = rng->Signed32( 0, static_cast< i32 >( buffers.size() ) - 1 );
-        audioSystem->PlaySound( buffers[idx], volume );
+        return audioSystem->PlaySound( buffers[idx], volume, loop );
     }
 
-    void SoundCollection::PlayAt( Vec3 position, f32 volume ) {
+    AudioSourceHandle SoundCollection::PlayAt( Vec3 position, f32 volume, bool loop ) {
         ATTO_ASSERT( audioSystem != nullptr, "Audio system is null" );
         ATTO_ASSERT( rng != nullptr, "RNG is null" );
 
         const i32 idx = rng->Signed32( 0, static_cast< i32 >( buffers.size() ) - 1 );
-        audioSystem->PlaySoundAt( buffers[idx], position, volume );
+        return audioSystem->PlaySoundAt( buffers[idx], position, volume, loop );
     }
 
     // Helper to check OpenAL errors

@@ -46,6 +46,9 @@ Editor:
 
 Engine:
 - Animation blending
+- Packaged builds, packing and loading assets.
+- Remove editor from build
+- Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.
 
 Rendering:
 - MSAA

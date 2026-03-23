@@ -838,6 +838,67 @@ namespace atto {
         DebugLine( corners[3], corners[7], color );
     }
 
+    void Renderer::RenderBillboard( const Texture * texture, const Vec3 & worldPos, f32 size,
+                                     const Vec3 & cameraPos, const Vec3 & cameraUp,
+                                     f32 rotationRad, const Vec4 & color ) {
+        f32 halfSize = size * 0.5f;
+
+        Vec3 toCamera = Normalize( cameraPos - worldPos );
+        Vec3 right = Normalize( Cross( cameraUp, toCamera ) ) * halfSize;
+        Vec3 up = Normalize( Cross( toCamera, right ) ) * halfSize;
+
+        // Apply rotation around the facing axis
+        if ( rotationRad != 0.0f ) {
+            f32 cosA = cosf( rotationRad );
+            f32 sinA = sinf( rotationRad );
+            Vec3 newRight = right * cosA + up * sinA;
+            Vec3 newUp = -right * sinA + up * cosA;
+            right = newRight;
+            up = newUp;
+        }
+
+        Vec3 bl = worldPos - right - up;
+        Vec3 br = worldPos + right - up;
+        Vec3 tr = worldPos + right + up;
+        Vec3 tl = worldPos - right + up;
+
+        ParticleVert verts[6] = {
+            { bl, Vec2( 0.0f, 0.0f ), color },
+            { br, Vec2( 1.0f, 0.0f ), color },
+            { tr, Vec2( 1.0f, 1.0f ), color },
+            { bl, Vec2( 0.0f, 0.0f ), color },
+            { tr, Vec2( 1.0f, 1.0f ), color },
+            { tl, Vec2( 0.0f, 1.0f ), color },
+        };
+
+        glDepthMask( GL_FALSE );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE );
+
+        particleShader.Bind();
+        particleShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+
+        if ( texture != nullptr && texture->IsValid() ) {
+            particleShader.SetInt( "uHasTexture", 1 );
+            particleShader.SetInt( "uTexture", 0 );
+            texture->Bind( 0 );
+        }
+        else {
+            particleShader.SetInt( "uHasTexture", 0 );
+        }
+
+        glBindVertexArray( particleVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, particleVBO );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( verts ), verts, GL_DYNAMIC_DRAW );
+        glDrawArrays( GL_TRIANGLES, 0, 6 );
+
+        glBindVertexArray( 0 );
+        particleShader.Unbind();
+
+        glDepthMask( GL_TRUE );
+        glDisable( GL_BLEND );
+    }
+
     void Renderer::RenderParticles( const ParticleSystem::Particle * particles, i32 count, const Vec3 & cameraPos, const Vec3 & cameraUp ) {
         if ( count <= 0 ) {
             return;

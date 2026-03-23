@@ -24,6 +24,7 @@ namespace atto {
         void Initialize();
 
         void StartMap();
+        void Shutdown();
 
         void Update( f32 dt );
         void Render( Renderer & renderer, f32 dt, i32 selectedBrush = -1 );
@@ -43,6 +44,7 @@ namespace atto {
         void                 SetPlayerPosition( const Vec3 & pos ) { playerPosition = pos; }
         void                 SetPlayerCameraUp( const Vec3 & up ) { playerCameraUp = up; }
         Vec3                 GetPlayerPosition() const { return playerPosition; }
+        Vec3                 GetPlayerCameraUp() const { return playerCameraUp; }
         void                 DamagePlayer( i32 damage ) { playerDamagePending += damage; }
         i32                  FlushPlayerDamage() { i32 d = playerDamagePending; playerDamagePending = 0; return d; }
 

@@ -51,6 +51,12 @@ namespace atto {
 
     }
 
+    void GameMap::Shutdown() {
+        for ( auto & entity : entities ) {
+            entity->OnDespawn();
+        }
+    }
+
     void GameMap::Update( f32 dt ) {
         for ( auto & entity : entities ) {
             if ( !entity->IsPendingDestroy() ) {

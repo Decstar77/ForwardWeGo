@@ -39,8 +39,8 @@ namespace atto {
         void Initialize();
         void Initialize( AudioSystem * audioSystem, RNG * rng );
         void LoadSounds( const std::vector<const char *> & names );
-        void Play( f32 volume = 1.0f );
-        void PlayAt( Vec3 position, f32 volume = 1.0f );
+        AudioSourceHandle Play( f32 volume = 1.0f, bool loop = false );
+        AudioSourceHandle PlayAt( Vec3 position, f32 volume = 1.0f, bool loop = false );
 
     private:
         RNG *                       rng = nullptr;

@@ -53,6 +53,12 @@ namespace atto {
         const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
         const Font * GetOrLoadFont( const char * path, f32 fontSize );
 
+        // Billboard rendering — single textured quad in world space, always facing cameraPos
+        // rotationRad rotates the quad around its facing axis
+        void RenderBillboard( const Texture * texture, const Vec3 & worldPos, f32 size,
+                              const Vec3 & cameraPos, const Vec3 & cameraUp,
+                              f32 rotationRad = 0.0f, const Vec4 & color = Vec4( 1.0f ) );
+
         // Particle rendering (called by ParticleSystem::Render)
         void RenderParticles( const ParticleSystem::Particle * particles, i32 count, const Vec3 & cameraPos, const Vec3 & cameraUp );
 

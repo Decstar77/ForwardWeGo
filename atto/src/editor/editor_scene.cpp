@@ -2057,6 +2057,7 @@ namespace atto {
     }
 
     void EditorScene::OnShutdown() {
+        map.Shutdown();
         SaveEditorState();
     }
 

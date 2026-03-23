@@ -119,7 +119,7 @@ namespace atto {
     }
 
     void GameMapScene::OnShutdown() {
-
+        map.Shutdown();
     }
 
     void GameMapScene::OnResize( i32 width, i32 height ) {
