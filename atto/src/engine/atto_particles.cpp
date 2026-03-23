@@ -36,6 +36,8 @@ namespace atto {
             p.startColor = parms.startColor;
             p.endColor = parms.endColor;
             p.texture = parms.texture;
+            p.velocityAligned = parms.velocityAligned;
+            p.stretchFactor = parms.stretchFactor;
         }
     }
 

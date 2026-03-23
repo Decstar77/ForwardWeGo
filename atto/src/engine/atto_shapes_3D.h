@@ -78,6 +78,7 @@ namespace atto {
     public:
         static bool TestSphere( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Sphere & sphere, f32 & dist );
         static bool TestAlignedBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const AlignedBox & alignedBox, f32 & dist );
+        static bool TestAlignedBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const AlignedBox & alignedBox, f32 & dist, Vec3 & outNormal );
         static bool TestBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Box & box, f32 & dist );
         static bool TestCapsule( const Vec3 & rayOrigin, const Vec3 & rayDirection, const Capsule & capsule, f32 & dist );
     };

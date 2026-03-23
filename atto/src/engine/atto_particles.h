@@ -31,6 +31,9 @@ namespace atto {
 
         const Texture * texture = nullptr;
 
+        bool    velocityAligned = false;
+        f32     stretchFactor = 1.0f;
+
         i32     count = 1;
     };
 
@@ -48,6 +51,8 @@ namespace atto {
             Color   startColor;
             Color   endColor;
             const Texture * texture;
+            bool    velocityAligned;
+            f32     stretchFactor;
         };
 
         void Emit( const ParticleParms & parms );

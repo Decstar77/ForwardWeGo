@@ -23,6 +23,7 @@ namespace atto {
         Entity *    entity;
         i32         brushIndex;
         f32         distance;
+        Vec3        normal;
     };
 
     class GameMap {

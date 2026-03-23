@@ -168,7 +168,7 @@ namespace atto {
     void PlayerWeaponGlock::OnStart() {
         particleTextureSmoke = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Smoke_01.png" );
         particleTextureTrace1 = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/kenny/trace_06.png" );
-        particleTextureTrace2 = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/kenny/trace_07.png" );
+        particleTextureTrace2 = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/kenny/smoke_01.png" );
 
         model.LoadFromFile( "assets/player/arms/glock.glb" );
         animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
@@ -341,6 +341,49 @@ namespace atto {
                     LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
                     result.entity->TakeDamage( 25 );
                 }
+
+                // Impact particles at hit point
+                Vec3 hitPoint = camera.GetPosition() + camera.GetForward() * result.distance;
+                Vec3 hitNormal = result.normal;
+                ParticleSystem & ps = map.GetParticleSystem();
+
+                // Impact sparks — velocity-aligned streaks that scatter off the surface
+                ParticleParms impactSparks;
+                impactSparks.position         = hitPoint + hitNormal * 0.02f;
+                impactSparks.positionVariance = Vec3( 0.01f );
+                impactSparks.velocity         = hitNormal * 2.0f;
+                impactSparks.velocityVariance = Vec3( 2.5f, 2.5f, 2.5f );
+                impactSparks.gravity          = Vec3( 0.0f, -6.0f, 0.0f );
+                impactSparks.drag             = 2.0f;
+                impactSparks.lifetime         = 0.2f;
+                impactSparks.lifetimeVariance = 0.1f;
+                impactSparks.startSize        = 0.04f * 10;
+                impactSparks.endSize          = 0.005f * 10;
+                impactSparks.startColor       = Color( 1.0f, 0.5f, 0.1f, 1.0f );
+                impactSparks.endColor         = Color( 0.8f, 0.15f, 0.0f, 0.0f );
+                impactSparks.texture          = particleTextureTrace1;
+                impactSparks.velocityAligned  = true;
+                impactSparks.stretchFactor    = 2.5f;
+                impactSparks.count            = 5;
+                ps.Emit( impactSparks );
+
+                // Impact dust/debris — slower, larger, fades out
+                ParticleParms impactDust;
+                impactDust.position         = hitPoint + hitNormal * 0.01f;
+                impactDust.positionVariance = Vec3( 0.03f );
+                impactDust.velocity         = hitNormal * 0.8f;
+                impactDust.velocityVariance = Vec3( 0.5f, 0.5f, 0.5f );
+                impactDust.gravity          = Vec3( 0.0f, 0.3f, 0.0f );
+                impactDust.drag             = 4.0f;
+                impactDust.lifetime         = 0.5f;
+                impactDust.lifetimeVariance = 0.2f;
+                impactDust.startSize        = 0.03f * 10;
+                impactDust.endSize          = 0.12f * 10;
+                impactDust.startColor       = Color( 0.9f, 0.85f, 0.7f, 0.6f );
+                impactDust.endColor         = Color( 0.5f, 0.5f, 0.5f, 0.0f );
+                impactDust.texture          = particleTextureTrace2;
+                impactDust.count            = 3;
+                ps.Emit( impactDust );
             }
             sndShoot.Play( 0.2f );
         }

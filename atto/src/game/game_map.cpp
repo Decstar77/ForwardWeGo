@@ -250,14 +250,17 @@ namespace atto {
         result.entity = nullptr;
         result.brushIndex = -1;
         result.distance = FLT_MAX;
+        result.normal = Vec3( 0.0f );
 
         for ( i32 i = 0; i < static_cast<i32>( brushCollsion.size() ); i++ ) {
             f32 distance = FLT_MAX;
-            if ( Raycast::TestAlignedBox( start, direction, brushCollsion[i], distance ) ) {
+            Vec3 normal = Vec3( 0.0f );
+            if ( Raycast::TestAlignedBox( start, direction, brushCollsion[i], distance, normal ) ) {
                 if ( distance < minDistance ) {
                     minDistance = distance;
                     result.entity = nullptr;
                     result.brushIndex = i;
+                    result.normal = normal;
                 }
             }
         }
@@ -267,11 +270,13 @@ namespace atto {
             if ( entity ) {
                 AlignedBox bounds = entity->GetBounds();
                 f32 distance = FLT_MAX;
-                if ( Raycast::TestAlignedBox( start, direction, bounds, distance ) ) {
+                Vec3 normal = Vec3( 0.0f );
+                if ( Raycast::TestAlignedBox( start, direction, bounds, distance, normal ) ) {
                     if ( distance < minDistance ) {
                         minDistance = distance;
                         result.entity = entity;
                         result.brushIndex = -1;
+                        result.normal = normal;
                     }
                 }
             }

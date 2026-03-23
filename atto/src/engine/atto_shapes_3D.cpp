@@ -156,6 +156,63 @@ namespace atto {
         return false;
     }
 
+    bool Raycast::TestAlignedBox( const Vec3 & rayOrigin, const Vec3 & rayDirection, const AlignedBox & alignedBox,
+                                  f32 & dist, Vec3 & outNormal ) {
+        f32 tMin = -FLT_MAX;
+        f32 tMax = FLT_MAX;
+        i32 minAxis = 0;
+        i32 minSign = 1;
+
+        for ( i32 i = 0; i < 3; i++ ) {
+            if ( Abs( rayDirection[i] ) < 0.000001f ) {
+                if ( rayOrigin[i] < alignedBox.min[i] || rayOrigin[i] > alignedBox.max[i] ) {
+                    return false;
+                }
+            }
+            else {
+                f32 invD = 1.0f / rayDirection[i];
+                f32 t1 = (alignedBox.min[i] - rayOrigin[i]) * invD;
+                f32 t2 = (alignedBox.max[i] - rayOrigin[i]) * invD;
+
+                i32 sign = -1;
+                if ( t1 > t2 ) {
+                    f32 tmp = t1;
+                    t1 = t2;
+                    t2 = tmp;
+                    sign = 1;
+                }
+
+                if ( t1 > tMin ) {
+                    tMin = t1;
+                    minAxis = i;
+                    minSign = sign;
+                }
+                tMax = Min( tMax, t2 );
+
+                if ( tMin > tMax ) {
+                    return false;
+                }
+            }
+        }
+
+        outNormal = Vec3( 0.0f );
+
+        if ( tMin >= 0.0f ) {
+            dist = tMin;
+            outNormal[minAxis] = (f32)minSign;
+            return true;
+        }
+
+        if ( tMax >= 0.0f ) {
+            dist = tMax;
+            // Inside the box, normal points away from ray direction
+            outNormal[minAxis] = (f32)-minSign;
+            return true;
+        }
+
+        return false;
+    }
+
     // ===============================================================
     //  Box (OBB)
     // ===============================================================

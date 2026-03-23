@@ -832,10 +832,20 @@ namespace atto {
                 Lerp( p.startColor.a, p.endColor.a, t )
             );
 
-            // Billboard: face camera
-            Vec3 toCamera = Normalize( cameraPos - p.position );
-            Vec3 right = Normalize( Cross( cameraUp, toCamera ) ) * size;
-            Vec3 up = Normalize( Cross( toCamera, right ) ) * size;
+            Vec3 right, up;
+            if ( p.velocityAligned && LengthSquared( p.velocity ) > 0.0001f ) {
+                // Velocity-aligned billboard: stretch along velocity direction
+                Vec3 velDir = Normalize( p.velocity );
+                Vec3 toCamera = Normalize( cameraPos - p.position );
+                right = Normalize( Cross( velDir, toCamera ) ) * size;
+                up = velDir * size * p.stretchFactor;
+            }
+            else {
+                // Standard billboard: face camera
+                Vec3 toCamera = Normalize( cameraPos - p.position );
+                right = Normalize( Cross( cameraUp, toCamera ) ) * size;
+                up = Normalize( Cross( toCamera, right ) ) * size;
+            }
 
             Vec3 bl = p.position - right - up;
             Vec3 br = p.position + right - up;
