@@ -151,6 +151,9 @@ namespace atto {
         bool        hasEntityClipboard = false;
         EntityType  entityClipboardType = EntityType::None;
         std::string entityClipboardJson;
+        bool                           hasNavClipboard = false;
+        std::vector<Vec3>              navClipboardPositions;
+        std::vector<std::pair<i32,i32>> navClipboardEdges; // local index pairs within clipboard
 
         // Selection state
         i32              selectedBrushIndex = -1;

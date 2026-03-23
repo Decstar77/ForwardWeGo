@@ -563,8 +563,22 @@ namespace atto {
                 }
             }
             else if ( selectionMode == EditorSelectionMode::NavGraph && selectedNavNodeIndex >= 0 && selectedNavNodeIndex < map.GetNavGraph().GetNodeCount() ) {
-                WaypointNode & node = map.GetNavGraph().GetWaypoint( selectedNavNodeIndex );
-                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), node.position );
+                WaypointGraph & graph = map.GetNavGraph();
+
+                // Use multi-selection if populated, otherwise just the primary node
+                const std::vector<i32> & effectiveSel = selectedNavNodeIndices.empty()
+                    ? std::vector<i32>{ selectedNavNodeIndex }
+                    : selectedNavNodeIndices;
+
+                // Pivot = average position of all selected nodes
+                Vec3 pivot = Vec3( 0.0f );
+                for ( i32 idx : effectiveSel ) {
+                    pivot += graph.GetWaypoint( idx ).position;
+                }
+                pivot /= static_cast<f32>( effectiveSel.size() );
+
+                Mat4 gizmoMatrix = glm::translate( Mat4( 1.0f ), pivot );
+                Mat4 deltaMatrix = Mat4( 1.0f );
 
                 if ( ImGuizmo::Manipulate(
                     glm::value_ptr( view ),
@@ -572,24 +586,29 @@ namespace atto {
                     ImGuizmo::TRANSLATE,
                     ImGuizmo::WORLD,
                     glm::value_ptr( gizmoMatrix ),
-                    nullptr,
+                    glm::value_ptr( deltaMatrix ),
                     snapEnabled ? translateSnap : nullptr ) ) {
-                    node.position = Vec3( gizmoMatrix[ 3 ] );
-                    // Update edge distances for all edges incident to this node
-                    WaypointGraph & graph = map.GetNavGraph();
-                    for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
-                        WaypointEdge & edge = node.edges[ e ];
-                        const Vec3 & otherPos = graph.GetWaypoint( edge.nodeBIndex ).position;
-                        f32 newDist = Distance( node.position, otherPos );
-                        edge.distance = newDist;
-                        edge.cost     = newDist;
-                        // Mirror on the reverse edge
-                        WaypointNode & other = graph.GetWaypoint( edge.nodeBIndex );
-                        for ( i32 re = 0; re < other.edges.GetCount(); re++ ) {
-                            if ( other.edges[ re ].nodeBIndex == selectedNavNodeIndex ) {
-                                other.edges[ re ].distance = newDist;
-                                other.edges[ re ].cost     = newDist;
-                                break;
+
+                    Vec3 delta = Vec3( deltaMatrix[ 3 ] );
+                    for ( i32 idx : effectiveSel ) {
+                        graph.GetWaypoint( idx ).position += delta;
+                    }
+
+                    // Update edge distances for all moved nodes
+                    for ( i32 idx : effectiveSel ) {
+                        WaypointNode & node = graph.GetWaypoint( idx );
+                        for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
+                            WaypointEdge & edge = node.edges[ e ];
+                            f32 newDist = Distance( node.position, graph.GetWaypoint( edge.nodeBIndex ).position );
+                            edge.distance = newDist;
+                            edge.cost     = newDist;
+                            WaypointNode & other = graph.GetWaypoint( edge.nodeBIndex );
+                            for ( i32 re = 0; re < other.edges.GetCount(); re++ ) {
+                                if ( other.edges[ re ].nodeBIndex == idx ) {
+                                    other.edges[ re ].distance = newDist;
+                                    other.edges[ re ].cost     = newDist;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -1125,10 +1144,12 @@ namespace atto {
                 if ( ImGui::MenuItem( "Undo", "Ctrl+Z", false, !undoStack.empty() ) ) { Undo(); }
                 if ( ImGui::MenuItem( "Redo", "Ctrl+Shift+Z", false, !redoStack.empty() ) ) { Redo(); }
                 ImGui::Separator();
-                bool canCopy = (selectionMode == EditorSelectionMode::Brush  && selectedBrushIndex  >= 0) ||
-                               (selectionMode == EditorSelectionMode::Entity && selectedEntityIndex >= 0);
-                bool canPaste = (selectionMode == EditorSelectionMode::Brush  && hasBrushClipboard) ||
-                                (selectionMode == EditorSelectionMode::Entity && hasEntityClipboard);
+                bool canCopy = (selectionMode == EditorSelectionMode::Brush    && selectedBrushIndex    >= 0) ||
+                               (selectionMode == EditorSelectionMode::Entity   && selectedEntityIndex  >= 0) ||
+                               (selectionMode == EditorSelectionMode::NavGraph && !selectedNavNodeIndices.empty());
+                bool canPaste = (selectionMode == EditorSelectionMode::Brush    && hasBrushClipboard)  ||
+                                (selectionMode == EditorSelectionMode::Entity   && hasEntityClipboard) ||
+                                (selectionMode == EditorSelectionMode::NavGraph && hasNavClipboard);
                 if ( ImGui::MenuItem( "Copy",  "Ctrl+C", false, canCopy  ) ) { CopySelected(); }
                 if ( ImGui::MenuItem( "Paste", "Ctrl+V", false, canPaste ) ) { PasteSelected(); }
                 ImGui::Separator();
@@ -1721,6 +1742,36 @@ namespace atto {
             entityClipboardJson  = serializer.ToString();
             hasEntityClipboard   = true;
         }
+        else if ( selectionMode == EditorSelectionMode::NavGraph && !selectedNavNodeIndices.empty() ) {
+            WaypointGraph & graph = map.GetNavGraph();
+            navClipboardPositions.clear();
+            navClipboardEdges.clear();
+
+            // Build position list and a local-index lookup
+            for ( i32 origIdx : selectedNavNodeIndices ) {
+                navClipboardPositions.push_back( graph.GetWaypoint( origIdx ).position );
+            }
+
+            auto getLocalIndex = [&]( i32 origIdx ) -> i32 {
+                for ( i32 i = 0; i < (i32)selectedNavNodeIndices.size(); i++ ) {
+                    if ( selectedNavNodeIndices[ i ] == origIdx ) { return i; }
+                }
+                return -1;
+            };
+
+            // Collect edges whose both endpoints are in the selection (each undirected edge once)
+            for ( i32 i = 0; i < (i32)selectedNavNodeIndices.size(); i++ ) {
+                const WaypointNode & node = graph.GetWaypoint( selectedNavNodeIndices[ i ] );
+                for ( i32 e = 0; e < node.edges.GetCount(); e++ ) {
+                    i32 localB = getLocalIndex( node.edges[ e ].nodeBIndex );
+                    if ( localB >= 0 && i < localB ) {
+                        navClipboardEdges.push_back( { i, localB } );
+                    }
+                }
+            }
+
+            hasNavClipboard = true;
+        }
     }
 
     void EditorScene::PasteSelected() {
@@ -1750,6 +1801,26 @@ namespace atto {
                 selectedEntityIndices = { selectedEntityIndex };
                 unsavedChanges = true;
             }
+        }
+        else if ( selectionMode == EditorSelectionMode::NavGraph && hasNavClipboard ) {
+            Snapshot();
+            WaypointGraph & graph = map.GetNavGraph();
+            i32 baseIndex = graph.GetNodeCount();
+
+            for ( const Vec3 & pos : navClipboardPositions ) {
+                graph.AddWaypoint( pos + PasteOffset );
+            }
+            for ( const auto & edge : navClipboardEdges ) {
+                graph.ConnectWaypoints( baseIndex + edge.first, baseIndex + edge.second );
+            }
+
+            selectedNavNodeIndices.clear();
+            for ( i32 i = 0; i < (i32)navClipboardPositions.size(); i++ ) {
+                selectedNavNodeIndices.push_back( baseIndex + i );
+            }
+            selectedNavNodeIndex = selectedNavNodeIndices.empty() ? -1 : selectedNavNodeIndices.back();
+            navConnectMode = false;
+            unsavedChanges = true;
         }
     }
 
