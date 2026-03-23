@@ -293,7 +293,7 @@ namespace atto {
     }
 
     void Renderer::RenderStaticModel( const StaticModel * model, const Mat4 & modelMatrix ) {
-        RenderStaticModel( model, modelMatrix, Vec3( 0.8f ) );
+        RenderStaticModel( model, modelMatrix, Vec3( 1.0f ) );
     }
 
     void Renderer::RenderStaticModel( const StaticModel * model, const Mat4 & modelMatrix, const Vec3 & color ) {

@@ -56,4 +56,14 @@ namespace atto {
         serializer( "Position", position );
         serializer( "Orientation", orientation );
     }
+
+    void Entity::DebugDrawBounds( Renderer &renderer ) {
+        const AlignedBox box = GetBounds();
+        renderer.DebugAlignedBox( box );
+    }
+
+    void Entity::DebugDrawCollider( Renderer &renderer ) {
+        const Box box = GetCollider();
+        renderer.DebugBox( box );
+    }
 }

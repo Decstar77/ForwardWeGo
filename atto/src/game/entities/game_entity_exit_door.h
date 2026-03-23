@@ -16,7 +16,11 @@ namespace atto {
         bool RayTest( const Vec3 & start, const Vec3 & dir, f32 & dist ) const override;
         void DebugDrawBounds( Renderer & renderer ) override;
 
+        bool IsOpen() const { return isOpen; }
+        void SetOpen( bool open ) { isOpen = open; }
+        
     private:
+        bool isOpen = false;
         const StaticModel * modelClosed = nullptr;
         const StaticModel * modelOpen = nullptr;
     };

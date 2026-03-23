@@ -19,6 +19,7 @@ namespace atto {
         GameMode_KillAllEntities,
         Prop,
         Roach,
+        CoinCrate,
 
         EntityTypeCount
     };
@@ -35,6 +36,7 @@ namespace atto {
         EntityType::GameMode_KillAllEntities,
         EntityType::Prop,
         EntityType::Roach,
+        EntityType::CoinCrate,
     };
 
     inline static const char * EntityTypeNames[] = {
@@ -44,7 +46,8 @@ namespace atto {
         "ExitDoor",
         "GameMode_KillAllEntities",
         "Prop",
-        "Roach"
+        "Roach",
+        "CoinCrate"
     };
 
     static_assert(EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch");
@@ -109,8 +112,8 @@ namespace atto {
         virtual TakeDamageResult TakeDamage( i32 damage ) { return TakeDamageResult::DoesNotTakeDamage; }
 
         // ================ Debug =============== //
-        virtual void        DebugDrawBounds( Renderer & renderer ) {}
-        virtual void        DebugDrawCollider( Renderer & renderer ) {}
+        virtual void        DebugDrawBounds( Renderer & renderer );
+        virtual void        DebugDrawCollider( Renderer & renderer );
 
     protected:
         EntityType type = EntityType::None;

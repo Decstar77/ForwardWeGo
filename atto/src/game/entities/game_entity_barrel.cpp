@@ -12,7 +12,7 @@ namespace atto {
 
     void Entity_Barrel::OnSpawn() {
         Renderer &renderer = Engine::Get().GetRenderer();
-        model = renderer.GetOrLoadStaticModel( "assets/player/props/barrel.fbx", 3.5f );
+        model = renderer.GetOrLoadStaticModel( "assets/player/props/barrel.fbx", 3.0f );
         orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( -90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
     }
 

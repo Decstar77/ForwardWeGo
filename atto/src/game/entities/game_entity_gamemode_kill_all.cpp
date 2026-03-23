@@ -29,8 +29,15 @@ namespace atto {
             }
         }
 
-        if ( remainingEntities.size() == 0 ) {
-            Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
+        if ( remainingEntities.empty() ) {
+            for ( i32 entityIndex = 0; entityIndex < map->GetEntityCount(); entityIndex++ ) {
+                Entity * entity = map->GetEntity( entityIndex );
+                if ( entity->GetType() == EntityType::ExitDoor ) {
+                    Entity_ExitDoor * door = reinterpret_cast< Entity_ExitDoor * >( entity );
+                    door->SetOpen( true );
+                }
+            }
+            //Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
             LOG_INFO( "Entity_GameMode_KillAllEntities :: Game over" );
         }
     }

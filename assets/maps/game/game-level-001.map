@@ -1,0 +1,196 @@
+{
+    "brushes": [
+        {
+            "item": {
+                "center": [
+                    0.0,
+                    -0.5,
+                    -3.0
+                ],
+                "halfExtents": [
+                    4.0,
+                    0.5,
+                    9.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Light/texture_08.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -4.5,
+                    1.0,
+                    -0.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    2.0,
+                    7.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    4.5,
+                    1.0,
+                    -0.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    2.0,
+                    7.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    3.25,
+                    1.0,
+                    -7.5
+                ],
+                "halfExtents": [
+                    0.75,
+                    2.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -3.25,
+                    1.0,
+                    -7.5
+                ],
+                "halfExtents": [
+                    0.75,
+                    2.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        }
+    ],
+    "entities": [
+        {
+            "Orientation": [
+                -0.9999995231628418,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                -0.9999995231628418
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                6.0
+            ],
+            "SpawnId": 14353295783029886837,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Door_01.obj"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -6.861578941345215
+            ],
+            "SpawnId": 870851736796973674,
+            "Type": "ExitDoor"
+        },
+        {
+            "MapName": "",
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -7.0,
+                0.0,
+                0.0
+            ],
+            "RemainingEntities": [
+                6885942867846166075
+            ],
+            "SpawnId": 2291127974717498537,
+            "Type": "GameMode_KillAllEntities"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -2.0
+            ],
+            "SpawnId": 6885942867846166075,
+            "Type": "CoinCrate"
+        }
+    ],
+    "navGraph": {
+        "edgeCost": [],
+        "edgeEnabled": [],
+        "edgeNodeA": [],
+        "edgeNodeB": [],
+        "positions": []
+    },
+    "playerStart": {
+        "spawnOri": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "spawnPos": [
+            0.0,
+            0.0,
+            5.0
+        ]
+    }
+}

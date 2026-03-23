@@ -78,7 +78,7 @@ namespace atto {
             if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
-            Vec3 color = (i == selectedBrush) ? Vec3( 0.2f, 0.8f, 0.2f ) : Vec3( 1.0f, 1.0f, 1.0f );
+            Vec3 color = (i == selectedBrush) ? Vec3( 1.0f, 2.8f, 1.0f ) : Vec3( 1.0f, 1.0f, 1.0f );
             for ( i32 j = 0; j < brushModels[i].GetMeshCount(); j++ ) {
                 brushModels[i].GetMesh( j ).GetMaterial().albedo = color;
                 brushModels[i].GetMesh( j ).GetMaterial().albedoTexture = brushTextures[i];

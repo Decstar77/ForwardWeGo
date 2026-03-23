@@ -40,13 +40,16 @@ Gameplay:
 - Roach attack sound
 
 Editor:
+- SpawnID selection
+- Copy paste is not being respected when copying stuff into imgui input boxes it actually copy pastes entities.
 
 Engine:
 - Animation blending
 
-Renderering:
-- Shadows
+Rendering:
 - MSAA
+- Cavity
+- Shadows
 - SSAO
 - Image based lighting
 - Light maps

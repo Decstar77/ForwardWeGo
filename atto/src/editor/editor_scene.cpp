@@ -100,7 +100,7 @@ namespace atto {
         if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
         if ( alt && input.IsKeyPressed( Key::Num2 ) ) { viewMode = EditorViewMode::XY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
         if ( alt && input.IsKeyPressed( Key::Num3 ) ) { viewMode = EditorViewMode::ZY;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
-        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Lit; }
+        if ( alt && input.IsKeyPressed( Key::Num4 ) ) { viewMode = EditorViewMode::Cam3D; brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Unlit; }
 
         if ( !input.IsCursorCaptured() ) {
             if ( input.IsKeyPressed( Key::Num1 ) && !alt ) { selectionMode = EditorSelectionMode::Brush; }
