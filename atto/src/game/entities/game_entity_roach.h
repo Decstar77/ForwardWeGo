@@ -51,6 +51,7 @@ namespace atto {
         f32 lostSightTimer = 0.0f;
         f32 rePathTimer = 0.0f;
         f32 attackCooldown = 0.0f;
+        f32 drawRed = 0.0f;
     };
 }
 

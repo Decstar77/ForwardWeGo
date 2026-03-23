@@ -87,14 +87,14 @@ namespace atto {
     }
 
     void Mesh::Draw( Shader * shader ) const {
-        bool hasTexture = material.albedoTexture != nullptr && material.albedoTexture->IsValid();
+        const bool hasTexture = material.albedoTexture != nullptr && material.albedoTexture->IsValid();
+        shader->SetInt( "uHasAlbedoTexture", hasTexture ? 1 : 0 );
         if ( hasTexture ) {
             material.albedoTexture->Bind( 0 );
             shader->SetInt( "uAlbedoTexture", 0 );
+        } else {
+            shader->SetVec3( "uObjectColor", material.albedo );
         }
-        shader->SetInt( "uHasAlbedoTexture", hasTexture ? 1 : 0 );
-
-        shader->SetVec3( "uObjectColor", material.albedo );
 
         glBindVertexArray( vao );
         glDrawElements( GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0 );

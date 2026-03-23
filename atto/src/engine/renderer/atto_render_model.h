@@ -78,9 +78,9 @@ namespace atto {
         void Draw( Shader * shader ) const;
 
         i32                 GetIndexCount() const { return indexCount; }
-        const AlignedBox & GetBounds() const { return bounds; }
-        const Material & GetMaterial() const { return material; }
-        Material & GetMaterial() { return material; }
+        const AlignedBox &  GetBounds() const { return bounds; }
+        Material &          GetMaterial() { return material; }
+        const Material &    GetMaterial() const { return material; }
         void                SetMaterial( const Material & mat ) { material = mat; }
 
     private:

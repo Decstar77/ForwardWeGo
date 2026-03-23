@@ -280,6 +280,11 @@ namespace atto {
             }
         }
 
+        // ---- Damage flash ----
+        if ( drawRed > 0.0f ) {
+            drawRed = Max( drawRed - dt, 0.0f );
+        }
+
         // ---- Orientation during attack (face player) ----
         if ( state == RoachState::Attack ) {
             Vec3 toPlayer = playerPos - position;
@@ -297,7 +302,12 @@ namespace atto {
 
     void Entity_Roach::OnRender( Renderer &renderer ) {
         const Mat4 modelMatrix = GetModelMatrix();
-        renderer.RenderStaticModel( model, modelMatrix );
+        if ( drawRed > 0.0f ) {
+            renderer.RenderStaticModel( model, modelMatrix, Vec3( 1.0f, 0.8f, 0.8f ) );
+        }
+        else {
+            renderer.RenderStaticModel( model, modelMatrix );
+        }
     }
 
     void Entity_Roach::OnDespawn() {
@@ -329,6 +339,7 @@ namespace atto {
     }
 
     TakeDamageResult Entity_Roach::TakeDamage( i32 damage ) {
+        drawRed = 0.2f;
         health -= damage;
         if ( health <= 0 ) {
             map->DestroyEntity( this );
