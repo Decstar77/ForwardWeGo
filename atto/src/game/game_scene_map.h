@@ -21,6 +21,7 @@ namespace atto {
         GameMap             map;
         PlayerController    player;
         UICanvas            ui;
+        const Texture *     coinTexture      = nullptr;
         const Texture *     crosshairTexture = nullptr;
         const Texture *     hitMarkerTexture = nullptr;
         const Font *        hudFont          = nullptr;

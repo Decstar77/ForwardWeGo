@@ -41,7 +41,8 @@ Gameplay:
 
 Editor:
 - SpawnID selection
-- Copy paste is not being respected when copying stuff into imgui input boxes it actually copy pastes entities.
+- Scroll effects both asset browser scroll and ortho views
+- Right click on asset and say "Copy relative/absolute path"
 
 Engine:
 - Animation blending

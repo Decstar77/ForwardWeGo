@@ -20,6 +20,7 @@ namespace atto {
         Prop,
         Roach,
         CoinCrate,
+        Portal,
 
         EntityTypeCount
     };
@@ -37,6 +38,7 @@ namespace atto {
         EntityType::Prop,
         EntityType::Roach,
         EntityType::CoinCrate,
+        EntityType::Portal,
     };
 
     inline static const char * EntityTypeNames[] = {
@@ -47,7 +49,8 @@ namespace atto {
         "GameMode_KillAllEntities",
         "Prop",
         "Roach",
-        "CoinCrate"
+        "CoinCrate",
+        "Portal"
     };
 
     static_assert(EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch");

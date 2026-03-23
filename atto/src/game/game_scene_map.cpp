@@ -15,6 +15,7 @@ namespace atto {
 
         player.OnStart( map.GetPlayerStart().spawnPos );
 
+        coinTexture      = renderer.GetOrLoadTexture( "assets/textures/coin.png" );
         crosshairTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair008.png" );
         hitMarkerTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair/crosshair086.png" );
         hudFont          = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 26.0f );

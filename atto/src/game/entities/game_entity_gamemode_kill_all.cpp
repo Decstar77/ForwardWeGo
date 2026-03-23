@@ -38,7 +38,7 @@ namespace atto {
                 }
             }
             //Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
-            LOG_INFO( "Entity_GameMode_KillAllEntities :: Game over" );
+            //LOG_INFO( "Entity_GameMode_KillAllEntities :: Game over" );
         }
     }
 

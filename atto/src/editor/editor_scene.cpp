@@ -86,15 +86,19 @@ namespace atto {
         bool ctrl = input.IsKeyDown( Key::LeftControl ) || input.IsKeyDown( Key::RightControl );
         bool shift = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
 
+        bool imguiWantsKeyboard = ImGui::GetIO().WantCaptureKeyboard;
+
         if ( ctrl && shift && input.IsKeyPressed( Key::S ) ) { SaveMapAs(); }
         else if ( ctrl && input.IsKeyPressed( Key::S ) ) { SaveMap(); }
-        if ( ctrl && shift && input.IsKeyPressed( Key::Z ) ) { Redo(); }
-        else if ( ctrl && input.IsKeyPressed( Key::Z ) ) { Undo(); }
-        if ( ctrl && input.IsKeyPressed( Key::C ) ) { CopySelected(); }
-        if ( ctrl && input.IsKeyPressed( Key::V ) ) { PasteSelected(); }
+        if ( !imguiWantsKeyboard ) {
+            if ( ctrl && shift && input.IsKeyPressed( Key::Z ) ) { Redo(); }
+            else if ( ctrl && input.IsKeyPressed( Key::Z ) ) { Undo(); }
+            if ( ctrl && input.IsKeyPressed( Key::C ) ) { CopySelected(); }
+            if ( ctrl && input.IsKeyPressed( Key::V ) ) { PasteSelected(); }
+            if ( input.IsKeyPressed( Key::Delete ) ) { DeleteSelected(); }
+        }
         if ( ctrl && input.IsKeyPressed( Key::N ) ) { NewMap(); }
         if ( ctrl && input.IsKeyPressed( Key::O ) ) { OpenMap(); }
-        if ( input.IsKeyPressed( Key::Delete ) ) { DeleteSelected(); }
 
         bool alt = input.IsKeyDown( Key::LeftAlt ) || input.IsKeyDown( Key::RightAlt );
         if ( alt && input.IsKeyPressed( Key::Num1 ) ) { viewMode = EditorViewMode::XZ;   input.SetCursorCaptured( false ); brushDrag.mode = BrushDragMode::None; renderMode = EditorRenderMode::Wireframe; }
