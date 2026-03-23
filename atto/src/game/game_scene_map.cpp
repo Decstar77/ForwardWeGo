@@ -76,34 +76,25 @@ namespace atto {
 
         ui.Begin( vpW, vpH );
 
-        ui.Sprite(
-            UIConstraint::FromPreset( UIAnchorPreset::Center ),
-            crosshairTexture, 32, 32
-        );
+        // Crosshair at screen center
+        ui.DrawSprite( crosshairTexture, ui.GetCenterX(), ui.GetCenterY(), 32, 32 );
 
         if ( player.GetHitMarkerAlpha() > 0.0f ) {
-            ui.Sprite(
-                UIConstraint::FromPreset( UIAnchorPreset::Center ),
-                hitMarkerTexture, 48, 48
-            );
+            ui.DrawSprite( hitMarkerTexture, ui.GetCenterX(), ui.GetCenterY(), 48, 48 );
         }
 
+        // FPS — top left
         char fpsText[ 32 ];
         snprintf( fpsText, sizeof( fpsText ), "FPS: %.0f", fps );
-        ui.Text(
-            UIConstraint::FromPreset( UIAnchorPreset::TopLeft, Vec2( 20.0f, 20.0f ) ),
-            hudFont, fpsText, Vec4( 1.0f )
-        );
+        ui.DrawText( hudFont, 20, 20, fpsText );
 
-        // Health display — bottom left
+        // Health — bottom left
         {
             char healthText[ 32 ];
             snprintf( healthText, sizeof( healthText ), "HP: %d", player.GetHealth() );
             Vec4 healthColor = player.GetHealth() > 30 ? Vec4( 1.0f ) : Vec4( 1.0f, 0.3f, 0.3f, 1.0f );
-            ui.Text(
-                UIConstraint::FromPreset( UIAnchorPreset::BottomLeft, Vec2( 20.0f, -20.0f ) ),
-                hudFont, healthText, healthColor
-            );
+            ui.DrawText( hudFont, 20, ui.GetHeight() - 20, healthText, healthColor,
+                         UIAlignH::Left, UIAlignV::Bottom );
         }
 
         // Ammo / weapon display — bottom right
@@ -114,16 +105,12 @@ namespace atto {
             char ammoText[ 32 ];
             snprintf( ammoText, sizeof( ammoText ), "%d / %d",
                       player.GetGlock().GetAmmo(), player.GetGlock().GetMaxAmmo() );
-            ui.Text(
-                UIConstraint::FromPreset( UIAnchorPreset::BottomRight, Vec2( -20.0f, -40.0f ) ),
-                hudFont, ammoText, Vec4( 1.0f )
-            );
+            ui.DrawText( hudFont, ui.GetWidth() - 20, ui.GetHeight() - 40, ammoText, Vec4( 1.0f ),
+                         UIAlignH::Right, UIAlignV::Bottom );
         }
 
-        ui.Text(
-            UIConstraint::FromPreset( UIAnchorPreset::BottomRight, Vec2( -20.0f, -20.0f ) ),
-            hudFontSmall, weaponName, Vec4( 0.7f, 0.7f, 0.7f, 1.0f )
-        );
+        ui.DrawText( hudFontSmall, ui.GetWidth() - 20, ui.GetHeight() - 20, weaponName,
+                     Vec4( 0.7f, 0.7f, 0.7f, 1.0f ), UIAlignH::Right, UIAlignV::Bottom );
 
         ui.End( renderer );
 

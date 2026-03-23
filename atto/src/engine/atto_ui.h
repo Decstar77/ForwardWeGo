@@ -1,10 +1,9 @@
 #pragma once
 
 /*
-    Atto Engine - UI System
+    Atto Engine - Immediate-Mode UI System
     Uses stb_truetype for font rendering.
-    Constraint-based layout: each element is positioned by an anchor on
-    the viewport, a pivot on the element, and a pixel offset.
+    Simple screen-space drawing: specify pixel coordinates directly.
 */
 
 #include "atto_core.h"
@@ -18,7 +17,7 @@ namespace atto {
     constexpr i32 FONT_ATLAS_WIDTH  = 512;
     constexpr i32 FONT_ATLAS_HEIGHT = 512;
     constexpr i32 FONT_FIRST_CHAR   = 32;  // space
-    constexpr i32 FONT_CHAR_COUNT   = 96;  // ASCII 32–127
+    constexpr i32 FONT_CHAR_COUNT   = 96;  // ASCII 32-127
 
     class Font {
     public:
@@ -41,65 +40,70 @@ namespace atto {
     };
 
     // =========================================================================
-    // Constraint-based UI
+    // Immediate-mode UI
     // =========================================================================
 
-    // Presets for common anchor/pivot combinations.
-    enum class UIAnchorPreset {
-        TopLeft,
-        TopCenter,
-        TopRight,
-        CenterLeft,
-        Center,
-        CenterRight,
-        BottomLeft,
-        BottomCenter,
-        BottomRight,
+    // Horizontal text alignment relative to the x coordinate.
+    enum class UIAlignH {
+        Left,       // x is the left edge of the text
+        Center,     // x is the horizontal center of the text
+        Right,      // x is the right edge of the text
     };
 
-    // Describes where an element sits on screen.
-    //   anchor  — (0-1) point on the viewport  (0,0 = top-left, 1,1 = bottom-right)
-    //   pivot   — (0-1) point on the element    (0,0 = top-left of element)
-    //   offset  — pixel offset applied after anchor resolution
-    struct UIConstraint {
-        Vec2 anchor = Vec2( 0.0f );
-        Vec2 pivot  = Vec2( 0.0f );
-        Vec2 offset = Vec2( 0.0f );
-
-        static UIConstraint Create( Vec2 anchor, Vec2 pivot, Vec2 offset = Vec2( 0.0f ) );
-        static UIConstraint FromPreset( UIAnchorPreset preset, Vec2 offset = Vec2( 0.0f ) );
+    // Vertical text alignment relative to the y coordinate.
+    enum class UIAlignV {
+        Top,        // y is the top of the text
+        Center,     // y is the vertical center of the text
+        Bottom,     // y is the bottom of the text
     };
 
     // Forward-declared — Renderer lives in atto_renderer.h.
     class Renderer;
     class Texture;
 
-    // Immediate-mode UI canvas.  Call Begin → add elements → End each frame.
+    // Immediate-mode UI canvas.  Call Begin -> draw elements -> End each frame.
+    // All coordinates are in screen-space pixels with (0,0) at the top-left.
     class UICanvas {
     public:
         void Begin( i32 viewportW, i32 viewportH );
 
-        void Text( const UIConstraint & constraint, const Font * font, const char * text, Vec4 color = Vec4( 1.0f ) );
-        void Sprite( const UIConstraint & constraint, const Texture * texture, i32 width, i32 height );
+        // Draw text at the given screen position.
+        // alignH/alignV control how x,y relate to the text bounding box.
+        void DrawText( const Font * font, f32 x, f32 y, const char * text,
+                       Vec4 color = Vec4( 1.0f ),
+                       UIAlignH alignH = UIAlignH::Left,
+                       UIAlignV alignV = UIAlignV::Top );
 
+        // Draw a sprite centered at the given screen position.
+        void DrawSprite( const Texture * texture, f32 x, f32 y, i32 width, i32 height );
+
+        // Flush all queued draw commands.
         void End( Renderer & renderer );
 
         // Utility — measure the pixel bounds of a string without drawing it.
         static Vec2 MeasureText( const Font * font, const char * text );
+
+        // Viewport accessors for easy positioning.
+        f32 GetWidth()   const { return (f32)vw; }
+        f32 GetHeight()  const { return (f32)vh; }
+        f32 GetCenterX() const { return (f32)vw * 0.5f; }
+        f32 GetCenterY() const { return (f32)vh * 0.5f; }
 
     private:
         i32 vw = 0;
         i32 vh = 0;
 
         struct TextCmd {
-            UIConstraint    constraint;
+            f32             x, y;
             const Font *    font;
             Vec4            color;
+            UIAlignH        alignH;
+            UIAlignV        alignV;
             char            text[ 256 ];
         };
 
         struct SpriteCmd {
-            UIConstraint    constraint;
+            f32             x, y;
             const Texture * texture;
             i32             width;
             i32             height;

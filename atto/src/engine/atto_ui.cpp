@@ -6,35 +6,6 @@
 namespace atto {
 
     // =========================================================================
-    // UIConstraint
-    // =========================================================================
-
-    UIConstraint UIConstraint::Create( Vec2 anchor, Vec2 pivot, Vec2 offset ) {
-        UIConstraint c;
-        c.anchor = anchor;
-        c.pivot  = pivot;
-        c.offset = offset;
-        return c;
-    }
-
-    UIConstraint UIConstraint::FromPreset( UIAnchorPreset preset, Vec2 offset ) {
-        UIConstraint c;
-        c.offset = offset;
-        switch ( preset ) {
-            case UIAnchorPreset::TopLeft:      c.anchor = Vec2( 0.0f, 0.0f ); c.pivot = Vec2( 0.0f, 0.0f ); break;
-            case UIAnchorPreset::TopCenter:    c.anchor = Vec2( 0.5f, 0.0f ); c.pivot = Vec2( 0.5f, 0.0f ); break;
-            case UIAnchorPreset::TopRight:     c.anchor = Vec2( 1.0f, 0.0f ); c.pivot = Vec2( 1.0f, 0.0f ); break;
-            case UIAnchorPreset::CenterLeft:   c.anchor = Vec2( 0.0f, 0.5f ); c.pivot = Vec2( 0.0f, 0.5f ); break;
-            case UIAnchorPreset::Center:       c.anchor = Vec2( 0.5f, 0.5f ); c.pivot = Vec2( 0.5f, 0.5f ); break;
-            case UIAnchorPreset::CenterRight:  c.anchor = Vec2( 1.0f, 0.5f ); c.pivot = Vec2( 1.0f, 0.5f ); break;
-            case UIAnchorPreset::BottomLeft:   c.anchor = Vec2( 0.0f, 1.0f ); c.pivot = Vec2( 0.0f, 1.0f ); break;
-            case UIAnchorPreset::BottomCenter: c.anchor = Vec2( 0.5f, 1.0f ); c.pivot = Vec2( 0.5f, 1.0f ); break;
-            case UIAnchorPreset::BottomRight:  c.anchor = Vec2( 1.0f, 1.0f ); c.pivot = Vec2( 1.0f, 1.0f ); break;
-        }
-        return c;
-    }
-
-    // =========================================================================
     // Text measurement helpers
     // =========================================================================
 
@@ -96,55 +67,51 @@ namespace atto {
         spriteCmds.Clear();
     }
 
-    void UICanvas::Text( const UIConstraint & constraint, const Font * font, const char * text, Vec4 color ) {
+    void UICanvas::DrawText( const Font * font, f32 x, f32 y, const char * text,
+                             Vec4 color, UIAlignH alignH, UIAlignV alignV ) {
         if ( !font || !text || *text == '\0' ) {
             return;
         }
 
         TextCmd & cmd = textCmds.AddEmpty();
-        cmd.constraint = constraint;
-        cmd.font       = font;
-        cmd.color      = color;
+        cmd.x      = x;
+        cmd.y      = y;
+        cmd.font   = font;
+        cmd.color  = color;
+        cmd.alignH = alignH;
+        cmd.alignV = alignV;
         strncpy( cmd.text, text, sizeof( cmd.text ) - 1 );
         cmd.text[ sizeof( cmd.text ) - 1 ] = '\0';
     }
 
-    void UICanvas::Sprite( const UIConstraint & constraint, const Texture * texture, i32 width, i32 height ) {
+    void UICanvas::DrawSprite( const Texture * texture, f32 x, f32 y, i32 width, i32 height ) {
         if ( !texture ) {
             return;
         }
 
         SpriteCmd & cmd = spriteCmds.AddEmpty();
-        cmd.constraint = constraint;
-        cmd.texture    = texture;
-        cmd.width      = width;
-        cmd.height     = height;
+        cmd.x       = x;
+        cmd.y       = y;
+        cmd.texture = texture;
+        cmd.width   = width;
+        cmd.height  = height;
     }
 
     void UICanvas::End( Renderer & renderer ) {
-        const Vec2 viewport( (f32)vw, (f32)vh );
-
-        // Resolve and render sprite commands
+        // Render sprite commands
         const i32 spriteCount = spriteCmds.GetCount();
         for ( i32 i = 0; i < spriteCount; i++ ) {
             const SpriteCmd & cmd = spriteCmds[ i ];
-            const Vec2 elemSize( (f32)cmd.width, (f32)cmd.height );
 
-            // Constraint resolution: top-left pixel position
-            Vec2 topLeft = cmd.constraint.anchor * viewport
-                         + cmd.constraint.offset
-                         - cmd.constraint.pivot * elemSize;
-
-            // Pixel center → NDC  (screen Y down, NDC Y up)
-            Vec2 pixelCenter = topLeft + elemSize * 0.5f;
+            // Convert pixel center to NDC (screen Y down, NDC Y up)
             Vec2 ndcCenter;
-            ndcCenter.x = ( pixelCenter.x / (f32)vw ) * 2.0f - 1.0f;
-            ndcCenter.y = 1.0f - ( pixelCenter.y / (f32)vh ) * 2.0f;
+            ndcCenter.x = ( cmd.x / (f32)vw ) * 2.0f - 1.0f;
+            ndcCenter.y = 1.0f - ( cmd.y / (f32)vh ) * 2.0f;
 
             renderer.RenderSprite( cmd.texture, ndcCenter, cmd.width, cmd.height, vw, vh );
         }
 
-        // Resolve and render text commands
+        // Render text commands
         const i32 textCount = textCmds.GetCount();
         for ( i32 i = 0; i < textCount; i++ ) {
             const TextCmd & cmd = textCmds[ i ];
@@ -153,14 +120,26 @@ namespace atto {
             f32  baselineFromTop;
             MeasureTextInternal( cmd.font, cmd.text, textSize, baselineFromTop );
 
-            Vec2 topLeft = cmd.constraint.anchor * viewport
-                         + cmd.constraint.offset
-                         - cmd.constraint.pivot * textSize;
+            // Resolve horizontal position to left edge
+            f32 leftX = cmd.x;
+            switch ( cmd.alignH ) {
+                case UIAlignH::Left:   break;
+                case UIAlignH::Center: leftX -= textSize.x * 0.5f; break;
+                case UIAlignH::Right:  leftX -= textSize.x;        break;
+            }
+
+            // Resolve vertical position to top edge
+            f32 topY = cmd.y;
+            switch ( cmd.alignV ) {
+                case UIAlignV::Top:    break;
+                case UIAlignV::Center: topY -= textSize.y * 0.5f; break;
+                case UIAlignV::Bottom: topY -= textSize.y;        break;
+            }
 
             // DrawText expects the baseline y, not the top of the text box
-            f32 baselineY = topLeft.y + baselineFromTop;
+            f32 baselineY = topY + baselineFromTop;
 
-            renderer.DrawText( cmd.font, cmd.text, topLeft.x, baselineY, cmd.color, vw, vh );
+            renderer.DrawText( cmd.font, cmd.text, leftX, baselineY, cmd.color, vw, vh );
         }
     }
 
