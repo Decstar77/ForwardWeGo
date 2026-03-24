@@ -4,15 +4,9 @@
 #include "engine/renderer/atto_render_model.h"
 #include "game/game_map.h"
 #include "editor_asset_browser.h"
+#include "editor_brush_tools.h"
 
 namespace atto {
-
-    enum class EditorViewMode {
-        XY,     // Front  - orthographic (Alt-1)
-        ZY,     // Side   - orthographic (Alt-2)
-        XZ,     // Top    - orthographic (Alt-3)
-        Cam3D   // Free 3D perspective   (Alt-4)
-    };
 
     enum class EditorRenderMode {
         Lit,
@@ -31,25 +25,6 @@ namespace atto {
     enum class EditorGizmoMode {
         Translate,
         Rotate
-    };
-
-    enum class BrushDragMode {
-        None,
-        Edge,
-        Move,
-        Create
-    };
-
-    struct BrushDragState {
-        BrushDragMode mode = BrushDragMode::None;
-        i32 brushIndex = -1;
-        i32 axis = -1;
-        i32 sign = 0;
-        f32 fixedEdge = 0;
-        f32 mouseOffset = 0;
-        Vec3 lastWorldPos = Vec3( 0.0f );
-        Vec3 createStartPos = Vec3( 0.0f );
-        Vec3 moveOffset = Vec3( 0.0f );
     };
 
     class EditorScene : public SceneInterface {
@@ -104,20 +79,9 @@ namespace atto {
         Mat4 GetOrthoViewProjectionMatrix() const;
         Vec3 ScreenToWorldOrtho( Vec2 screenPos ) const;
 
-        // Brush operations
-        void BrushGetOrthoAxes( i32 & hAxis, i32 & vAxis ) const;
-        i32  BrushPickOrtho( Vec3 worldPos ) const;
-        i32  BrushPick3D( Vec2 screenPos ) const;
+        // Picking
         i32  EntityPick3D( Vec2 screenPos ) const;
         i32  NavNodePick3D( Vec2 screenPos ) const;
-        bool BrushTryStartEdgeDrag( Vec3 worldClickPos );
-        void BrushUpdateEdgeDrag( Vec3 worldMousePos );
-        void BrushStartMoveDrag( Vec3 worldClickPos );
-        void BrushUpdateMoveDrag( Vec3 worldMousePos );
-        void BrushStartCreateDrag( Vec3 worldClickPos );
-        void BrushUpdateCreateDrag( Vec3 worldMousePos );
-        void BrushFinishCreateDrag();
-        f32  SnapValue( f32 value ) const;
 
         // View state
         EditorViewMode      viewMode = EditorViewMode::Cam3D;
@@ -162,7 +126,7 @@ namespace atto {
         i32              selectedBrushIndex = -1;
         i32              selectedEntityIndex = -1;   // primary (last clicked), shown in inspector
         std::vector<i32> selectedEntityIndices;      // full multi-selection set
-        BrushDragState   brushDrag;
+        EditorBrushTools brushTools;
 
         // NavGraph editing state
         i32              selectedNavNodeIndex = -1;

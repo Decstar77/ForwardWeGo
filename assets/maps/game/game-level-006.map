@@ -172,7 +172,7 @@
                     0.5,
                     20.625
                 ],
-                "texturePath": "assets/textures/prototype-textures/Light/texture_08.png",
+                "texturePath": "assets/textures/floor_tiles_sand_large.png",
                 "textureScale": 1.0
             }
         },
