@@ -1,0 +1,890 @@
+{
+    "brushes": [
+        {
+            "item": {
+                "center": [
+                    -2.5,
+                    3.5,
+                    -2.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    4.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    2.5,
+                    3.5,
+                    -2.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    4.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -5.0,
+                    3.5,
+                    -5.5
+                ],
+                "halfExtents": [
+                    3.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    5.5,
+                    3.5,
+                    -5.5
+                ],
+                "halfExtents": [
+                    2.5,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -8.5,
+                    3.5,
+                    -8.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -8.5,
+                    3.5,
+                    -17.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    8.5,
+                    3.5,
+                    -8.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    8.5,
+                    3.5,
+                    -17.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -5.0,
+                    3.5,
+                    -20.5
+                ],
+                "halfExtents": [
+                    3.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    5.0,
+                    3.5,
+                    -20.5
+                ],
+                "halfExtents": [
+                    3.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -0.25,
+                    -0.5,
+                    -13.375
+                ],
+                "halfExtents": [
+                    18.75,
+                    0.5,
+                    20.625
+                ],
+                "texturePath": "assets/textures/prototype-textures/Light/texture_08.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -2.5,
+                    3.5,
+                    -24.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    4.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    2.5,
+                    3.5,
+                    -24.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    4.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    0.0,
+                    5.5,
+                    -28.5
+                ],
+                "halfExtents": [
+                    3.0,
+                    2.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    0.0,
+                    3.5,
+                    2.5
+                ],
+                "halfExtents": [
+                    3.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    8.5,
+                    5.5,
+                    -13.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    2.5,
+                    2.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -8.5,
+                    5.5,
+                    -13.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    2.5,
+                    2.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -11.0,
+                    3.5,
+                    -15.5
+                ],
+                "halfExtents": [
+                    2.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -13.5,
+                    3.5,
+                    -13.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    3.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -11.0,
+                    3.5,
+                    -10.5
+                ],
+                "halfExtents": [
+                    2.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    11.0,
+                    3.5,
+                    -10.5
+                ],
+                "halfExtents": [
+                    2.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    13.5,
+                    3.5,
+                    -13.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    3.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    11.0,
+                    3.5,
+                    -15.5
+                ],
+                "halfExtents": [
+                    2.0,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -2.25,
+                    8.5,
+                    -13.375
+                ],
+                "halfExtents": [
+                    18.75,
+                    0.5,
+                    20.625
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_06.png",
+                "textureScale": 1.0
+            }
+        }
+    ],
+    "entities": [
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.9999995231628418,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                -0.9999995231628418
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                2.0
+            ],
+            "SpawnId": 819273645081927364,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Door_01.obj"
+        },
+        {
+            "Orientation": [
+                -0.9999995231628418,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                -0.9999995231628418
+            ],
+            "Position": [
+                -4.0,
+                0.0,
+                -10.0
+            ],
+            "SpawnId": 918273645091827364,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                4.0,
+                0.0,
+                -16.0
+            ],
+            "SpawnId": 546372819054637281,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                5.960464477539063e-08,
+                0.0,
+                -0.9999998211860657,
+                0.0,
+                1.0,
+                0.0,
+                0.9999998211860657,
+                0.0,
+                5.960464477539063e-08
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -18.0
+            ],
+            "SpawnId": 729183645072918364,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -12.0,
+                0.0,
+                -13.0
+            ],
+            "SpawnId": 638472910563847291,
+            "Type": "CoinCrate"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                11.0,
+                0.0,
+                -13.0
+            ],
+            "SpawnId": 192738465019273846,
+            "Type": "CoinCrate"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.7071066498756409,
+                0.0,
+                0.7071067094802856,
+                0.0,
+                1.0,
+                0.0,
+                -0.7071067094802856,
+                0.0,
+                0.7071066498756409
+            ],
+            "Position": [
+                6.25,
+                0.0,
+                -7.75
+            ],
+            "SpawnId": 827364501982736450,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Plant_Vase_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.7071065306663513,
+                0.0,
+                -0.707106351852417,
+                0.0,
+                1.0,
+                0.0,
+                0.707106351852417,
+                0.0,
+                -0.7071065306663513
+            ],
+            "Position": [
+                -6.25,
+                0.0,
+                -7.75
+            ],
+            "SpawnId": 501928374650192837,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Plant_Vase_01.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.9659256935119629,
+                0.0,
+                -0.25881901383399963,
+                0.0,
+                1.0,
+                0.0,
+                0.25881901383399963,
+                0.0,
+                0.9659256935119629
+            ],
+            "Position": [
+                6.25,
+                0.0,
+                -18.25
+            ],
+            "SpawnId": 374650192837465019,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Plant_Vase_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.9659256935119629,
+                0.0,
+                0.25881901383399963,
+                0.0,
+                1.0,
+                0.0,
+                -0.25881901383399963,
+                0.0,
+                -0.9659256935119629
+            ],
+            "Position": [
+                -6.25,
+                0.0,
+                -18.25
+            ],
+            "SpawnId": 928374650192837465,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Plant_Vase_01.obj"
+        },
+        {
+            "Collision": false,
+            "Orientation": [
+                5.960464477539063e-08,
+                0.0,
+                -0.9999998211860657,
+                0.0,
+                1.0,
+                0.0,
+                0.9999998211860657,
+                0.0,
+                5.960464477539063e-08
+            ],
+            "Position": [
+                -8.0,
+                0.0,
+                -13.591987609863281
+            ],
+            "SpawnId": 650192837465019283,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Collision": false,
+            "Orientation": [
+                -5.960464477539063e-08,
+                0.0,
+                0.9999998211860657,
+                0.0,
+                1.0,
+                0.0,
+                -0.9999998211860657,
+                0.0,
+                -5.960464477539063e-08
+            ],
+            "Position": [
+                8.0,
+                0.0,
+                -12.367770195007324
+            ],
+            "SpawnId": 283746501928374650,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.0004883557558059692,
+                0.0,
+                0.9999992251396179,
+                0.0,
+                1.0,
+                0.0,
+                -0.9999992251396179,
+                0.0,
+                0.0004883557558059692
+            ],
+            "Position": [
+                7.0,
+                0.0,
+                -16.5
+            ],
+            "SpawnId": 483927165048392716,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Dumpster_01.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -14.0,
+                0.0,
+                -12.0
+            ],
+            "SpawnId": 572946183057294618,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_VendingMachine_01.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.9999995231628418,
+                0.0,
+                -5.960464477539063e-08,
+                0.0,
+                1.0,
+                0.0,
+                5.960464477539063e-08,
+                0.0,
+                0.9999995231628418
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -13.0
+            ],
+            "SpawnId": 795130482679513048,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Pillar_02.obj"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -27.0
+            ],
+            "SpawnId": 465019283746501928,
+            "Type": "ExitDoor"
+        },
+        {
+            "MapName": "",
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "PortalSize": 2.0,
+            "Position": [
+                0.0,
+                1.0,
+                -31.0
+            ],
+            "SpawnId": 746501928374650192,
+            "Type": "Portal"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "RemainingEntities": [
+                918273645091827364,
+                546372819054637281,
+                729183645072918364
+            ],
+            "SpawnId": 192837465019283746,
+            "Type": "GameMode_KillAllEntities"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.707106351852417,
+                0.0,
+                -0.7071062922477722,
+                0.0,
+                1.0,
+                0.0,
+                0.7071062922477722,
+                0.0,
+                -0.707106351852417
+            ],
+            "Position": [
+                -7.0,
+                0.0,
+                -7.0
+            ],
+            "SpawnId": 14291482606606646907,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Pillar_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.8662683367729187,
+                0.0005980196292512119,
+                0.4995766580104828,
+                0.0005180462030693889,
+                0.9999998211860657,
+                -0.00029875681502744555,
+                -0.4995766282081604,
+                3.5644764917464045e-11,
+                -0.866268515586853
+            ],
+            "Position": [
+                7.0,
+                0.0,
+                -7.0
+            ],
+            "SpawnId": 4724428939204039245,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Pillar_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.7074516415596008,
+                0.0,
+                0.7067610621452332,
+                0.0,
+                1.0,
+                0.0,
+                -0.7067610621452332,
+                0.0,
+                0.7074516415596008
+            ],
+            "Position": [
+                7.0,
+                0.0,
+                -19.0
+            ],
+            "SpawnId": 18369543892444367900,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Pillar_02.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.707106351852417,
+                0.0,
+                -0.7071064710617065,
+                0.0,
+                1.0,
+                0.0,
+                0.7071064710617065,
+                0.0,
+                0.707106351852417
+            ],
+            "Position": [
+                -7.0,
+                0.0,
+                -19.0
+            ],
+            "SpawnId": 1563727959953492304,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Pillar_02.obj"
+        }
+    ],
+    "navGraph": {
+        "edgeCost": [],
+        "edgeEnabled": [],
+        "edgeNodeA": [],
+        "edgeNodeB": [],
+        "positions": []
+    },
+    "playerStart": {
+        "spawnOri": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "spawnPos": [
+            0.0,
+            0.0,
+            0.0
+        ]
+    }
+}
