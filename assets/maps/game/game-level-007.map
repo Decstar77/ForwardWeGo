@@ -1,0 +1,259 @@
+{
+    "brushes": [
+        {
+            "item": {
+                "center": [
+                    -0.5,
+                    -0.5,
+                    -3.0
+                ],
+                "halfExtents": [
+                    2.5,
+                    0.5,
+                    13.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Light/texture_07.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -3.5,
+                    3.5,
+                    0.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    9.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_08.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    2.5,
+                    3.5,
+                    0.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    4.5,
+                    9.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_08.png",
+                "textureScale": 1.0
+            }
+        }
+    ],
+    "entities": [
+        {
+            "Orientation": [
+                0.9999999403953552,
+                0.0,
+                0.0,
+                0.0,
+                -4.371138828673793e-08,
+                -1.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-08
+            ],
+            "Position": [
+                -1.25,
+                0.0,
+                -2.25
+            ],
+            "SpawnId": 7954713465465293185,
+            "Type": "Barrel"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -1.5,
+                0.0,
+                -4.0
+            ],
+            "SpawnId": 11495373081692969484,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -0.5,
+                0.0,
+                -6.0
+            ],
+            "SpawnId": 10584680047736308473,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -0.5,
+                0.0,
+                2.0
+            ],
+            "SpawnId": 13658746413184556782,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -1.5,
+                0.0,
+                -6.0
+            ],
+            "SpawnId": 11456890858076724084,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.5,
+                0.0,
+                -4.0
+            ],
+            "SpawnId": 13131903224506492665,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.5,
+                0.0,
+                -6.0
+            ],
+            "SpawnId": 15004662455662090333,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -0.5,
+                0.0,
+                -9.0
+            ],
+            "SpawnId": 11703788435241057390,
+            "Type": "ExitDoor"
+        },
+        {
+            "Orientation": [
+                0.9999999403953552,
+                0.0,
+                0.0,
+                0.0,
+                -4.371138828673793e-08,
+                -1.0,
+                0.0,
+                1.0,
+                -4.371138828673793e-08
+            ],
+            "Position": [
+                0.25,
+                0.0,
+                -2.25
+            ],
+            "SpawnId": 3293566947364519331,
+            "Type": "Barrel"
+        }
+    ],
+    "navGraph": {
+        "edgeCost": [],
+        "edgeEnabled": [],
+        "edgeNodeA": [],
+        "edgeNodeB": [],
+        "positions": []
+    },
+    "playerStart": {
+        "spawnOri": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "spawnPos": [
+            -0.5,
+            0.0,
+            8.25
+        ]
+    }
+}

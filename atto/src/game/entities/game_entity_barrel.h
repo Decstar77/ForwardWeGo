@@ -18,8 +18,15 @@ namespace atto {
         TakeDamageResult TakeDamage( i32 damage ) override;
 
     private:
+        void Explode();
+
         const StaticModel * model = nullptr;
+        const Texture * particleSmokeTexture = nullptr;
+        const Texture * particleSparkleTexture = nullptr;
         i32 health = 100;
+
+        static constexpr f32 EXPLOSION_RADIUS = 8.0f;
+        static constexpr i32 EXPLOSION_DAMAGE = 100;
     };
 } // atto
 

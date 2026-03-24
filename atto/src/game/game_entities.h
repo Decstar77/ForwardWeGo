@@ -9,3 +9,4 @@
 #include "entities/game_entity_roach.h"
 #include "entities/game_entity_coincrate.h"
 #include "entities/game_entity_portal.h"
+#include "entities/game_entity_coin.h"

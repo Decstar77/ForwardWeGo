@@ -44,8 +44,24 @@ namespace atto {
         if ( health <= 0 ) {
             map->DestroyEntity( this );
             destroySound.PlayAt( position );
+
+            RNG & rng = Engine::Get().GetRNG();
+            for ( int i = 0; i < coinGiveAmount; i++ ) {
+                Entity * coin = map->CreateEntity( EntityType::Coin );
+                if ( coin ) {
+                    const float x = rng.Float() * 1.2f;
+                    const float z = rng.Float() * 1.2f;
+                    coin->SetPosition( position + Vec3( x, 0.5f, z ) );
+                    coin->OnSpawn();
+                }
+            }
         }
         return TakeDamageResult::Success_HP;
+    }
+
+    void Entity_CoinCrate::Serialize( Serializer &serializer ) {
+        Entity::Serialize( serializer );
+        serializer("CoinGiveAmount", coinGiveAmount);
     }
 }
 

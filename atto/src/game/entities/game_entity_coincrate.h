@@ -13,9 +13,12 @@ namespace atto {
         bool RayTest( const Vec3 &start, const Vec3 &dir, f32 &dist ) const override;
         TakeDamageResult TakeDamage( i32 damage ) override;
 
+        void Serialize( Serializer &serializer ) override;
+
     private:
         const StaticModel * model = nullptr;
         i32                 health = 100;
+        i32                 coinGiveAmount = 3;
         SoundCollection     destroySound;
     };
 }

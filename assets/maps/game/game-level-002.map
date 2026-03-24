@@ -28,7 +28,7 @@
                     2.0,
                     8.737289428710938
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -44,7 +44,7 @@
                     2.0,
                     8.666315078735352
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -60,7 +60,7 @@
                     2.0,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -76,7 +76,7 @@
                     2.0,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -92,7 +92,7 @@
                     2.0,
                     0.8021659851074219
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -108,7 +108,7 @@
                     2.0,
                     0.8021659851074219
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         },
@@ -124,13 +124,14 @@
                     2.0,
                     0.5
                 ],
-                "texturePath": "",
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
                 "textureScale": 1.0
             }
         }
     ],
     "entities": [
         {
+            "Collision": true,
             "Orientation": [
                 0.0002794414758682251,
                 -1.8958779037347995e-05,
@@ -234,6 +235,7 @@
             "Type": "Roach"
         },
         {
+            "Collision": true,
             "Orientation": [
                 0.966015100479126,
                 0.0,
@@ -255,6 +257,7 @@
             "model": "assets/models/sm/SM_Prop_Plant_Vase_01.obj"
         },
         {
+            "Collision": true,
             "Orientation": [
                 0.25881901383399963,
                 0.0,
@@ -276,6 +279,7 @@
             "model": "assets/models/sm/SM_Prop_Plant_Vase_01.obj"
         },
         {
+            "Collision": true,
             "Orientation": [
                 -0.9999996423721313,
                 0.0,
@@ -297,6 +301,7 @@
             "model": "assets/models/sm/SM_Prop_Door_01.obj"
         },
         {
+            "Collision": true,
             "Orientation": [
                 1.0,
                 0.0,
@@ -318,6 +323,7 @@
             "model": "assets/models/sm/SM_Env_Tree_02.obj"
         },
         {
+            "Collision": true,
             "Orientation": [
                 1.0,
                 0.0,
@@ -339,6 +345,7 @@
             "model": "assets/models/sm/SM_Env_Tree_02.obj"
         },
         {
+            "Collision": true,
             "Orientation": [
                 1.0,
                 0.0,
@@ -360,6 +367,7 @@
             "model": "assets/models/sm/SM_Env_Tree_02.obj"
         },
         {
+            "Collision": true,
             "Orientation": [
                 1.0,
                 0.0,
@@ -381,6 +389,7 @@
             "model": "assets/models/sm/SM_Env_Tree_02.obj"
         },
         {
+            "Collision": true,
             "Orientation": [
                 -0.0002795308828353882,
                 -1.8958779037347995e-05,

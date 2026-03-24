@@ -359,6 +359,13 @@ namespace atto {
         drawRed = 0.2f;
         health -= damage;
         if ( health <= 0 ) {
+            // Spawn a coin at the roach's position
+            Entity * coin = map->CreateEntity( EntityType::Coin );
+            if ( coin ) {
+                coin->SetPosition( position + Vec3( 0.0f, 0.5f, 0.0f ) );
+                coin->OnSpawn();
+            }
+
             map->DestroyEntity( this );
         }
 

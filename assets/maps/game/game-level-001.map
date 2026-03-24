@@ -20,12 +20,12 @@
             "item": {
                 "center": [
                     -4.5,
-                    1.0,
+                    4.5,
                     -0.5
                 ],
                 "halfExtents": [
                     0.5,
-                    2.0,
+                    5.5,
                     7.5
                 ],
                 "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
@@ -36,12 +36,12 @@
             "item": {
                 "center": [
                     4.5,
-                    1.0,
+                    4.5,
                     -0.5
                 ],
                 "halfExtents": [
                     0.5,
-                    2.0,
+                    5.5,
                     7.5
                 ],
                 "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
@@ -52,12 +52,12 @@
             "item": {
                 "center": [
                     3.25,
-                    1.0,
+                    4.50110387802124,
                     -7.5
                 ],
                 "halfExtents": [
                     0.75,
-                    2.0,
+                    5.50110387802124,
                     0.5
                 ],
                 "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
@@ -68,12 +68,28 @@
             "item": {
                 "center": [
                     -3.25,
-                    1.0,
+                    4.485612392425537,
                     -7.5
                 ],
                 "halfExtents": [
                     0.75,
-                    2.0,
+                    5.485612392425537,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    0.0,
+                    4.5,
+                    6.5
+                ],
+                "halfExtents": [
+                    4.0,
+                    5.5,
                     0.5
                 ],
                 "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
@@ -83,6 +99,7 @@
     ],
     "entities": [
         {
+            "Collision": true,
             "Orientation": [
                 -0.9999995231628418,
                 0.0,
@@ -189,6 +206,7 @@
             "Type": "Portal"
         },
         {
+            "Collision": true,
             "Orientation": [
                 1.0,
                 0.0,
