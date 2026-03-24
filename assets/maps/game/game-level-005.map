@@ -1,0 +1,846 @@
+{
+    "brushes": [
+        {
+            "item": {
+                "center": [
+                    2.0,
+                    -0.5,
+                    -16.0
+                ],
+                "halfExtents": [
+                    25.0,
+                    0.5,
+                    22.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Light/texture_08.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -3.5,
+                    4.0,
+                    3.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    3.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    7.5,
+                    4.0,
+                    2.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    4.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    5.5,
+                    4.0,
+                    -7.5
+                ],
+                "halfExtents": [
+                    2.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -5.5,
+                    4.0,
+                    -7.5
+                ],
+                "halfExtents": [
+                    4.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -6.5,
+                    4.0,
+                    -0.5
+                ],
+                "halfExtents": [
+                    2.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -11.5,
+                    4.0,
+                    -1.5
+                ],
+                "halfExtents": [
+                    2.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -15.0,
+                    4.0,
+                    -2.5
+                ],
+                "halfExtents": [
+                    2.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -16.5,
+                    4.0,
+                    -5.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    8.0,
+                    4.0,
+                    -8.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    9.0,
+                    4.0,
+                    -9.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    10.0,
+                    4.0,
+                    -10.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -6.5,
+                    4.0,
+                    -13.375
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    1.625
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -5.5,
+                    4.0,
+                    -15.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -3.0,
+                    4.0,
+                    -17.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -4.5,
+                    4.0,
+                    -16.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    9.5,
+                    4.0,
+                    -1.5
+                ],
+                "halfExtents": [
+                    1.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    11.5,
+                    4.0,
+                    -2.5
+                ],
+                "halfExtents": [
+                    1.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    13.5,
+                    4.0,
+                    -3.5
+                ],
+                "halfExtents": [
+                    1.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    15.0,
+                    4.0,
+                    -4.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    15.5,
+                    4.0,
+                    -11.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    6.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    4.5,
+                    4.0,
+                    -15.5
+                ],
+                "halfExtents": [
+                    2.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    8.0,
+                    4.0,
+                    -16.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    10.0,
+                    4.0,
+                    -17.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    13.5,
+                    4.0,
+                    -18.5
+                ],
+                "halfExtents": [
+                    2.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    0.0,
+                    6.0,
+                    -15.5
+                ],
+                "halfExtents": [
+                    2.0,
+                    3.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -1.5,
+                    6.0,
+                    -17.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -16.5,
+                    4.0,
+                    -21.25
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    4.75
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -2.0,
+                    4.0,
+                    -27.5
+                ],
+                "halfExtents": [
+                    13.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -16.0,
+                    4.0,
+                    -27.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    12.0,
+                    4.0,
+                    -25.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    11.0,
+                    4.0,
+                    -26.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    13.0,
+                    4.0,
+                    -24.5
+                ],
+                "halfExtents": [
+                    1.0,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    13.5,
+                    4.0,
+                    -21.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    5.0,
+                    2.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    -16.5,
+                    6.0,
+                    -12.0
+                ],
+                "halfExtents": [
+                    0.5,
+                    3.0,
+                    4.0
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    1.5,
+                    4.0,
+                    6.5
+                ],
+                "halfExtents": [
+                    5.5,
+                    5.0,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_01.png",
+                "textureScale": 1.0
+            }
+        }
+    ],
+    "entities": [
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.9999995231628418,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                -0.9999995231628418
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                6.0
+            ],
+            "SpawnId": 14353295783029886837,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Prop_Door_01.obj"
+        },
+        {
+            "Orientation": [
+                -0.999999463558197,
+                0.0,
+                1.043081283569336e-07,
+                0.0,
+                1.0,
+                0.0,
+                -1.043081283569336e-07,
+                0.0,
+                -0.999999463558197
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -19.86157989501953
+            ],
+            "SpawnId": 870851736796973674,
+            "Type": "ExitDoor"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -7.0,
+                0.0,
+                0.0
+            ],
+            "RemainingEntities": [
+                6885942867846166075
+            ],
+            "SpawnId": 2291127974717498537,
+            "Type": "GameMode_KillAllEntities"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -2.0
+            ],
+            "SpawnId": 6885942867846166075,
+            "Type": "CoinCrate"
+        },
+        {
+            "MapName": "assets/maps/level_003.map",
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "PortalSize": 2.0,
+            "Position": [
+                0.0,
+                1.0,
+                -26.0
+            ],
+            "SpawnId": 7839798364442487216,
+            "Type": "Portal"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.8662693500518799,
+                0.0,
+                -0.4995770752429962,
+                0.0,
+                1.0,
+                0.0,
+                0.4995770752429962,
+                0.0,
+                0.8662693500518799
+            ],
+            "Position": [
+                1.0,
+                0.0,
+                -8.0
+            ],
+            "SpawnId": 12794247216482656627,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Veh_Future_Taxi_01.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                -2.086161714487389e-07,
+                0.0,
+                -0.9999993443489075,
+                0.0,
+                1.0,
+                0.0,
+                0.9999993443489075,
+                0.0,
+                -2.086161714487389e-07
+            ],
+            "Position": [
+                -16.0,
+                0.0,
+                -11.0
+            ],
+            "SpawnId": 9516435968748191324,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                -2.086161714487389e-07,
+                0.0,
+                -0.9999993443489075,
+                0.0,
+                1.0,
+                0.0,
+                0.9999993443489075,
+                0.0,
+                -2.086161714487389e-07
+            ],
+            "Position": [
+                -16.0,
+                0.0,
+                -15.0
+            ],
+            "SpawnId": 4500127622810220836,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.0004883597139269114,
+                0.0,
+                0.999998927116394,
+                0.0,
+                1.0,
+                0.0,
+                -0.999998927116394,
+                0.0,
+                0.0004883597139269114
+            ],
+            "Position": [
+                -9.0,
+                0.0,
+                -9.0
+            ],
+            "SpawnId": 4762363970220163442,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                0.0004883597139269114,
+                0.0,
+                0.999998927116394,
+                0.0,
+                1.0,
+                0.0,
+                -0.999998927116394,
+                0.0,
+                0.0004883597139269114
+            ],
+            "Position": [
+                8.0,
+                0.0,
+                -21.0
+            ],
+            "SpawnId": 6096646003073945507,
+            "Type": "Prop",
+            "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
+        },
+        {
+            "Collision": true,
+            "Orientation": [
+                -0.0003452599048614502,
+                0.0,
+                0.9999998807907104,
+                0.0,
+                1.0,
+                0.0,
+                -0.9999998807907104,
+                0.0,
+                -0.0003452599048614502
+            ],
+            "Position": [
+                10.0,
+                0.0,
+                -21.69392204284668
+            ],
+            "SpawnId": 2460706107100989595,
+            "Type": "Prop",
+            "model": "assets/models/sm/SM_Veh_Future_01.obj"
+        }
+    ],
+    "navGraph": {
+        "edgeCost": [],
+        "edgeEnabled": [],
+        "edgeNodeA": [],
+        "edgeNodeB": [],
+        "positions": []
+    },
+    "playerStart": {
+        "spawnOri": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "spawnPos": [
+            0.0,
+            0.0,
+            5.0
+        ]
+    }
+}

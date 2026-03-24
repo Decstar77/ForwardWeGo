@@ -1,20 +1,20 @@
 {
-    "CamPitch": -0.7928449511528015,
+    "CamPitch": -0.8853464722633362,
     "CamPos": [
-        -5.861580848693848,
-        7.675658702850342,
-        -7.909642696380615
+        -2.892838716506958,
+        12.124709129333496,
+        -12.006617546081543
     ],
-    "CamYaw": -147.34068298339844,
-    "MapPath": "C:\\Projects\\2026\\ForwardWeGo\\assets\\maps\\game\\game-level-004.map",
-    "OrthoSize": 31.4044189453125,
+    "CamYaw": -166.4415740966797,
+    "MapPath": "C:\\Projects\\2026\\ForwardWeGo\\assets\\maps\\game\\game-level-005.map",
+    "OrthoSize": 29.785123825073242,
     "OrthoTarget": [
-        -7.952516555786133,
-        0.030145958065986633,
-        -2.4464111328125
+        -11.49073600769043,
+        4.981228828430176,
+        -13.144609451293945
     ],
     "RenderMode": 1,
-    "SelectionMode": 2,
+    "SelectionMode": 1,
     "Snap": true,
     "SnapSize": 1.0,
     "ViewMode": 2

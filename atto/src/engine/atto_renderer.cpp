@@ -281,6 +281,7 @@ namespace atto {
     }
 
     void Renderer::SetWireframe( bool enabled ) {
+        wireframe = enabled;
         glPolygonMode( GL_FRONT_AND_BACK, enabled ? GL_LINE : GL_FILL );
     }
 
@@ -310,6 +311,12 @@ namespace atto {
         staticModelShader->SetVec3( "uLightDir", lightDir );
         staticModelShader->SetVec3( "uLightColor", Vec3( 1.0f ) );
         staticModelShader->SetVec3( "uObjectColor", color );
+
+        if ( wireframe ) {
+            staticModelShader->SetInt( "uAllowTextures", 0 );
+        } else {
+            staticModelShader->SetInt( "uAllowTextures", 1 );
+        }
 
         model->Draw( staticModelShader );
 

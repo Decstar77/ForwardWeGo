@@ -8,11 +8,12 @@ uniform vec3 uLightColor;
 uniform vec3 uObjectColor;
 uniform sampler2D uAlbedoTexture;
 uniform bool uHasAlbedoTexture;
+uniform bool uAllowTextures;
 
 out vec4 FragColor;
 
 void main() {
-    vec3 albedo = uHasAlbedoTexture ? texture(uAlbedoTexture, vTexCoords).rgb * uObjectColor : uObjectColor;
+    vec3 albedo = uHasAlbedoTexture && uAllowTextures ? texture(uAlbedoTexture, vTexCoords).rgb * uObjectColor : uObjectColor;
 
     vec3 norm = normalize(vNormal);
     vec3 lightDir = normalize(-uLightDir);

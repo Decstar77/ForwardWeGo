@@ -72,6 +72,7 @@ namespace atto {
     private:
         void FlushDebugLines();
         Mat4 viewProjectionMatrix = Mat4( 1.0f );
+        bool wireframe = false;
 
         // Test triangle / grid resources
         u32 testTriangleVAO = 0;
