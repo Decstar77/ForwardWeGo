@@ -881,14 +881,21 @@ namespace atto {
     i32 EditorScene::BrushPickOrtho( Vec3 worldPos ) const {
         i32 hAxis, vAxis;
         BrushGetOrthoAxes( hAxis, vAxis );
+        i32 depthAxis = 3 - hAxis - vAxis;
 
-        for ( i32 i = map.GetBrushCount() - 1; i >= 0; i-- ) {
+        i32 bestIndex = -1;
+        f32 bestDepth = -1e30f;
+        for ( i32 i = 0; i < map.GetBrushCount(); i++ ) {
             const Brush & brush = map.GetBrush( i );
             if ( brush.IsPointInside( worldPos, hAxis, vAxis ) ) {
-                return i;
+                f32 frontFace = brush.center[ depthAxis ] + brush.halfExtents[ depthAxis ];
+                if ( frontFace > bestDepth ) {
+                    bestDepth = frontFace;
+                    bestIndex = i;
+                }
             }
         }
-        return -1;
+        return bestIndex;
     }
 
     i32 EditorScene::BrushPick3D( Vec2 screenPos ) const {
