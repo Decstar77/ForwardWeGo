@@ -65,6 +65,7 @@ namespace atto {
         vh = viewportH;
         textCmds.Clear();
         spriteCmds.Clear();
+        rectCmds.Clear();
     }
 
     void UICanvas::DrawText( const Font * font, f32 x, f32 y, const char * text,
@@ -97,7 +98,26 @@ namespace atto {
         cmd.height  = height;
     }
 
+    void UICanvas::DrawRect( f32 x, f32 y, i32 width, i32 height, const Vec4 & color ) {
+        RectCmd & cmd = rectCmds.AddEmpty();
+        cmd.x      = x;
+        cmd.y      = y;
+        cmd.width  = width;
+        cmd.height = height;
+        cmd.color  = color;
+    }
+
     void UICanvas::End( Renderer & renderer ) {
+        // Render rect commands (before sprites and text so they act as backgrounds)
+        const i32 rectCount = rectCmds.GetCount();
+        for ( i32 i = 0; i < rectCount; i++ ) {
+            const RectCmd & cmd = rectCmds[ i ];
+            Vec2 ndcCenter;
+            ndcCenter.x = ( cmd.x / (f32)vw ) * 2.0f - 1.0f;
+            ndcCenter.y = 1.0f - ( cmd.y / (f32)vh ) * 2.0f;
+            renderer.RenderRect( ndcCenter, cmd.width, cmd.height, vw, vh, cmd.color );
+        }
+
         // Render sprite commands
         const i32 spriteCount = spriteCmds.GetCount();
         for ( i32 i = 0; i < spriteCount; i++ ) {

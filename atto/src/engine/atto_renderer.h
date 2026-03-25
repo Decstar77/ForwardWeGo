@@ -43,6 +43,9 @@ namespace atto {
         // 2D sprite rendering (NDC center + pixel size relative to viewport)
         void RenderSprite( const Texture * texture, Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH );
 
+        // 2D filled rectangle (NDC center + pixel size)
+        void RenderRect( Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH, const Vec4 & color );
+
         // Fullscreen red damage vignette overlay (alpha 0..1)
         void RenderDamageVignette( f32 alpha );
 
@@ -157,6 +160,7 @@ namespace atto {
 
         // Sprite resources
         Shader spriteShader;
+        Shader rectShader;
         u32    spriteVAO = 0;
         u32    spriteVBO = 0;
 

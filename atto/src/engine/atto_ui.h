@@ -77,6 +77,9 @@ namespace atto {
         // Draw a sprite centered at the given screen position.
         void DrawSprite( const Texture * texture, f32 x, f32 y, i32 width, i32 height );
 
+        // Draw a filled rectangle centered at the given screen position.
+        void DrawRect( f32 x, f32 y, i32 width, i32 height, const Vec4 & color );
+
         // Flush all queued draw commands.
         void End( Renderer & renderer );
 
@@ -109,8 +112,16 @@ namespace atto {
             i32             height;
         };
 
+        struct RectCmd {
+            f32             x, y;
+            i32             width;
+            i32             height;
+            Vec4            color;
+        };
+
         FixedList<TextCmd, 128>   textCmds;
         FixedList<SpriteCmd, 128> spriteCmds;
+        FixedList<RectCmd, 128>   rectCmds;
     };
 
 } // namespace atto

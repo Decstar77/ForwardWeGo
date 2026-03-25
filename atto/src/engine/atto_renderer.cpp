@@ -105,6 +105,30 @@ namespace atto {
             return false;
         }
 
+        {
+            const char * rectVert = R"(
+                #version 330 core
+                layout (location = 0) in vec2 aPos;
+                uniform vec2 uCenter;
+                uniform vec2 uHalfSize;
+                void main() {
+                    gl_Position = vec4(uCenter + aPos * uHalfSize, 0.0, 1.0);
+                }
+            )";
+            const char * rectFrag = R"(
+                #version 330 core
+                uniform vec4 uColor;
+                out vec4 fragColor;
+                void main() {
+                    fragColor = uColor;
+                }
+            )";
+            if ( !rectShader.CreateFromSource( rectVert, rectFrag ) ) {
+                LOG_ERROR( "Failed to create rect shader" );
+                return false;
+            }
+        }
+
         if ( !damageVignetteShader.CreateFromFiles( "assets/shaders/damage_vignette.vert", "assets/shaders/damage_vignette.frag" ) ) {
             LOG_ERROR( "Failed to create damage vignette shader" );
             return false;
@@ -249,6 +273,7 @@ namespace atto {
         modelUnlitShader.Destroy();
         skinnedLitShader.Destroy();
         spriteShader.Destroy();
+        rectShader.Destroy();
         textShader.Destroy();
         skyboxShader.Destroy();
         particleShader.Destroy();
@@ -461,6 +486,31 @@ namespace atto {
         glBindVertexArray( 0 );
 
         spriteShader.Unbind();
+
+        glDisable( GL_BLEND );
+        glEnable( GL_DEPTH_TEST );
+    }
+
+    void Renderer::RenderRect( Vec2 centerNDC, i32 pixelWidth, i32 pixelHeight, i32 viewportW, i32 viewportH, const Vec4 & color ) {
+        Vec2 halfSize = Vec2(
+            (f32)pixelWidth / (f32)viewportW,
+            (f32)pixelHeight / (f32)viewportH
+        );
+
+        glDisable( GL_DEPTH_TEST );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        rectShader.Bind();
+        rectShader.SetVec2( "uCenter", centerNDC );
+        rectShader.SetVec2( "uHalfSize", halfSize );
+        rectShader.SetVec4( "uColor", color );
+
+        glBindVertexArray( spriteVAO );
+        glDrawArrays( GL_TRIANGLES, 0, 6 );
+        glBindVertexArray( 0 );
+
+        rectShader.Unbind();
 
         glDisable( GL_BLEND );
         glEnable( GL_DEPTH_TEST );
