@@ -104,6 +104,7 @@ namespace atto {
         }
 
         particleSystem.Render( renderer, playerPosition, playerCameraUp );
+        renderer.FlushTransparents( playerPosition );
     }
 
     std::unique_ptr<Entity> GameMap::MakeEntity( EntityType type ) {

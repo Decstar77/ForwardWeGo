@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <stb_image/std_image.h>
 
+#include <algorithm>
 #include <vector>
 #include <cmath>
 
@@ -849,8 +850,83 @@ namespace atto {
                                     f32 fillFraction, const Vec4 & fillColor,
                                     const Vec3 & cameraPos, const Vec3 & cameraUp,
                                     const Vec4 & bgColor ) {
-        fillFraction = Clamp( fillFraction, 0.0f, 1.0f );
+        QueuedWorldBar entry = {};
+        entry.worldPos = worldPos;
+        entry.width = width;
+        entry.height = height;
+        entry.fillFraction = Clamp( fillFraction, 0.0f, 1.0f );
+        entry.fillColor = fillColor;
+        entry.cameraPos = cameraPos;
+        entry.cameraUp = cameraUp;
+        entry.bgColor = bgColor;
 
+        TransparentEntry te = {};
+        te.type = TransparentType::WorldBar;
+        te.index = static_cast<i32>( queuedWorldBars.size() );
+        te.distSq = LengthSquared( cameraPos - worldPos );
+
+        queuedWorldBars.push_back( entry );
+        transparentEntries.push_back( te );
+    }
+
+    void Renderer::RenderBillboard( const Texture * texture, const Vec3 & worldPos, f32 size,
+                                     const Vec3 & cameraPos, const Vec3 & cameraUp,
+                                     f32 rotationRad, const Vec4 & color ) {
+        QueuedBillboard entry = {};
+        entry.texture = texture;
+        entry.worldPos = worldPos;
+        entry.size = size;
+        entry.cameraPos = cameraPos;
+        entry.cameraUp = cameraUp;
+        entry.rotationRad = rotationRad;
+        entry.color = color;
+
+        TransparentEntry te = {};
+        te.type = TransparentType::Billboard;
+        te.index = static_cast<i32>( queuedBillboards.size() );
+        te.distSq = LengthSquared( cameraPos - worldPos );
+
+        queuedBillboards.push_back( entry );
+        transparentEntries.push_back( te );
+    }
+
+    void Renderer::FlushTransparents( const Vec3 & cameraPos ) {
+        if ( transparentEntries.empty() ) {
+            return;
+        }
+
+        // Sort back-to-front (farthest first)
+        std::sort( transparentEntries.begin(), transparentEntries.end(),
+            []( const TransparentEntry & a, const TransparentEntry & b ) {
+                return a.distSq > b.distSq;
+            } );
+
+        for ( const TransparentEntry & te : transparentEntries ) {
+            switch ( te.type ) {
+                case TransparentType::Billboard: {
+                    const QueuedBillboard & bb = queuedBillboards[te.index];
+                    DrawBillboardImmediate( bb.texture, bb.worldPos, bb.size,
+                                            bb.cameraPos, bb.cameraUp,
+                                            bb.rotationRad, bb.color );
+                } break;
+                case TransparentType::WorldBar: {
+                    const QueuedWorldBar & wb = queuedWorldBars[te.index];
+                    DrawWorldBarImmediate( wb.worldPos, wb.width, wb.height,
+                                           wb.fillFraction, wb.fillColor,
+                                           wb.cameraPos, wb.cameraUp, wb.bgColor );
+                } break;
+            }
+        }
+
+        queuedBillboards.clear();
+        queuedWorldBars.clear();
+        transparentEntries.clear();
+    }
+
+    void Renderer::DrawWorldBarImmediate( const Vec3 & worldPos, f32 width, f32 height,
+                                           f32 fillFraction, const Vec4 & fillColor,
+                                           const Vec3 & cameraPos, const Vec3 & cameraUp,
+                                           const Vec4 & bgColor ) {
         Vec3 toCamera = Normalize( cameraPos - worldPos );
         Vec3 right = Normalize( Cross( cameraUp, toCamera ) );
         Vec3 up = Normalize( Cross( toCamera, right ) );
@@ -858,13 +934,11 @@ namespace atto {
         f32 halfW = width * 0.5f;
         f32 halfH = height * 0.5f;
 
-        // Background quad (full width)
         Vec3 bgBL = worldPos - right * halfW - up * halfH;
         Vec3 bgBR = worldPos + right * halfW - up * halfH;
         Vec3 bgTR = worldPos + right * halfW + up * halfH;
         Vec3 bgTL = worldPos - right * halfW + up * halfH;
 
-        // Fill quad (partial width, left-aligned)
         Vec3 fillLeft = worldPos - right * halfW;
         f32 fillW = width * fillFraction;
         Vec3 fBL = fillLeft - up * halfH;
@@ -873,14 +947,12 @@ namespace atto {
         Vec3 fTL = fillLeft + up * halfH;
 
         ParticleVert verts[12] = {
-            // Background
             { bgBL, Vec2( 0.0f, 0.0f ), bgColor },
             { bgBR, Vec2( 1.0f, 0.0f ), bgColor },
             { bgTR, Vec2( 1.0f, 1.0f ), bgColor },
             { bgBL, Vec2( 0.0f, 0.0f ), bgColor },
             { bgTR, Vec2( 1.0f, 1.0f ), bgColor },
             { bgTL, Vec2( 0.0f, 1.0f ), bgColor },
-            // Fill
             { fBL, Vec2( 0.0f, 0.0f ), fillColor },
             { fBR, Vec2( 1.0f, 0.0f ), fillColor },
             { fTR, Vec2( 1.0f, 1.0f ), fillColor },
@@ -909,16 +981,15 @@ namespace atto {
         glDisable( GL_BLEND );
     }
 
-    void Renderer::RenderBillboard( const Texture * texture, const Vec3 & worldPos, f32 size,
-                                     const Vec3 & cameraPos, const Vec3 & cameraUp,
-                                     f32 rotationRad, const Vec4 & color ) {
+    void Renderer::DrawBillboardImmediate( const Texture * texture, const Vec3 & worldPos, f32 size,
+                                            const Vec3 & cameraPos, const Vec3 & cameraUp,
+                                            f32 rotationRad, const Vec4 & color ) {
         f32 halfSize = size * 0.5f;
 
         Vec3 toCamera = Normalize( cameraPos - worldPos );
         Vec3 right = Normalize( Cross( cameraUp, toCamera ) ) * halfSize;
         Vec3 up = Normalize( Cross( toCamera, right ) ) * halfSize;
 
-        // Apply rotation around the facing axis
         if ( rotationRad != 0.0f ) {
             f32 cosA = cosf( rotationRad );
             f32 sinA = sinf( rotationRad );

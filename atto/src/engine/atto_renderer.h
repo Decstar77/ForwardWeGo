@@ -53,17 +53,20 @@ namespace atto {
         const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
         const Font * GetOrLoadFont( const char * path, f32 fontSize );
 
-        // Billboard rendering — single textured quad in world space, always facing cameraPos
-        // rotationRad rotates the quad around its facing axis
+        // Billboard rendering — queued for sorted transparent pass
         void RenderBillboard( const Texture * texture, const Vec3 & worldPos, f32 size,
                               const Vec3 & cameraPos, const Vec3 & cameraUp,
                               f32 rotationRad = 0.0f, const Vec4 & color = Vec4( 1.0f ) );
 
-        // World-space health bar — camera-facing colored bar with background
+        // World-space health bar — queued for sorted transparent pass
         void RenderWorldBar( const Vec3 & worldPos, f32 width, f32 height,
                              f32 fillFraction, const Vec4 & fillColor,
                              const Vec3 & cameraPos, const Vec3 & cameraUp,
                              const Vec4 & bgColor = Vec4( 0.0f, 0.0f, 0.0f, 0.6f ) );
+
+        // Flush all queued billboards and world bars, sorted back-to-front.
+        // Call after entity rendering, before particles.
+        void FlushTransparents( const Vec3 & cameraPos );
 
         // Particle rendering (called by ParticleSystem::Render)
         void RenderParticles( const ParticleSystem::Particle * particles, i32 count, const Vec3 & cameraPos, const Vec3 & cameraUp );
@@ -77,6 +80,50 @@ namespace atto {
 
     private:
         void FlushDebugLines();
+
+        // Immediate draw helpers (called by FlushTransparents)
+        void DrawBillboardImmediate( const Texture * texture, const Vec3 & worldPos, f32 size,
+                                     const Vec3 & cameraPos, const Vec3 & cameraUp,
+                                     f32 rotationRad, const Vec4 & color );
+        void DrawWorldBarImmediate( const Vec3 & worldPos, f32 width, f32 height,
+                                    f32 fillFraction, const Vec4 & fillColor,
+                                    const Vec3 & cameraPos, const Vec3 & cameraUp,
+                                    const Vec4 & bgColor );
+
+        // Transparent draw queues
+        struct QueuedBillboard {
+            const Texture * texture;
+            Vec3 worldPos;
+            f32  size;
+            Vec3 cameraPos;
+            Vec3 cameraUp;
+            f32  rotationRad;
+            Vec4 color;
+        };
+
+        struct QueuedWorldBar {
+            Vec3 worldPos;
+            f32  width;
+            f32  height;
+            f32  fillFraction;
+            Vec4 fillColor;
+            Vec3 cameraPos;
+            Vec3 cameraUp;
+            Vec4 bgColor;
+        };
+
+        enum class TransparentType : u8 { Billboard, WorldBar };
+
+        struct TransparentEntry {
+            TransparentType type;
+            i32             index;  // index into the corresponding vector
+            f32             distSq; // squared distance to camera (for sorting)
+        };
+
+        std::vector<QueuedBillboard> queuedBillboards;
+        std::vector<QueuedWorldBar>  queuedWorldBars;
+        std::vector<TransparentEntry> transparentEntries;
+
         Mat4 viewProjectionMatrix = Mat4( 1.0f );
         bool wireframe = false;
 
