@@ -108,8 +108,12 @@ namespace atto {
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    if ( result.entity->TakeDamage( 34 ) == TakeDamageResult::Success_HP ) {
+                    constexpr i32 KnifeAttack1Damage = 34;
+                    if ( result.entity->TakeDamage( KnifeAttack1Damage ) == TakeDamageResult::Success_HP ) {
                         didHitEntity = true;
+                        AlignedBox bounds = result.entity->GetBounds();
+                        Vec3 dmgPos = Vec3( result.entity->GetPosition().x, bounds.max.y + 0.2f, result.entity->GetPosition().z );
+                        map.SpawnDamageNumber( dmgPos, KnifeAttack1Damage );
                     }
                     sndHitMetal1.Play( 0.5f );
                 }
@@ -124,8 +128,12 @@ namespace atto {
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    if ( result.entity->TakeDamage( 55 ) == TakeDamageResult::Success_HP ) {
+                    constexpr i32 KnifeAttack3Damage = 55;
+                    if ( result.entity->TakeDamage( KnifeAttack3Damage ) == TakeDamageResult::Success_HP ) {
                         didHitEntity = true;
+                        AlignedBox bounds = result.entity->GetBounds();
+                        Vec3 dmgPos = Vec3( result.entity->GetPosition().x, bounds.max.y + 0.2f, result.entity->GetPosition().z );
+                        map.SpawnDamageNumber( dmgPos, KnifeAttack3Damage );
                     }
                     sndHitMetal2.Play( 0.5f );
                 }
@@ -310,9 +318,13 @@ namespace atto {
                 if ( map.Raycast( camera.GetPosition(), fireDir, result ) ) {
                     if ( result.entity && result.distance <= 50.0f ) {
                         LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                        if ( result.entity->TakeDamage( 25 ) == TakeDamageResult::Success_HP ) {
+                        constexpr i32 GlockDamage = 25;
+                        if ( result.entity->TakeDamage( GlockDamage ) == TakeDamageResult::Success_HP ) {
                             sndHit.Play();
                             didHitEntity = true;
+                            AlignedBox bounds = result.entity->GetBounds();
+                            Vec3 dmgPos = Vec3( result.entity->GetPosition().x, bounds.max.y + 0.2f, result.entity->GetPosition().z );
+                            map.SpawnDamageNumber( dmgPos, GlockDamage );
                         }
                     }
 

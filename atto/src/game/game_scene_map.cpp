@@ -134,6 +134,33 @@ namespace atto {
         ui.DrawText( hudFontSmall, ui.GetWidth() - 20, ui.GetHeight() - 20, weaponName,
                      Vec4( 0.7f, 0.7f, 0.7f, 1.0f ), UIAlignH::Right, UIAlignV::Bottom );
 
+        // Floating damage numbers
+        {
+            const Mat4 & vp = camera.GetViewProjectionMatrix();
+            const auto & damageNumbers = map.GetDamageNumbers();
+            for ( const auto & dn : damageNumbers ) {
+                Vec4 clip = vp * Vec4( dn.worldPos, 1.0f );
+                if ( clip.w <= 0.0f ) continue; // Behind camera
+
+                Vec3 ndc = Vec3( clip ) / clip.w;
+                f32 screenX = ( ndc.x + 1.0f ) * 0.5f * vpW;
+                f32 screenY = ( 1.0f - ndc.y ) * 0.5f * vpH;
+
+                f32 t = dn.timer / dn.lifetime;
+                f32 alpha = 1.0f - t * t; // Fade out
+                f32 scale = 1.0f + t * 0.5f; // Grow slightly
+
+                char dmgText[ 16 ];
+                snprintf( dmgText, sizeof( dmgText ), "%d", dn.damage );
+
+                // Scale offset: move text up as it scales
+                screenY -= scale * 10.0f;
+
+                Vec4 color( 1.0f, 0.9f, 0.2f, alpha );
+                ui.DrawText( hudFont, screenX, screenY, dmgText, color, UIAlignH::Center, UIAlignV::Center );
+            }
+        }
+
         ui.End( renderer );
 
         renderer.RenderDamageVignette( player.GetDamageVignetteAlpha() );

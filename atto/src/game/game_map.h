@@ -8,6 +8,13 @@
 
 namespace atto {
 
+    struct DamageNumber {
+        Vec3    worldPos;
+        i32     damage;
+        f32     timer;
+        f32     lifetime;
+    };
+
     struct MapRaycastResult {
         Entity *    entity;
         i32         brushIndex;
@@ -64,6 +71,10 @@ namespace atto {
         WaypointGraph & GetNavGraph() { return navGraph; }
         const WaypointGraph & GetNavGraph() const { return navGraph; }
 
+        // =========== Damage Numbers ===========
+        void SpawnDamageNumber( const Vec3 & worldPos, i32 damage );
+        const std::vector<DamageNumber> & GetDamageNumbers() const { return damageNumbers; }
+
         // =========== Particles ===========
         ParticleSystem & GetParticleSystem() { return particleSystem; }
         const ParticleSystem & GetParticleSystem() const { return particleSystem; }
@@ -95,6 +106,7 @@ namespace atto {
         WaypointGraph                           navGraph;
         ParticleSystem                          particleSystem;
 
+        std::vector<DamageNumber>               damageNumbers;
         std::vector<std::unique_ptr<Entity>>    entities;
         std::vector<Brush>                      brushes;
         std::vector<StaticModel>                brushModels;

@@ -57,6 +57,15 @@ namespace atto {
         }
     }
 
+    void GameMap::SpawnDamageNumber( const Vec3 & worldPos, i32 damage ) {
+        DamageNumber dn;
+        dn.worldPos = worldPos;
+        dn.damage   = damage;
+        dn.timer    = 0.0f;
+        dn.lifetime = 0.8f;
+        damageNumbers.push_back( dn );
+    }
+
     void GameMap::Update( f32 dt ) {
         for ( auto & entity : entities ) {
             if ( !entity->IsPendingDestroy() ) {
@@ -65,6 +74,15 @@ namespace atto {
         }
 
         FlushDestroyedEntities();
+
+        // Update damage numbers
+        for ( i32 i = static_cast<i32>( damageNumbers.size() ) - 1; i >= 0; i-- ) {
+            damageNumbers[i].timer += dt;
+            damageNumbers[i].worldPos.y += 1.5f * dt; // Float upward
+            if ( damageNumbers[i].timer >= damageNumbers[i].lifetime ) {
+                damageNumbers.erase( damageNumbers.begin() + i );
+            }
+        }
 
         particleSystem.Update( dt );
     }
