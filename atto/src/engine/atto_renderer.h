@@ -59,6 +59,12 @@ namespace atto {
                               const Vec3 & cameraPos, const Vec3 & cameraUp,
                               f32 rotationRad = 0.0f, const Vec4 & color = Vec4( 1.0f ) );
 
+        // World-space health bar — camera-facing colored bar with background
+        void RenderWorldBar( const Vec3 & worldPos, f32 width, f32 height,
+                             f32 fillFraction, const Vec4 & fillColor,
+                             const Vec3 & cameraPos, const Vec3 & cameraUp,
+                             const Vec4 & bgColor = Vec4( 0.0f, 0.0f, 0.0f, 0.6f ) );
+
         // Particle rendering (called by ParticleSystem::Render)
         void RenderParticles( const ParticleSystem::Particle * particles, i32 count, const Vec3 & cameraPos, const Vec3 & cameraUp );
 

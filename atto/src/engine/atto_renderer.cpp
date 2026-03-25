@@ -845,6 +845,70 @@ namespace atto {
         DebugLine( corners[3], corners[7], color );
     }
 
+    void Renderer::RenderWorldBar( const Vec3 & worldPos, f32 width, f32 height,
+                                    f32 fillFraction, const Vec4 & fillColor,
+                                    const Vec3 & cameraPos, const Vec3 & cameraUp,
+                                    const Vec4 & bgColor ) {
+        fillFraction = Clamp( fillFraction, 0.0f, 1.0f );
+
+        Vec3 toCamera = Normalize( cameraPos - worldPos );
+        Vec3 right = Normalize( Cross( cameraUp, toCamera ) );
+        Vec3 up = Normalize( Cross( toCamera, right ) );
+
+        f32 halfW = width * 0.5f;
+        f32 halfH = height * 0.5f;
+
+        // Background quad (full width)
+        Vec3 bgBL = worldPos - right * halfW - up * halfH;
+        Vec3 bgBR = worldPos + right * halfW - up * halfH;
+        Vec3 bgTR = worldPos + right * halfW + up * halfH;
+        Vec3 bgTL = worldPos - right * halfW + up * halfH;
+
+        // Fill quad (partial width, left-aligned)
+        Vec3 fillLeft = worldPos - right * halfW;
+        f32 fillW = width * fillFraction;
+        Vec3 fBL = fillLeft - up * halfH;
+        Vec3 fBR = fillLeft + right * fillW - up * halfH;
+        Vec3 fTR = fillLeft + right * fillW + up * halfH;
+        Vec3 fTL = fillLeft + up * halfH;
+
+        ParticleVert verts[12] = {
+            // Background
+            { bgBL, Vec2( 0.0f, 0.0f ), bgColor },
+            { bgBR, Vec2( 1.0f, 0.0f ), bgColor },
+            { bgTR, Vec2( 1.0f, 1.0f ), bgColor },
+            { bgBL, Vec2( 0.0f, 0.0f ), bgColor },
+            { bgTR, Vec2( 1.0f, 1.0f ), bgColor },
+            { bgTL, Vec2( 0.0f, 1.0f ), bgColor },
+            // Fill
+            { fBL, Vec2( 0.0f, 0.0f ), fillColor },
+            { fBR, Vec2( 1.0f, 0.0f ), fillColor },
+            { fTR, Vec2( 1.0f, 1.0f ), fillColor },
+            { fBL, Vec2( 0.0f, 0.0f ), fillColor },
+            { fTR, Vec2( 1.0f, 1.0f ), fillColor },
+            { fTL, Vec2( 0.0f, 1.0f ), fillColor },
+        };
+
+        glDepthMask( GL_FALSE );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        particleShader.Bind();
+        particleShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+        particleShader.SetInt( "uHasTexture", 0 );
+
+        glBindVertexArray( particleVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, particleVBO );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( verts ), verts, GL_DYNAMIC_DRAW );
+        glDrawArrays( GL_TRIANGLES, 0, 12 );
+
+        glBindVertexArray( 0 );
+        particleShader.Unbind();
+
+        glDepthMask( GL_TRUE );
+        glDisable( GL_BLEND );
+    }
+
     void Renderer::RenderBillboard( const Texture * texture, const Vec3 & worldPos, f32 size,
                                      const Vec3 & cameraPos, const Vec3 & cameraUp,
                                      f32 rotationRad, const Vec4 & color ) {

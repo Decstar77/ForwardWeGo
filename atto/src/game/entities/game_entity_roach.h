@@ -41,6 +41,7 @@ namespace atto {
 
         const StaticModel * model = nullptr;
         i32 health = 100;
+        static constexpr i32 MAX_HEALTH = 100;
         RoachState state = RoachState::Idle;
         bool hasTarget = false;
         Vec3 target = Vec3( 0.0f, 0.0f, 0.0f );
