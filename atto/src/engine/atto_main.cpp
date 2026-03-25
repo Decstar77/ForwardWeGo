@@ -29,15 +29,14 @@ int main() {
 /*
 TODO:
 Gameplay:
-- Enemy health bars
 - Health drops
-- Player reload bug
 - Weapon inacuracy
+- Player reload bug
 - Damage text
 - Multiple waves
 - Trigger areas
 - Level timer
-- Hands renderer as lit
+- Hands leak render models
 - Chest
 - Baneling
 - Level hazard ( ? Lava tile ? )

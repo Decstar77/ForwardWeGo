@@ -75,7 +75,7 @@ namespace atto {
             return false;
         }
 
-        if ( !skinnedLitShader.CreateFromFiles( "assets/shaders/skinned_lit.vert", "assets/shaders/model_lit.frag" ) ) {
+        if ( !skinnedLitShader.CreateFromFiles( "assets/shaders/skinned_unlit.vert", "assets/shaders/model_unlit.frag" ) ) {
             LOG_ERROR( "Failed to create skinned lit shader" );
             return false;
         }
