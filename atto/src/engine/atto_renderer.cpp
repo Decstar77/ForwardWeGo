@@ -890,6 +890,44 @@ namespace atto {
         transparentEntries.push_back( te );
     }
 
+    void Renderer::FlushParticleBatch() {
+        if ( particleBatchVerts.empty() ) {
+            return;
+        }
+
+        glDepthMask( GL_FALSE );
+        glEnable( GL_BLEND );
+        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+        particleShader.Bind();
+        particleShader.SetMat4( "uViewProjection", viewProjectionMatrix );
+
+        if ( particleBatchTexture != nullptr && particleBatchTexture->IsValid() ) {
+            particleShader.SetInt( "uHasTexture", 1 );
+            particleShader.SetInt( "uTexture", 0 );
+            particleBatchTexture->Bind( 0 );
+        }
+        else {
+            particleShader.SetInt( "uHasTexture", 0 );
+        }
+
+        glBindVertexArray( particleVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, particleVBO );
+        glBufferData( GL_ARRAY_BUFFER,
+                      (GLsizeiptr)( particleBatchVerts.size() * sizeof( ParticleVert ) ),
+                      particleBatchVerts.data(), GL_DYNAMIC_DRAW );
+        glDrawArrays( GL_TRIANGLES, 0, (GLsizei)particleBatchVerts.size() );
+
+        glBindVertexArray( 0 );
+        particleShader.Unbind();
+
+        glDepthMask( GL_TRUE );
+        glDisable( GL_BLEND );
+
+        particleBatchVerts.clear();
+        particleBatchTexture = nullptr;
+    }
+
     void Renderer::FlushTransparents( const Vec3 & cameraPos ) {
         if ( transparentEntries.empty() ) {
             return;
@@ -901,15 +939,35 @@ namespace atto {
                 return a.distSq > b.distSq;
             } );
 
+        particleBatchVerts.clear();
+        particleBatchTexture = nullptr;
+
         for ( const TransparentEntry & te : transparentEntries ) {
             switch ( te.type ) {
+                case TransparentType::Particle: {
+                    const QueuedParticle & qp = queuedParticles[te.index];
+
+                    // If texture changed, flush the current batch
+                    if ( !particleBatchVerts.empty() && qp.texture != particleBatchTexture ) {
+                        FlushParticleBatch();
+                    }
+
+                    particleBatchTexture = qp.texture;
+                    for ( i32 v = 0; v < 6; v++ ) {
+                        particleBatchVerts.push_back( qp.verts[v] );
+                    }
+                } break;
+
                 case TransparentType::Billboard: {
+                    FlushParticleBatch();
                     const QueuedBillboard & bb = queuedBillboards[te.index];
                     DrawBillboardImmediate( bb.texture, bb.worldPos, bb.size,
                                             bb.cameraPos, bb.cameraUp,
                                             bb.rotationRad, bb.color );
                 } break;
+
                 case TransparentType::WorldBar: {
+                    FlushParticleBatch();
                     const QueuedWorldBar & wb = queuedWorldBars[te.index];
                     DrawWorldBarImmediate( wb.worldPos, wb.width, wb.height,
                                            wb.fillFraction, wb.fillColor,
@@ -918,8 +976,12 @@ namespace atto {
             }
         }
 
+        // Flush any remaining particle batch
+        FlushParticleBatch();
+
         queuedBillboards.clear();
         queuedWorldBars.clear();
+        queuedParticles.clear();
         transparentEntries.clear();
     }
 
@@ -1046,10 +1108,6 @@ namespace atto {
             return;
         }
 
-        static std::vector<ParticleVert> verts;
-        verts.clear();
-        verts.reserve( count * 6 );
-
         for ( i32 i = 0; i < count; i++ ) {
             const auto & p = particles[i];
 
@@ -1064,14 +1122,12 @@ namespace atto {
 
             Vec3 right, up;
             if ( p.velocityAligned && LengthSquared( p.velocity ) > 0.0001f ) {
-                // Velocity-aligned billboard: stretch along velocity direction
                 Vec3 velDir = Normalize( p.velocity );
                 Vec3 toCamera = Normalize( cameraPos - p.position );
                 right = Normalize( Cross( velDir, toCamera ) ) * size;
                 up = velDir * size * p.stretchFactor;
             }
             else {
-                // Standard billboard: face camera
                 Vec3 toCamera = Normalize( cameraPos - p.position );
                 right = Normalize( Cross( cameraUp, toCamera ) ) * size;
                 up = Normalize( Cross( toCamera, right ) ) * size;
@@ -1082,57 +1138,23 @@ namespace atto {
             Vec3 tr = p.position + right + up;
             Vec3 tl = p.position - right + up;
 
-            verts.push_back( { bl, Vec2( 0.0f, 0.0f ), color } );
-            verts.push_back( { br, Vec2( 1.0f, 0.0f ), color } );
-            verts.push_back( { tr, Vec2( 1.0f, 1.0f ), color } );
-            verts.push_back( { bl, Vec2( 0.0f, 0.0f ), color } );
-            verts.push_back( { tr, Vec2( 1.0f, 1.0f ), color } );
-            verts.push_back( { tl, Vec2( 0.0f, 1.0f ), color } );
+            QueuedParticle qp = {};
+            qp.texture = p.texture;
+            qp.verts[0] = { bl, Vec2( 0.0f, 0.0f ), color };
+            qp.verts[1] = { br, Vec2( 1.0f, 0.0f ), color };
+            qp.verts[2] = { tr, Vec2( 1.0f, 1.0f ), color };
+            qp.verts[3] = { bl, Vec2( 0.0f, 0.0f ), color };
+            qp.verts[4] = { tr, Vec2( 1.0f, 1.0f ), color };
+            qp.verts[5] = { tl, Vec2( 0.0f, 1.0f ), color };
+
+            TransparentEntry te = {};
+            te.type = TransparentType::Particle;
+            te.index = static_cast<i32>( queuedParticles.size() );
+            te.distSq = LengthSquared( cameraPos - p.position );
+
+            queuedParticles.push_back( qp );
+            transparentEntries.push_back( te );
         }
-
-        glDepthMask( GL_FALSE );
-        glEnable( GL_BLEND );
-        glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-        particleShader.Bind();
-        particleShader.SetMat4( "uViewProjection", viewProjectionMatrix );
-
-        glBindVertexArray( particleVAO );
-        glBindBuffer( GL_ARRAY_BUFFER, particleVBO );
-        glBufferData( GL_ARRAY_BUFFER, (GLsizeiptr)( verts.size() * sizeof( ParticleVert ) ), verts.data(), GL_DYNAMIC_DRAW );
-
-        // Batch draw by texture
-        i32 batchStart = 0;
-        const Texture * currentTexture = particles[0].texture;
-
-        for ( i32 i = 0; i <= count; i++ ) {
-            const Texture * tex = (i < count) ? particles[i].texture : nullptr;
-
-            if ( i == count || tex != currentTexture ) {
-                // Set texture for the batch
-                if ( currentTexture != nullptr && currentTexture->IsValid() ) {
-                    particleShader.SetInt( "uHasTexture", 1 );
-                    particleShader.SetInt( "uTexture", 0 );
-                    currentTexture->Bind( 0 );
-                }
-                else {
-                    particleShader.SetInt( "uHasTexture", 0 );
-                }
-
-                i32 vertStart = batchStart * 6;
-                i32 vertCount = (i - batchStart) * 6;
-                glDrawArrays( GL_TRIANGLES, vertStart, vertCount );
-
-                batchStart = i;
-                currentTexture = tex;
-            }
-        }
-
-        glBindVertexArray( 0 );
-        particleShader.Unbind();
-
-        glDepthMask( GL_TRUE );
-        glDisable( GL_BLEND );
     }
 
     void Renderer::FlushDebugLines() {

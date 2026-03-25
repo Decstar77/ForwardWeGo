@@ -340,6 +340,7 @@
             "Type": "GameMode_KillAllEntities"
         },
         {
+            "CoinGiveAmount": 3,
             "Orientation": [
                 0.8694997429847717,
                 0.0,
@@ -360,7 +361,7 @@
             "Type": "CoinCrate"
         },
         {
-            "MapName": "assets/maps/level_003.map",
+            "MapName": "assets/maps/game/game-level-005.map",
             "Orientation": [
                 1.0,
                 0.0,
@@ -424,6 +425,7 @@
             "Type": "Roach"
         },
         {
+            "CoinGiveAmount": 3,
             "Orientation": [
                 1.0,
                 0.0,
@@ -488,6 +490,7 @@
             "model": "assets/models/sm-declan/SM_Bld_Section_Door_06_ArcRoom.obj"
         },
         {
+            "CoinGiveAmount": 3,
             "Orientation": [
                 1.0,
                 0.0,
@@ -508,6 +511,7 @@
             "Type": "CoinCrate"
         },
         {
+            "CoinGiveAmount": 3,
             "Orientation": [
                 0.7646967172622681,
                 0.0,

@@ -64,8 +64,7 @@ namespace atto {
                              const Vec3 & cameraPos, const Vec3 & cameraUp,
                              const Vec4 & bgColor = Vec4( 0.0f, 0.0f, 0.0f, 0.6f ) );
 
-        // Flush all queued billboards and world bars, sorted back-to-front.
-        // Call after entity rendering, before particles.
+        // Flush all queued transparents (billboards, world bars, particles), sorted back-to-front.
         void FlushTransparents( const Vec3 & cameraPos );
 
         // Particle rendering (called by ParticleSystem::Render)
@@ -90,6 +89,9 @@ namespace atto {
                                     const Vec3 & cameraPos, const Vec3 & cameraUp,
                                     const Vec4 & bgColor );
 
+        // Vertex type used by particle shader (billboards, bars, particles)
+        struct ParticleVert { Vec3 pos; Vec2 uv; Vec4 color; };
+
         // Transparent draw queues
         struct QueuedBillboard {
             const Texture * texture;
@@ -112,7 +114,12 @@ namespace atto {
             Vec4 bgColor;
         };
 
-        enum class TransparentType : u8 { Billboard, WorldBar };
+        struct QueuedParticle {
+            ParticleVert    verts[6];
+            const Texture * texture;
+        };
+
+        enum class TransparentType : u8 { Billboard, WorldBar, Particle };
 
         struct TransparentEntry {
             TransparentType type;
@@ -120,9 +127,16 @@ namespace atto {
             f32             distSq; // squared distance to camera (for sorting)
         };
 
-        std::vector<QueuedBillboard> queuedBillboards;
-        std::vector<QueuedWorldBar>  queuedWorldBars;
+        void FlushParticleBatch();
+
+        std::vector<QueuedBillboard>  queuedBillboards;
+        std::vector<QueuedWorldBar>   queuedWorldBars;
+        std::vector<QueuedParticle>   queuedParticles;
         std::vector<TransparentEntry> transparentEntries;
+
+        // Temp buffer for batching particles during flush
+        std::vector<ParticleVert>     particleBatchVerts;
+        const Texture *               particleBatchTexture = nullptr;
 
         Mat4 viewProjectionMatrix = Mat4( 1.0f );
         bool wireframe = false;
@@ -156,7 +170,6 @@ namespace atto {
         u32 skyboxTexture = 0;
 
         // Particle resources
-        struct ParticleVert { Vec3 pos; Vec2 uv; Vec4 color; };
         Shader particleShader;
         u32 particleVAO = 0;
         u32 particleVBO = 0;

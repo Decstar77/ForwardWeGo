@@ -469,6 +469,7 @@
             "Type": "Roach"
         },
         {
+            "CoinGiveAmount": 3,
             "Orientation": [
                 1.0,
                 0.0,
@@ -489,6 +490,7 @@
             "Type": "CoinCrate"
         },
         {
+            "CoinGiveAmount": 3,
             "Orientation": [
                 1.0,
                 0.0,
@@ -727,7 +729,7 @@
             "Type": "ExitDoor"
         },
         {
-            "MapName": "",
+            "MapName": "assets/maps/game/game-level-007.map",
             "Orientation": [
                 1.0,
                 0.0,

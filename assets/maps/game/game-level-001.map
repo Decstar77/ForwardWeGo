@@ -164,6 +164,7 @@
             "Type": "GameMode_KillAllEntities"
         },
         {
+            "CoinGiveAmount": 3,
             "Orientation": [
                 1.0,
                 0.0,
@@ -184,7 +185,7 @@
             "Type": "CoinCrate"
         },
         {
-            "MapName": "assets/maps/level_003.map",
+            "MapName": "assets/maps/game/game-level-002.map",
             "Orientation": [
                 1.0,
                 0.0,

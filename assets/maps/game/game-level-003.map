@@ -279,7 +279,7 @@
             "Type": "ExitDoor"
         },
         {
-            "MapName": "",
+            "MapName": "assets/maps/game/game-level-004.map",
             "Orientation": [
                 1.0,
                 0.0,

@@ -29,7 +29,6 @@ int main() {
 /*
 TODO:
 Gameplay:
-- Coins drops
 - Enemy health bars
 - Health drops
 - Player reload bug
