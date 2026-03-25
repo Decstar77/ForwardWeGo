@@ -11,7 +11,7 @@ namespace atto {
     public:
         void OnStart();
         void OnEquip();
-        void OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map );
+        void OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map );
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
         bool IsAttacking() const { return isAttacking; }
@@ -35,7 +35,7 @@ namespace atto {
     public:
         void OnStart();
         void OnEquip();
-        void OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map );
+        void OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map );
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
         bool IsAttacking() const { return isAttacking; }

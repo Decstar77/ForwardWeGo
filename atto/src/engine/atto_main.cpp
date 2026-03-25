@@ -29,15 +29,17 @@ int main() {
 /*
 TODO:
 Gameplay:
-- Health drops
-- Weapon inacuracy
-- Player reload bug
 - Damage text
+- Player reload bug
+
+- Trigger brushes
+- Collision brushes
+
 - Multiple waves
-- Trigger areas
+- Player dying
+
 - Level timer
 - Hands leak render models
-- Chest
 - Baneling
 - Level hazard ( ? Lava tile ? )
 - Impact sounds:
@@ -69,6 +71,7 @@ Gameplay:
 - Player cards:
     - Attack speed increased ( must )
     - Attack damage increased ( must )
+    - Attack inacuracy increased ( must )
     - Magazine capacity increased ( must )
     - Reload speed increased ( must )
     - Health increased ( must )

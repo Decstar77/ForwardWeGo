@@ -106,11 +106,11 @@ namespace atto {
         }
 
         if ( activeWeapon == WeaponSlot::Knife ) {
-            knife.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
+            knife.OnUpdate( deltaTime, isMoving, isSprinting, isCrouching, camera, map );
             if ( knife.ConsumeHit() ) { ShowHitMarker(); }
         }
         else {
-            glock.OnUpdate( deltaTime, isMoving, isSprinting, camera, map );
+            glock.OnUpdate( deltaTime, isMoving, isSprinting, isCrouching, camera, map );
             if ( glock.ConsumeHit() ) { ShowHitMarker(); }
         }
 

@@ -64,7 +64,7 @@ namespace atto {
         sndEquip.Play();
     }
 
-    void PlayerWeaponKnife::OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map ) {
+    void PlayerWeaponKnife::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map ) {
         ATTO_ASSERT( animator.GetCurrentAnimation(), "knife animator has no animation" );
 
         // Finish equip animation before allowing any input
@@ -255,7 +255,7 @@ namespace atto {
         sndEquip.Play();
     }
 
-    void PlayerWeaponGlock::OnUpdate( f32 dt, bool isMoving, bool isSprinting, FPSCamera & camera, GameMap & map ) {
+    void PlayerWeaponGlock::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map ) {
         ATTO_ASSERT( animator.GetCurrentAnimation(), "glock animator has no animation" );
 
         Input & input = Engine::Get().GetInput();
@@ -290,8 +290,24 @@ namespace atto {
                 ammo--;
                 sndShoot.Play( 0.2f );
 
+                // Accuracy spread based on player state
+                // Crouching = perfect accuracy, standing still = small spread, walking = larger spread
+                constexpr f32 SpreadStanding = 0.015f; // ~0.86 degrees
+                constexpr f32 SpreadWalking  = 0.04f;  // ~2.3 degrees
+                f32 spreadAmount = isCrouching ? 0.0f : ( isMoving ? SpreadWalking : SpreadStanding );
+
+                Vec3 fireDir = camera.GetForward();
+                if ( spreadAmount > 0.0f ) {
+                    RNG & rng = Engine::Get().GetRNG();
+                    Vec3 right = camera.GetRight();
+                    Vec3 up    = camera.GetUp();
+                    f32 offsetX = rng.Float( -spreadAmount, spreadAmount );
+                    f32 offsetY = rng.Float( -spreadAmount, spreadAmount );
+                    fireDir = glm::normalize( fireDir + right * offsetX + up * offsetY );
+                }
+
                 MapRaycastResult result;
-                if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
+                if ( map.Raycast( camera.GetPosition(), fireDir, result ) ) {
                     if ( result.entity && result.distance <= 50.0f ) {
                         LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
                         if ( result.entity->TakeDamage( 25 ) == TakeDamageResult::Success_HP ) {
@@ -301,7 +317,7 @@ namespace atto {
                     }
 
                     // Impact particles at hit point
-                    Vec3 hitPoint = camera.GetPosition() + camera.GetForward() * result.distance;
+                    Vec3 hitPoint = camera.GetPosition() + fireDir * result.distance;
                     Vec3 hitNormal = result.normal;
                     ParticleSystem & ps = map.GetParticleSystem();
 
