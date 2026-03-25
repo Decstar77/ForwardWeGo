@@ -153,8 +153,9 @@ namespace atto {
                 char dmgText[ 16 ];
                 snprintf( dmgText, sizeof( dmgText ), "%d", dn.damage );
 
-                // Scale offset: move text up as it scales
+                // Drift: move up slightly and sideways based on random direction
                 screenY -= scale * 10.0f;
+                screenX += dn.horizontalDir * t * 40.0f;
 
                 Vec4 color( 1.0f, 0.9f, 0.2f, alpha );
                 ui.DrawText( hudFont, screenX, screenY, dmgText, color, UIAlignH::Center, UIAlignV::Center );

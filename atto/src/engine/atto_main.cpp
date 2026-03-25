@@ -31,7 +31,8 @@ TODO:
 Gameplay:
 - Damage text
 - Player reload bug
-
+- Health sound
+- Explosion sound
 - Trigger brushes
 - Collision brushes
 

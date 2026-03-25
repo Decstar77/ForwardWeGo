@@ -13,6 +13,7 @@ namespace atto {
         i32     damage;
         f32     timer;
         f32     lifetime;
+        f32     horizontalDir; // -1 to 1, random drift direction
     };
 
     struct MapRaycastResult {

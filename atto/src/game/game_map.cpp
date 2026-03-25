@@ -59,10 +59,11 @@ namespace atto {
 
     void GameMap::SpawnDamageNumber( const Vec3 & worldPos, i32 damage ) {
         DamageNumber dn;
-        dn.worldPos = worldPos;
-        dn.damage   = damage;
-        dn.timer    = 0.0f;
-        dn.lifetime = 0.8f;
+        dn.worldPos      = worldPos;
+        dn.damage        = damage;
+        dn.timer         = 0.0f;
+        dn.lifetime      = 0.8f;
+        dn.horizontalDir = Engine::Get().GetRNG().Float( -1.0f, 1.0f );
         damageNumbers.push_back( dn );
     }
 
