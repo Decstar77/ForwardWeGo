@@ -16,6 +16,12 @@ namespace atto {
         orientation = Mat3( glm::rotate( glm::mat4( 1 ), glm::radians( -90.0f ), Vec3( 1.0f, 0.0f, 0.0f ) ) );
         particleSmokeTexture = renderer.GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Smoke_01.png" );
         particleSparkleTexture = renderer.GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Sparkle.png" );
+        sndExplode.Initialize();
+        sndExplode.LoadSounds( {
+            "bullet-hits/explosion_large_01.wav",
+            "bullet-hits/explosion_large_02.wav",
+            "bullet-hits/explosion_large_03.wav",
+        });
     }
 
     void Entity_Barrel::OnUpdate( f32 dt ) {
@@ -147,6 +153,8 @@ namespace atto {
                 map->DamagePlayer( dmg );
             }
         }
+
+        sndExplode.PlayAt( position );
 
         LOG_INFO( "Barrel exploded at (%.1f, %.1f, %.1f)", position.x, position.y, position.z );
     }

@@ -29,20 +29,17 @@ int main() {
 /*
 TODO:
 Gameplay:
-- Damage text
 - Player reload bug
-- Health sound
-- Explosion sound
 - Trigger brushes
 - Collision brushes
 
 - Multiple waves
 - Player dying
 
-- Level timer
+- Level timer ( unsure )
 - Hands leak render models
-- Baneling
-- Level hazard ( ? Lava tile ? )
+- Baneling ( Friday )
+- Level hazard ( unsure )
 - Impact sounds:
     - Flesh bullet hit sound
     - Metal bullet hit sound

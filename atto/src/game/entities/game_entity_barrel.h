@@ -23,6 +23,7 @@ namespace atto {
         const StaticModel * model = nullptr;
         const Texture * particleSmokeTexture = nullptr;
         const Texture * particleSparkleTexture = nullptr;
+        SoundCollection sndExplode;
         i32 health = 100;
 
         static constexpr f32 EXPLOSION_RADIUS = 8.0f;
