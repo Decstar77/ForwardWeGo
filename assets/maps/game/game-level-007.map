@@ -47,6 +47,22 @@
                 "texturePath": "assets/textures/prototype-textures/Dark/texture_08.png",
                 "textureScale": 1.0
             }
+        },
+        {
+            "item": {
+                "center": [
+                    -0.5,
+                    3.5,
+                    10.5
+                ],
+                "halfExtents": [
+                    3.5,
+                    4.5,
+                    0.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_08.png",
+                "textureScale": 1.0
+            }
         }
     ],
     "entities": [
@@ -125,7 +141,7 @@
             "Position": [
                 -0.5,
                 0.0,
-                2.0
+                -4.0
             ],
             "SpawnId": 13658746413184556782,
             "Type": "Roach"
@@ -231,7 +247,7 @@
             "Type": "Barrel"
         },
         {
-            "CoinValue": 1,
+            "HealAmount": 50,
             "Orientation": [
                 1.0,
                 0.0,
@@ -244,12 +260,12 @@
                 1.0
             ],
             "Position": [
-                -1.0,
                 0.0,
+                1.0,
                 0.0
             ],
-            "SpawnId": 11299170506637597262,
-            "Type": "Coin"
+            "SpawnId": 4088116201633024429,
+            "Type": "HealthPickup"
         }
     ],
     "navGraph": {

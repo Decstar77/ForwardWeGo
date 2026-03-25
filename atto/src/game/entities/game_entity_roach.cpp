@@ -388,6 +388,16 @@ namespace atto {
                 coin->OnSpawn();
             }
 
+            // 10% chance to spawn a health pickup
+            RNG & rng = Engine::Get().GetRNG();
+            if ( rng.Float() < 0.1f ) {
+                Entity * hp = map->CreateEntity( EntityType::HealthPickup );
+                if ( hp ) {
+                    hp->SetPosition( position + Vec3( 0.0f, 0.8f, 0.0f ) );
+                    hp->OnSpawn();
+                }
+            }
+
             map->DestroyEntity( this );
         }
 

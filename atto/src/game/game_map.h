@@ -47,6 +47,8 @@ namespace atto {
         Vec3                 GetPlayerCameraUp() const { return playerCameraUp; }
         void                 DamagePlayer( i32 damage ) { playerDamagePending += damage; }
         i32                  FlushPlayerDamage() { i32 d = playerDamagePending; playerDamagePending = 0; return d; }
+        void                 HealPlayer( i32 amount ) { playerHealPending += amount; }
+        i32                  FlushPlayerHeal() { i32 h = playerHealPending; playerHealPending = 0; return h; }
 
         // =========== Entities ===========
         std::unique_ptr<Entity> MakeEntity( EntityType type );
@@ -88,6 +90,7 @@ namespace atto {
         Vec3                                    playerPosition = Vec3( 0.0f );
         Vec3                                    playerCameraUp = Vec3( 0.0f );
         i32                                     playerDamagePending = 0;
+        i32                                     playerHealPending = 0;
 
         WaypointGraph                           navGraph;
         ParticleSystem                          particleSystem;

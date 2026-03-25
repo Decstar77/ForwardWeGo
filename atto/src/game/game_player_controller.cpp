@@ -158,6 +158,14 @@ namespace atto {
         LOG_INFO( "Player took %d damage, health: %d", damage, health );
     }
 
+    void PlayerController::Heal( i32 amount ) {
+        health += amount;
+        if ( health > 100 ) {
+            health = 100;
+        }
+        LOG_INFO( "Player healed %d, health: %d", amount, health );
+    }
+
     void PlayerController::OnRender( Renderer & renderer ) {
         renderer.ClearDepthBuffer();
         if ( activeWeapon == WeaponSlot::Knife ) {

@@ -36,6 +36,7 @@ namespace atto {
         const PlayerWeaponGlock &   GetGlock()        const { return glock; }
 
         void                TakeDamage( i32 damage );
+        void                Heal( i32 amount );
         i32                 GetHealth() const { return health; }
         bool                IsAlive() const { return health > 0; }
 

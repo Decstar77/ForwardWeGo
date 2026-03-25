@@ -58,6 +58,12 @@ namespace atto {
         if ( pendingDmg > 0 ) {
             player.TakeDamage( pendingDmg );
         }
+
+        // Apply any healing entities gave to the player
+        i32 pendingHeal = map.FlushPlayerHeal();
+        if ( pendingHeal > 0 ) {
+            player.Heal( pendingHeal );
+        }
     }
 
     void GameMapScene::OnRender( Renderer & renderer ) {
