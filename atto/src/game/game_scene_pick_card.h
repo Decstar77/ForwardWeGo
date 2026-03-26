@@ -1,61 +1,17 @@
 #pragma once
 
 #include "engine/atto_engine.h"
+#include "game_player_card.h"
 
 namespace atto {
 
-    enum class CardType {
-        MaxHealth,
-        MoveSpeed,
-        ReloadSpeed,
-        ExtraAmmo,
-        DamageBoost,
-
-        CardTypeCount
-    };
-
-    static constexpr i32 CardTypeCountValue = static_cast<i32>( CardType::CardTypeCount );
-
-    inline const char * CardTypeToName( CardType type ) {
-        switch ( type ) {
-            case CardType::MaxHealth:    return "Vitality";
-            case CardType::MoveSpeed:    return "Swift Boots";
-            case CardType::ReloadSpeed:  return "Quick Hands";
-            case CardType::ExtraAmmo:    return "Deep Pockets";
-            case CardType::DamageBoost:  return "Sharp Rounds";
-            default:                     return "???";
-        }
-    }
-
-    inline const char * CardTypeToDescription( CardType type ) {
-        switch ( type ) {
-            case CardType::MaxHealth:    return "+25 Max Health";
-            case CardType::MoveSpeed:    return "+15% Move Speed";
-            case CardType::ReloadSpeed:  return "+20% Reload Speed";
-            case CardType::ExtraAmmo:    return "+4 Magazine Size";
-            case CardType::DamageBoost:  return "+10% Damage";
-            default:                     return "";
-        }
-    }
-
-    inline Vec4 CardTypeToColor( CardType type ) {
-        switch ( type ) {
-            case CardType::MaxHealth:    return Vec4( 0.8f, 0.2f, 0.2f, 1.0f );
-            case CardType::MoveSpeed:    return Vec4( 0.2f, 0.7f, 0.3f, 1.0f );
-            case CardType::ReloadSpeed:  return Vec4( 0.9f, 0.7f, 0.1f, 1.0f );
-            case CardType::ExtraAmmo:    return Vec4( 0.2f, 0.4f, 0.8f, 1.0f );
-            case CardType::DamageBoost:  return Vec4( 0.8f, 0.4f, 0.1f, 1.0f );
-            default:                     return Vec4( 0.5f, 0.5f, 0.5f, 1.0f );
-        }
-    }
-
     struct PickCard {
-        CardType    type;
-        f32         x;          // current screen x position
-        f32         targetX;    // target x position (at rest)
-        f32         y;          // current screen y position
-        f32         targetY;    // target y position (at rest)
-        bool        hovered;
+        PlayerCardType  type;
+        f32             x;          // current screen x
+        f32             targetX;    // resting screen x
+        f32             y;          // current screen y
+        f32             targetY;    // resting screen y
+        bool            hovered;
     };
 
     enum class PickCardPhase {
@@ -81,14 +37,16 @@ namespace atto {
 
         std::string     nextMap;
         UICanvas        ui;
+        PlayerCard      playerCard;
         const Font *    titleFont    = nullptr;
-        const Font *    cardFont     = nullptr;
-        const Font *    descFont     = nullptr;
+        const Font *    cardNameFont = nullptr;
+        const Font *    cardDescFont = nullptr;
 
         static constexpr i32 NumCards   = 3;
         static constexpr i32 CardWidth  = 200;
-        static constexpr i32 CardHeight = 280;
-        static constexpr i32 CardGap    = 40;
+        static constexpr i32 CardHeight = 298; // Matches 1771:2633 ratio
+        static constexpr i32 CardGap    = 60;
+        static constexpr i32 GemSize    = 48;
 
         PickCard        cards[ NumCards ];
         PickCardPhase   phase        = PickCardPhase::SlideIn;

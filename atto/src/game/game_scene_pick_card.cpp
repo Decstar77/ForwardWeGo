@@ -3,13 +3,11 @@
 
 namespace atto {
 
-    // Ease-out cubic: fast start, smooth deceleration
     static f32 EaseOutCubic( f32 t ) {
         f32 inv = 1.0f - t;
         return 1.0f - inv * inv * inv;
     }
 
-    // Ease-in cubic: smooth start, fast end
     static f32 EaseInCubic( f32 t ) {
         return t * t * t;
     }
@@ -18,11 +16,12 @@ namespace atto {
         nextMap = args ? args : "";
 
         Renderer & renderer = Engine::Get().GetRenderer();
-        titleFont = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 36.0f );
-        cardFont  = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 22.0f );
-        descFont  = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 14.0f );
+        titleFont    = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 36.0f );
+        cardNameFont = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 16.0f );
+        cardDescFont = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 12.0f );
 
-        // Release the cursor so the player can click cards
+        playerCard.Initialize();
+
         Engine::Get().GetInput().SetCursorCaptured( false );
 
         RollCards();
@@ -36,18 +35,15 @@ namespace atto {
         RNG & rng = Engine::Get().GetRNG();
         Vec2i winSize = Engine::Get().GetWindowSize();
         f32 centerX = winSize.x * 0.5f;
-        f32 centerY = winSize.y * 0.5f;
+        f32 centerY = winSize.y * 0.5f + 20.0f; // Slight offset for title
 
-        // Total width of all cards + gaps
         f32 totalWidth = (f32)( NumCards * CardWidth + ( NumCards - 1 ) * CardGap );
         f32 startX = centerX - totalWidth * 0.5f + CardWidth * 0.5f;
 
         for ( i32 i = 0; i < NumCards; i++ ) {
-            // Random card type, allow duplicates
-            cards[i].type    = static_cast<CardType>( rng.Unsigned32( 0, CardTypeCountValue - 1 ) );
+            cards[i].type    = static_cast<PlayerCardType>( rng.Unsigned32( 0, PlayerCardTypeCountValue - 1 ) );
             cards[i].targetX = startX + i * ( CardWidth + CardGap );
             cards[i].targetY = centerY;
-            // Start off-screen below
             cards[i].x       = cards[i].targetX;
             cards[i].y       = (f32)winSize.y + CardHeight;
             cards[i].hovered = false;
@@ -69,7 +65,6 @@ namespace atto {
 
         if ( phase == PickCardPhase::SlideIn ) {
             for ( i32 i = 0; i < NumCards; i++ ) {
-                // Stagger each card slightly
                 f32 cardDelay = i * 0.1f;
                 f32 t = Saturate( ( phaseTimer - cardDelay ) / SlideInDuration );
                 f32 eased = EaseOutCubic( t );
@@ -77,7 +72,6 @@ namespace atto {
                 cards[i].y = Lerp( startY, cards[i].targetY, eased );
             }
 
-            // All cards done sliding in when the last card finishes
             f32 lastCardFinish = ( NumCards - 1 ) * 0.1f + SlideInDuration;
             if ( phaseTimer >= lastCardFinish ) {
                 phase = PickCardPhase::Choosing;
@@ -93,7 +87,6 @@ namespace atto {
             for ( i32 i = 0; i < NumCards; i++ ) {
                 cards[i].hovered = IsMouseOverCard( cards[i], mousePos );
 
-                // Hover lift effect
                 f32 hoverTarget = cards[i].hovered ? cards[i].targetY - 15.0f : cards[i].targetY;
                 cards[i].y += ( hoverTarget - cards[i].y ) * Min( 12.0f * deltaTime, 1.0f );
             }
@@ -115,19 +108,17 @@ namespace atto {
                 f32 eased = EaseInCubic( t );
 
                 if ( i == chosenCard ) {
-                    // Chosen card zooms up and off screen
                     f32 exitY = -CardHeight * 1.5f;
                     cards[i].y = Lerp( cards[i].targetY, exitY, eased );
                 }
                 else {
-                    // Other cards fall down off screen
                     f32 exitY = (f32)winSize.y + CardHeight * 1.5f;
                     cards[i].y = Lerp( cards[i].targetY, exitY, eased );
                 }
             }
 
             if ( phaseTimer >= SlideOutDuration + 0.15f ) {
-                // TODO: Apply card effect to global state here
+                // TODO: Apply card effect to global state
                 if ( !nextMap.empty() ) {
                     Engine::Get().TransitionToScene( "GameMapScene", nextMap.c_str() );
                 }
@@ -149,41 +140,31 @@ namespace atto {
         ui.Begin( vpW, vpH );
 
         // Title
-        ui.DrawText( titleFont, ui.GetCenterX(), 60.0f, "Choose a Card",
-                     Vec4( 1.0f, 1.0f, 1.0f, 1.0f ), UIAlignH::Center, UIAlignV::Top );
+        ui.DrawText( titleFont, ui.GetCenterX(), 50.0f, "Choose a Card",
+                     Vec4( 1.0f ), UIAlignH::Center, UIAlignV::Top );
 
-        // Draw cards
         for ( i32 i = 0; i < NumCards; i++ ) {
             const PickCard & card = cards[i];
-            Vec4 baseColor = CardTypeToColor( card.type );
 
-            // Hover brightening
-            Vec4 cardColor = baseColor;
-            if ( card.hovered && phase == PickCardPhase::Choosing ) {
-                cardColor = Vec4(
-                    Min( baseColor.x + 0.15f, 1.0f ),
-                    Min( baseColor.y + 0.15f, 1.0f ),
-                    Min( baseColor.z + 0.15f, 1.0f ),
-                    1.0f
-                );
-            }
+            // Card front frame on top
+            ui.DrawSprite( playerCard.GetFront(), card.x, card.y, CardWidth, CardHeight );
 
-            // Card background
-            ui.DrawRect( card.x, card.y, CardWidth, CardHeight, cardColor );
+            // Full gem centered in the upper arch area of the front texture
+            // The arch window is roughly the top 55% of the card
+            //f32 gemY = card.y - CardHeight * 0.15f;
+            //ui.DrawSprite( playerCard.GetFullGem(), card.x, gemY, GemSize, GemSize );
 
-            // Inner darker panel for text area
-            Vec4 innerColor = Vec4( cardColor.x * 0.3f, cardColor.y * 0.3f, cardColor.z * 0.3f, 0.8f );
-            ui.DrawRect( card.x, card.y + 40.0f, CardWidth - 20, CardHeight - 100, innerColor );
+            // Card name on the banner (roughly 55% down from card top)
+            f32 bannerY = card.y + CardHeight * 0.2f;
+            ui.DrawText( cardNameFont, card.x, bannerY,
+                         PlayerCardTypeToName( card.type ),
+                         Vec4( 0.0f, 0.0f, 0.0f, 1.0f ), UIAlignH::Center, UIAlignV::Center );
 
-            // Card name
-            ui.DrawText( cardFont, card.x, card.y - CardHeight * 0.5f + 30.0f,
-                         CardTypeToName( card.type ),
-                         Vec4( 1.0f ), UIAlignH::Center, UIAlignV::Center );
-
-            // Card description
-            ui.DrawText( descFont, card.x, card.y + 40.0f,
-                         CardTypeToDescription( card.type ),
-                         Vec4( 0.9f, 0.9f, 0.9f, 1.0f ), UIAlignH::Center, UIAlignV::Center );
+            // Card description in the lower panel (roughly 75% down)
+            f32 descY = card.y + CardHeight * 0.32f;
+            ui.DrawText( cardDescFont, card.x, descY,
+                         PlayerCardTypeToDescription( card.type ),
+                         Vec4( 0.15f, 0.15f, 0.15f, 1.0f ), UIAlignH::Center, UIAlignV::Center );
         }
 
         ui.End( renderer );
@@ -193,9 +174,8 @@ namespace atto {
     }
 
     void GameScenePickCard::OnResize( i32 width, i32 height ) {
-        // Recalculate card target positions on resize
         f32 centerX = width * 0.5f;
-        f32 centerY = height * 0.5f;
+        f32 centerY = height * 0.5f + 20.0f;
         f32 totalWidth = (f32)( NumCards * CardWidth + ( NumCards - 1 ) * CardGap );
         f32 startX = centerX - totalWidth * 0.5f + CardWidth * 0.5f;
 
