@@ -42,11 +42,13 @@ namespace atto {
         const Font *    cardNameFont = nullptr;
         const Font *    cardDescFont = nullptr;
 
-        static constexpr i32 NumCards   = 3;
-        static constexpr i32 CardWidth  = 200;
-        static constexpr i32 CardHeight = 298; // Matches 1771:2633 ratio
-        static constexpr i32 CardGap    = 60;
-        static constexpr i32 GemSize    = 48;
+        f32 GetUIScale() const;
+
+        static constexpr i32 NumCards       = 3;
+        static constexpr i32 BaseCardWidth  = 200;
+        static constexpr i32 BaseCardHeight = 298; // Matches 1771:2633 ratio
+        static constexpr i32 BaseCardGap    = 60;
+        static constexpr i32 BaseGemSize    = 48;
 
         PickCard        cards[ NumCards ];
         PickCardPhase   phase        = PickCardPhase::SlideIn;

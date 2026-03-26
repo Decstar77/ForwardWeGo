@@ -12,6 +12,11 @@ namespace atto {
         return t * t * t;
     }
 
+    f32 GameScenePickCard::GetUIScale() const {
+        Vec2i winSize = Engine::Get().GetWindowSize();
+        return (f32)winSize.y / 720.0f;
+    }
+
     void GameScenePickCard::OnStart( const char * args ) {
         nextMap = args ? args : "";
 
@@ -34,25 +39,30 @@ namespace atto {
     void GameScenePickCard::RollCards() {
         RNG & rng = Engine::Get().GetRNG();
         Vec2i winSize = Engine::Get().GetWindowSize();
+        f32 scale   = GetUIScale();
+        f32 cardW   = BaseCardWidth * scale;
+        f32 cardH   = BaseCardHeight * scale;
+        f32 cardGap = BaseCardGap * scale;
         f32 centerX = winSize.x * 0.5f;
-        f32 centerY = winSize.y * 0.5f + 20.0f; // Slight offset for title
+        f32 centerY = winSize.y * 0.5f + 20.0f * scale;
 
-        f32 totalWidth = (f32)( NumCards * CardWidth + ( NumCards - 1 ) * CardGap );
-        f32 startX = centerX - totalWidth * 0.5f + CardWidth * 0.5f;
+        f32 totalWidth = NumCards * cardW + ( NumCards - 1 ) * cardGap;
+        f32 startX = centerX - totalWidth * 0.5f + cardW * 0.5f;
 
         for ( i32 i = 0; i < NumCards; i++ ) {
             cards[i].type    = static_cast<PlayerCardType>( rng.Unsigned32( 0, PlayerCardTypeCountValue - 1 ) );
-            cards[i].targetX = startX + i * ( CardWidth + CardGap );
+            cards[i].targetX = startX + i * ( cardW + cardGap );
             cards[i].targetY = centerY;
             cards[i].x       = cards[i].targetX;
-            cards[i].y       = (f32)winSize.y + CardHeight;
+            cards[i].y       = (f32)winSize.y + cardH;
             cards[i].hovered = false;
         }
     }
 
     bool GameScenePickCard::IsMouseOverCard( const PickCard & card, Vec2 mousePos ) const {
-        f32 halfW = CardWidth * 0.5f;
-        f32 halfH = CardHeight * 0.5f;
+        f32 scale = GetUIScale();
+        f32 halfW = BaseCardWidth * scale * 0.5f;
+        f32 halfH = BaseCardHeight * scale * 0.5f;
         return mousePos.x >= card.x - halfW && mousePos.x <= card.x + halfW
             && mousePos.y >= card.y - halfH && mousePos.y <= card.y + halfH;
     }
@@ -60,6 +70,8 @@ namespace atto {
     void GameScenePickCard::OnUpdate( f32 deltaTime ) {
         Input & input = Engine::Get().GetInput();
         Vec2i winSize = Engine::Get().GetWindowSize();
+        f32 scale = GetUIScale();
+        f32 cardH = BaseCardHeight * scale;
 
         phaseTimer += deltaTime;
 
@@ -68,7 +80,7 @@ namespace atto {
                 f32 cardDelay = i * 0.1f;
                 f32 t = Saturate( ( phaseTimer - cardDelay ) / SlideInDuration );
                 f32 eased = EaseOutCubic( t );
-                f32 startY = (f32)winSize.y + CardHeight;
+                f32 startY = (f32)winSize.y + cardH;
                 cards[i].y = Lerp( startY, cards[i].targetY, eased );
             }
 
@@ -87,7 +99,8 @@ namespace atto {
             for ( i32 i = 0; i < NumCards; i++ ) {
                 cards[i].hovered = IsMouseOverCard( cards[i], mousePos );
 
-                f32 hoverTarget = cards[i].hovered ? cards[i].targetY - 15.0f : cards[i].targetY;
+                f32 hoverLift = 15.0f * scale;
+                f32 hoverTarget = cards[i].hovered ? cards[i].targetY - hoverLift : cards[i].targetY;
                 cards[i].y += ( hoverTarget - cards[i].y ) * Min( 12.0f * deltaTime, 1.0f );
             }
 
@@ -108,11 +121,11 @@ namespace atto {
                 f32 eased = EaseInCubic( t );
 
                 if ( i == chosenCard ) {
-                    f32 exitY = -CardHeight * 1.5f;
+                    f32 exitY = -cardH * 1.5f;
                     cards[i].y = Lerp( cards[i].targetY, exitY, eased );
                 }
                 else {
-                    f32 exitY = (f32)winSize.y + CardHeight * 1.5f;
+                    f32 exitY = (f32)winSize.y + cardH * 1.5f;
                     cards[i].y = Lerp( cards[i].targetY, exitY, eased );
                 }
             }
@@ -133,6 +146,10 @@ namespace atto {
         Vec2i winSize = Engine::Get().GetWindowSize();
         i32 vpW = winSize.x;
         i32 vpH = winSize.y;
+        f32 scale = GetUIScale();
+
+        i32 cardW = (i32)( BaseCardWidth * scale );
+        i32 cardH = (i32)( BaseCardHeight * scale );
 
         renderer.SetClearColor( Color( 0.08f, 0.08f, 0.12f, 1.0f ) );
         renderer.SetViewport( 0, 0, vpW, vpH );
@@ -140,28 +157,23 @@ namespace atto {
         ui.Begin( vpW, vpH );
 
         // Title
-        ui.DrawText( titleFont, ui.GetCenterX(), 50.0f, "Choose a Card",
+        ui.DrawText( titleFont, ui.GetCenterX(), 50.0f * scale, "Choose a Card",
                      Vec4( 1.0f ), UIAlignH::Center, UIAlignV::Top );
 
         for ( i32 i = 0; i < NumCards; i++ ) {
             const PickCard & card = cards[i];
 
-            // Card front frame on top
-            ui.DrawSprite( playerCard.GetFront(), card.x, card.y, CardWidth, CardHeight );
+            // Card front frame
+            ui.DrawSprite( playerCard.GetFront(), card.x, card.y, cardW, cardH );
 
-            // Full gem centered in the upper arch area of the front texture
-            // The arch window is roughly the top 55% of the card
-            //f32 gemY = card.y - CardHeight * 0.15f;
-            //ui.DrawSprite( playerCard.GetFullGem(), card.x, gemY, GemSize, GemSize );
-
-            // Card name on the banner (roughly 55% down from card top)
-            f32 bannerY = card.y + CardHeight * 0.2f;
+            // Card name on the banner
+            f32 bannerY = card.y + cardH * 0.2f;
             ui.DrawText( cardNameFont, card.x, bannerY,
                          PlayerCardTypeToName( card.type ),
                          Vec4( 0.0f, 0.0f, 0.0f, 1.0f ), UIAlignH::Center, UIAlignV::Center );
 
-            // Card description in the lower panel (roughly 75% down)
-            f32 descY = card.y + CardHeight * 0.32f;
+            // Card description in the lower panel
+            f32 descY = card.y + cardH * 0.32f;
             ui.DrawText( cardDescFont, card.x, descY,
                          PlayerCardTypeToDescription( card.type ),
                          Vec4( 0.15f, 0.15f, 0.15f, 1.0f ), UIAlignH::Center, UIAlignV::Center );
@@ -174,13 +186,16 @@ namespace atto {
     }
 
     void GameScenePickCard::OnResize( i32 width, i32 height ) {
+        f32 scale   = GetUIScale();
+        f32 cardW   = BaseCardWidth * scale;
+        f32 cardGap = BaseCardGap * scale;
         f32 centerX = width * 0.5f;
-        f32 centerY = height * 0.5f + 20.0f;
-        f32 totalWidth = (f32)( NumCards * CardWidth + ( NumCards - 1 ) * CardGap );
-        f32 startX = centerX - totalWidth * 0.5f + CardWidth * 0.5f;
+        f32 centerY = height * 0.5f + 20.0f * scale;
+        f32 totalWidth = NumCards * cardW + ( NumCards - 1 ) * cardGap;
+        f32 startX = centerX - totalWidth * 0.5f + cardW * 0.5f;
 
         for ( i32 i = 0; i < NumCards; i++ ) {
-            cards[i].targetX = startX + i * ( CardWidth + CardGap );
+            cards[i].targetX = startX + i * ( cardW + cardGap );
             cards[i].targetY = centerY;
             cards[i].x = cards[i].targetX;
         }
