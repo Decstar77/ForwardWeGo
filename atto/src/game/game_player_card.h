@@ -48,15 +48,5 @@ namespace  atto {
 
     class PlayerCard {
     public:
-        void Initialize();
-
-        const Texture * GetFront()    const { return front; }
-        const Texture * GetEmptyGem() const { return emptyGem; }
-        const Texture * GetFullGem()  const { return fullGem; }
-
-    private:
-        const Texture * front = nullptr;
-        const Texture * emptyGem = nullptr;
-        const Texture * fullGem = nullptr;
     };
 }

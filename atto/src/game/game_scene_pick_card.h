@@ -32,8 +32,9 @@ namespace atto {
         void OnResize( i32 width, i32 height ) override;
 
     private:
-        void RollCards();
-        bool IsMouseOverCard( const PickCard & card, Vec2 mousePos ) const;
+        void            RollCards();
+        bool            IsMouseOverCard( const PickCard & card, Vec2 mousePos ) const;
+        const Texture * PlayerCardTypeToFeatureTexture( PlayerCardType type ) const;
 
         std::string     nextMap;
         UICanvas        ui;
@@ -41,6 +42,13 @@ namespace atto {
         const Font *    titleFont    = nullptr;
         const Font *    cardNameFont = nullptr;
         const Font *    cardDescFont = nullptr;
+        const Texture * backGroundTexture = nullptr;
+        const Texture * cardFrontTexture = nullptr;
+        const Texture * cardAttackSpeedIncreaseTexture = nullptr;
+        const Texture * cardAttackDamageIncreaseTexture = nullptr;
+        const Texture * cardAttackAccuracyIncreaseTexture = nullptr;
+        const Texture * cardEmptyGem = nullptr;
+        const Texture * cardFullGem = nullptr;
 
         f32 GetUIScale() const;
 
@@ -49,6 +57,8 @@ namespace atto {
         static constexpr i32 BaseCardHeight = 298; // Matches 1771:2633 ratio
         static constexpr i32 BaseCardGap    = 60;
         static constexpr i32 BaseGemSize    = 48;
+        static constexpr i32 CardFeatureWidth = 256;
+        static constexpr i32 CardFeatureHeight = 256;
 
         PickCard        cards[ NumCards ];
         PickCardPhase   phase        = PickCardPhase::SlideIn;

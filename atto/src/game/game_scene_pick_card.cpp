@@ -12,6 +12,7 @@ namespace atto {
         return t * t * t;
     }
 
+
     f32 GameScenePickCard::GetUIScale() const {
         Vec2i winSize = Engine::Get().GetWindowSize();
         return (f32)winSize.y / 720.0f;
@@ -24,8 +25,13 @@ namespace atto {
         titleFont    = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 36.0f );
         cardNameFont = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 16.0f );
         cardDescFont = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 12.0f );
-
-        playerCard.Initialize();
+        backGroundTexture = renderer.GetOrLoadTexture( "assets/textures/ai-gen/background001.png", true );
+        cardFrontTexture = renderer.GetOrLoadTexture( "assets/textures/cards/front.png", true );
+        cardAttackSpeedIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-speed-increase.png", true );
+        cardAttackDamageIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-damage-increase.png", true );
+        cardAttackAccuracyIncreaseTexture =  renderer.GetOrLoadTexture( "assets/textures/cards/attack-accuracy-increase.png", true );
+        cardEmptyGem =  renderer.GetOrLoadTexture( "assets/textures/cards/empty-gem.png", true );
+        cardFullGem =  renderer.GetOrLoadTexture( "assets/textures/cards/full-gem.png", true );
 
         Engine::Get().GetInput().SetCursorCaptured( false );
 
@@ -65,6 +71,15 @@ namespace atto {
         f32 halfH = BaseCardHeight * scale * 0.5f;
         return mousePos.x >= card.x - halfW && mousePos.x <= card.x + halfW
             && mousePos.y >= card.y - halfH && mousePos.y <= card.y + halfH;
+    }
+
+    const Texture * GameScenePickCard::PlayerCardTypeToFeatureTexture( PlayerCardType type ) const {
+        switch ( type ) {
+            case PlayerCardType::AttackSpeedIncrease: return cardAttackSpeedIncreaseTexture;
+            case PlayerCardType::AttackDamageIncrease: return cardAttackDamageIncreaseTexture;
+            case PlayerCardType::AttackAccuracyIncrease: return cardAttackAccuracyIncreaseTexture;
+            default: return cardAttackSpeedIncreaseTexture; // Temp
+        }
     }
 
     void GameScenePickCard::OnUpdate( f32 deltaTime ) {
@@ -156,6 +171,8 @@ namespace atto {
 
         ui.Begin( vpW, vpH );
 
+        ui.DrawSprite( backGroundTexture, 0, 0, vpW, vpH );
+
         // Title
         ui.DrawText( titleFont, ui.GetCenterX(), 50.0f * scale, "Choose a Card",
                      Vec4( 1.0f ), UIAlignH::Center, UIAlignV::Top );
@@ -163,8 +180,16 @@ namespace atto {
         for ( i32 i = 0; i < NumCards; i++ ) {
             const PickCard & card = cards[i];
 
+            // Feature first
+            const i32 featureYOffset = static_cast<i32>( card.y - 55 * scale );
+            const i32 featureSize = static_cast<i32>( 140 * scale );
+            const Texture * featureTexture = PlayerCardTypeToFeatureTexture( card.type );
+            // Feature image
+            ui.DrawSprite( featureTexture, card.x , featureYOffset, featureSize + 10 * scale, featureSize );
+
             // Card front frame
-            ui.DrawSprite( playerCard.GetFront(), card.x, card.y, cardW, cardH );
+            ui.DrawSprite( cardFrontTexture, card.x, card.y, cardW, cardH );
+
 
             // Card name on the banner
             f32 bannerY = card.y + cardH * 0.2f;
