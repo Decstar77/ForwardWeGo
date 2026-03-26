@@ -47,6 +47,11 @@ namespace atto {
         const Texture * cardAttackSpeedIncreaseTexture = nullptr;
         const Texture * cardAttackDamageIncreaseTexture = nullptr;
         const Texture * cardAttackAccuracyIncreaseTexture = nullptr;
+        const Texture * cardReloadSpeedIncreaseTexture = nullptr;
+        const Texture * cardAmmoCapacityIncreaseTexture = nullptr;
+        const Texture * cardMaxHealthIncreaseTexture = nullptr;
+        const Texture * cardRestoreHealthTexture = nullptr;
+        const Texture * cardExtraCoinsTexture = nullptr;
         const Texture * cardEmptyGem = nullptr;
         const Texture * cardFullGem = nullptr;
 

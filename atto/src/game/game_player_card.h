@@ -23,10 +23,10 @@ namespace  atto {
             case PlayerCardType::AttackSpeedIncrease:    return "Rapid Fire";
             case PlayerCardType::AttackDamageIncrease:   return "Sharp Rounds";
             case PlayerCardType::AttackAccuracyIncrease: return "Steady Aim";
-            case PlayerCardType::AmmoCapacityIncrease:   return "Deep Pockets";
-            case PlayerCardType::ReloadSpeedIncrease:    return "Quick Hands";
+            case PlayerCardType::AmmoCapacityIncrease:   return "Perpetual fire";
+            case PlayerCardType::ReloadSpeedIncrease:    return "Robotic Hands";
             case PlayerCardType::MaxHealthIncrease:      return "Vitality";
-            case PlayerCardType::RestoreHealth:          return "Medkit";
+            case PlayerCardType::RestoreHealth:          return "Bandage Up";
             case PlayerCardType::ExtraCoins_10:          return "Jackpot";
             default:                                     return "???";
         }
@@ -37,10 +37,10 @@ namespace  atto {
             case PlayerCardType::AttackSpeedIncrease:    return "+15% Attack Speed";
             case PlayerCardType::AttackDamageIncrease:   return "+10% Damage";
             case PlayerCardType::AttackAccuracyIncrease: return "+20% Accuracy";
-            case PlayerCardType::AmmoCapacityIncrease:   return "+4 Magazine Size";
+            case PlayerCardType::AmmoCapacityIncrease:   return "+4 Ammo Capacity";
             case PlayerCardType::ReloadSpeedIncrease:    return "+20% Reload Speed";
             case PlayerCardType::MaxHealthIncrease:      return "+25 Max Health";
-            case PlayerCardType::RestoreHealth:          return "Restore Full Health";
+            case PlayerCardType::RestoreHealth:          return "Restore Health";
             case PlayerCardType::ExtraCoins_10:          return "+10 Coins";
             default:                                     return "";
         }

@@ -29,7 +29,12 @@ namespace atto {
         cardFrontTexture = renderer.GetOrLoadTexture( "assets/textures/cards/front.png", true );
         cardAttackSpeedIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-speed-increase.png", true );
         cardAttackDamageIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-damage-increase.png", true );
-        cardAttackAccuracyIncreaseTexture =  renderer.GetOrLoadTexture( "assets/textures/cards/attack-accuracy-increase.png", true );
+        cardAttackAccuracyIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-accuracy-increase.png", true );
+        cardReloadSpeedIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/reload-speed-increase.png", true );
+        cardAmmoCapacityIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/ammo-capacity-increase.png", true );
+        cardMaxHealthIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/max-health-increase.png", true );
+        cardRestoreHealthTexture = renderer.GetOrLoadTexture( "assets/textures/cards/restore-health.png", true );
+        cardExtraCoinsTexture = renderer.GetOrLoadTexture( "assets/textures/coin.png", true );
         cardEmptyGem =  renderer.GetOrLoadTexture( "assets/textures/cards/empty-gem.png", true );
         cardFullGem =  renderer.GetOrLoadTexture( "assets/textures/cards/full-gem.png", true );
 
@@ -78,7 +83,12 @@ namespace atto {
             case PlayerCardType::AttackSpeedIncrease: return cardAttackSpeedIncreaseTexture;
             case PlayerCardType::AttackDamageIncrease: return cardAttackDamageIncreaseTexture;
             case PlayerCardType::AttackAccuracyIncrease: return cardAttackAccuracyIncreaseTexture;
-            default: return cardAttackSpeedIncreaseTexture; // Temp
+            case PlayerCardType::AmmoCapacityIncrease:  return cardAmmoCapacityIncreaseTexture;
+            case PlayerCardType::ReloadSpeedIncrease: return cardReloadSpeedIncreaseTexture;
+            case PlayerCardType::MaxHealthIncrease: return cardMaxHealthIncreaseTexture;
+            case PlayerCardType::RestoreHealth: return cardRestoreHealthTexture;
+            case PlayerCardType::ExtraCoins_10: return cardExtraCoinsTexture;
+            default: return nullptr;
         }
     }
 
@@ -171,7 +181,7 @@ namespace atto {
 
         ui.Begin( vpW, vpH );
 
-        ui.DrawSprite( backGroundTexture, 0, 0, vpW, vpH );
+        ui.DrawSprite( backGroundTexture, ui.GetCenterX(), ui.GetCenterY(), vpW, vpH );
 
         // Title
         ui.DrawText( titleFont, ui.GetCenterX(), 50.0f * scale, "Choose a Card",
