@@ -74,8 +74,10 @@ namespace atto {
         f32 scale = GetUIScale();
         f32 halfW = BaseCardWidth * scale * 0.5f;
         f32 halfH = BaseCardHeight * scale * 0.5f;
-        return mousePos.x >= card.x - halfW && mousePos.x <= card.x + halfW
-            && mousePos.y >= card.y - halfH && mousePos.y <= card.y + halfH;
+        // Test against the resting target position, not the animated position,
+        // to prevent oscillation when the hover lift moves the card edge past the cursor.
+        return mousePos.x >= card.targetX - halfW && mousePos.x <= card.targetX + halfW
+            && mousePos.y >= card.targetY - halfH && mousePos.y <= card.targetY + halfH;
     }
 
     const Texture * GameScenePickCard::PlayerCardTypeToFeatureTexture( PlayerCardType type ) const {
