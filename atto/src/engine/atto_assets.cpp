@@ -357,6 +357,20 @@ namespace atto {
         return sub;
     }
 
+    void JsonSerializer::OpArrayPrimitive( const char * key, std::vector<u8> & value ) {
+        if ( isSaving ) {
+            jsonContainer->json[key] = value;
+        }
+        else {
+            if ( jsonContainer->json.contains( key ) && jsonContainer->json[key].is_array() ) {
+                value.clear();
+                for ( const auto & elem : jsonContainer->json[key] ) {
+                    value.push_back( elem.get<u8>() );
+                }
+            }
+        }
+    }
+
     void JsonSerializer::OpArrayPrimitive( const char * key, std::vector<i32> & value ) {
         if ( isSaving ) {
             jsonContainer->json[key] = value;
@@ -546,6 +560,13 @@ namespace atto {
     }
 
     BinarySerializer::~BinarySerializer() = default;
+
+    void BinarySerializer::Reset( bool saving ) {
+        isSaving = saving;
+        ownedReadPos = 0;
+        readPosPtr = &ownedReadPos;
+        bufferPtr = &ownedBuffer;
+    }
 
     void BinarySerializer::SetBuffer( const u8 * data, usize size ) {
         ownedBuffer.assign( data, data + size );
@@ -760,6 +781,24 @@ namespace atto {
     }
 
     // Primitive array operations
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<u8> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            if ( count > 0 ) {
+                WriteBytes( value.data(), count );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            if ( count > 0 ) {
+                ReadBytes( value.data(), count );
+            }
+        }
+    }
+
     void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<i32> & value ) {
         if ( isSaving ) {
             u32 count = static_cast<u32>( value.size() );
@@ -982,6 +1021,9 @@ namespace atto {
 
         stbi_image_free( data );
 
+        // Must match the order in Texture::Serialize
+        LargeString path = LargeString::FromLiteral( filePath );
+        serializer("Path", path);
         serializer("Width", w);
         serializer("Height", h);
         serializer("Channels", channels);

@@ -553,9 +553,9 @@ namespace atto {
             }
         }
 
-        BinarySerializer serializer( false );
+        BinarySerializer serializer( true );
         Engine::Get().GetAssetManager().LoadTextureData( filePath, serializer );
-        serializer.Reset( true ); // Set to loading
+        serializer.Reset( false ); // Switch to loading mode
         Texture & texture = textures.AddEmpty();
         texture.Serialize( serializer, createInfo );
         return &texture;

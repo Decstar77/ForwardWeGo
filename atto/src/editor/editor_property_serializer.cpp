@@ -184,6 +184,10 @@ namespace atto {
     // Array primitive operations
     // ============================================================
 
+    void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<u8> & value ) {
+        ImGui::Text( "%s: [%d bytes]", key, (i32)value.size() );
+    }
+
     void ImguiPropertySerializer::OpArrayPrimitive( const char * key, std::vector<i32> & value ) {
         bool open = ImGui::TreeNode( key );
         ImGui::SameLine();

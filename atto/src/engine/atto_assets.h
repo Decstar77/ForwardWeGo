@@ -36,6 +36,10 @@ namespace atto {
         inline bool IsSaving() const { return isSaving; }
         inline bool IsLoading() const { return !isSaving; }
 
+        // Reset the serializer to a new mode, keeping data intact.
+        // BinarySerializer overrides to also reset read position.
+        virtual void Reset( bool saving ) { isSaving = saving; }
+
         // Primitive types
         inline void operator() ( const char * key, u8 & value ) { Op( key, value ); }
         inline void operator() ( const char * key, i8 & value ) { Op( key, value ); }
@@ -60,6 +64,7 @@ namespace atto {
         inline void operator() ( const char * key, const StaticModel *& value ) { OpStaticModel( key, value ); }
 
         // Primitive vector types
+        inline void operator() ( const char * key, std::vector<u8> & value ) { OpArrayPrimitive( key, value ); }
         inline void operator() ( const char * key, std::vector<i32> & value ) { OpArrayPrimitive( key, value ); }
         inline void operator() ( const char * key, std::vector<u64> & value ) { OpArrayPrimitive( key, value ); }
         inline void operator() ( const char * key, std::vector<f32> & value ) { OpArrayPrimitive( key, value ); }
@@ -158,6 +163,7 @@ namespace atto {
         virtual std::unique_ptr<Serializer> GetArrayElement( const char * key, i32 index ) = 0;
 
         // Primitive array operations
+        virtual void OpArrayPrimitive( const char * key, std::vector<u8> & value ) = 0;
         virtual void OpArrayPrimitive( const char * key, std::vector<i32> & value ) = 0;
         virtual void OpArrayPrimitive( const char * key, std::vector<u64> & value ) = 0;
         virtual void OpArrayPrimitive( const char * key, std::vector<f32> & value ) = 0;
@@ -219,6 +225,7 @@ namespace atto {
         virtual std::unique_ptr<Serializer> GetArrayElement( const char * key, i32 index ) override;
 
         // Primitive array operations
+        virtual void OpArrayPrimitive( const char * key, std::vector<u8> & value ) override;
         virtual void OpArrayPrimitive( const char * key, std::vector<i32> & value ) override;
         virtual void OpArrayPrimitive( const char * key, std::vector<u64> & value ) override;
         virtual void OpArrayPrimitive( const char * key, std::vector<f32> & value ) override;
@@ -266,6 +273,7 @@ namespace atto {
         const std::vector<u8> & GetBuffer() const { return *bufferPtr; }
         void SetBuffer( const u8 * data, usize size );
         void SetBuffer( const std::vector<u8> & data );
+        void Reset( bool saving ) override;
 
         std::unique_ptr<Serializer> CreateSubSerializer() override;
         void SetObject( const char * key, Serializer * serializer ) override;
@@ -275,6 +283,7 @@ namespace atto {
         void AppendArrayElement( const char * key, Serializer * serializer ) override;
         std::unique_ptr<Serializer> GetArrayElement( const char * key, i32 index ) override;
 
+        void OpArrayPrimitive( const char * key, std::vector<u8> & value ) override;
         void OpArrayPrimitive( const char * key, std::vector<i32> & value ) override;
         void OpArrayPrimitive( const char * key, std::vector<u64> & value ) override;
         void OpArrayPrimitive( const char * key, std::vector<f32> & value ) override;

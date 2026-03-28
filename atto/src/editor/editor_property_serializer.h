@@ -23,6 +23,7 @@ namespace atto {
         void AppendArrayElement( const char * key, Serializer * serializer ) override;
         std::unique_ptr<Serializer> GetArrayElement( const char * key, i32 index ) override;
 
+        void OpArrayPrimitive( const char * key, std::vector<u8> & value ) override;
         void OpArrayPrimitive( const char * key, std::vector<i32> & value ) override;
         void OpArrayPrimitive( const char * key, std::vector<u64> & value ) override;
         void OpArrayPrimitive( const char * key, std::vector<f32> & value ) override;
