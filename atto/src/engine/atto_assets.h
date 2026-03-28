@@ -331,7 +331,7 @@ namespace atto {
         std::string     OpenFilePicker( const std::string & basePath );
         std::string     SaveFilePicker( const std::string & basePath, const std::string & extensions );  // "png;jpg;fbx"
 
-
+        bool            LoadTextureData( const char * filePath, Serializer & serializer );
 
         std::vector< std::string > GetFilesInFolderRecursive( const char * path, const char * ext );
     };

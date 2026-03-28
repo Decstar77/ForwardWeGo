@@ -11,6 +11,7 @@
 #include <cmath>
 
 #define STB_TRUETYPE_IMPLEMENTATION
+#include "atto_engine.h"
 #include "stb_truetype/stb_truetype.h"
 
 namespace atto {
@@ -552,8 +553,11 @@ namespace atto {
             }
         }
 
+        BinarySerializer serializer( false );
+        Engine::Get().GetAssetManager().LoadTextureData( filePath, serializer );
+        serializer.Reset( true ); // Set to loading
         Texture & texture = textures.AddEmpty();
-        texture.LoadFromFile( filePath, createInfo );
+        texture.Serialize( serializer, createInfo );
         return &texture;
     }
 

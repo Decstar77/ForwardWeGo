@@ -5,30 +5,31 @@
 
 #include <glad/glad.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image/std_image.h>
 
 namespace atto {
 
     // =========================================================================
     // Texture
     // =========================================================================
-
-    void Texture::LoadFromFile( const char * filePath, const TextureCreateInfo info ) {
+    void Texture::Serialize( Serializer &serializer, TextureCreateInfo info ) {
         Destroy();
 
-        stbi_set_flip_vertically_on_load( info.flip );
+        serializer( "Path", path );
+        serializer( "Width", width );
+        serializer("Height", height );
+        serializer("Channels", channels );
+        std::vector<u8> data = {};
+        if ( serializer.IsLoading() == true ) {
+            if ( info.flip ) {
+                // TODO: flip the texture
+            }
 
-        int w, h, channels;
-        stbi_uc * data = stbi_load( filePath, &w, &h, &channels, STBI_rgb_alpha );
-        if ( !data ) {
-            LOG_ERROR( "Failed to load texture image '%s'", filePath );
-            return;
+            serializer("Data", data );
+            CreateGLObject( data, info );
         }
+    }
 
-        width = w;
-        height = h;
-
+    void Texture::CreateGLObject( const std::vector<u8> & data, TextureCreateInfo info ) {
         glGenTextures( 1, &handle );
         glBindTexture( GL_TEXTURE_2D, handle );
 
@@ -37,14 +38,10 @@ namespace atto {
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data() );
         glGenerateMipmap( GL_TEXTURE_2D );
 
         glBindTexture( GL_TEXTURE_2D, 0 );
-
-        stbi_image_free( data );
-
-        path = LargeString::FromLiteral( filePath );
     }
 
     void Texture::Destroy() {

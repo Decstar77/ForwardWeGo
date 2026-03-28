@@ -6,6 +6,8 @@
 
 namespace atto {
 
+    class Serializer;
+
     enum class TextureWrapType {
         CLAMP,
         REPEAT
@@ -18,7 +20,6 @@ namespace atto {
 
     class Texture {
     public:
-        void LoadFromFile( const char * filePath, TextureCreateInfo info );
         void Destroy();
         void Bind( i32 slot = 0 ) const;
         void Unbind( i32 slot = 0 ) const;
@@ -30,10 +31,16 @@ namespace atto {
 
         const LargeString & GetPath() const { return path; }
 
+        void Serialize( Serializer & serializer, TextureCreateInfo info );
+
     private:
+        void CreateGLObject( const std::vector<u8> & data, TextureCreateInfo info );
+
+        u32 handle = 0;
+
         i32 width = 0;
         i32 height = 0;
-        u32 handle = 0;
+        i32 channels = 0;
         LargeString path = {};
     };
 
