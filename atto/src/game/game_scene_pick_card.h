@@ -55,6 +55,9 @@ namespace atto {
         const Texture * cardEmptyGem = nullptr;
         const Texture * cardFullGem = nullptr;
 
+        SoundCollection sndCardPlace;
+        SoundCollection sndCardSlide;
+
         f32 GetUIScale() const;
 
         static constexpr i32 NumCards       = 3;

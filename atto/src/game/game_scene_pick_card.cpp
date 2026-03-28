@@ -38,6 +38,26 @@ namespace atto {
         cardEmptyGem =  renderer.GetOrLoadTexture( "assets/textures/cards/empty-gem.png", true );
         cardFullGem =  renderer.GetOrLoadTexture( "assets/textures/cards/full-gem.png", true );
 
+        sndCardSlide.Initialize();
+        sndCardSlide.LoadSounds( {
+            "card/card-slide-1.ogg",
+            "card/card-slide-2.ogg",
+            "card/card-slide-3.ogg",
+            "card/card-slide-4.ogg",
+            "card/card-slide-5.ogg",
+            "card/card-slide-6.ogg",
+            "card/card-slide-7.ogg",
+            "card/card-slide-8.ogg",
+        } );
+
+        sndCardPlace.Initialize();
+        sndCardPlace.LoadSounds( {
+            "card/card-place-1.ogg",
+            "card/card-place-2.ogg",
+            "card/card-place-3.ogg",
+            "card/card-slide-4.ogg",
+        } );
+
         Engine::Get().GetInput().SetCursorCaptured( false );
 
         RollCards();

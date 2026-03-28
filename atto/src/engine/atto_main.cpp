@@ -28,18 +28,39 @@ int main() {
 
 /*
 TODO:
-Gameplay:
-
-- Trigger brushes
-- Collision brushes
-
 - Hands leak render models
 - Player reload bug
+- Player dying
+- Card Sounds
+- Animation blending
+- Main menu:
+    Option to choose run biome
+    Button to weapons menu
+    Button to player upgrades
+    Display player coins ( top right )
+    Options ( Top left gear icon ):
+        Mouse Sensitivity ( Slider )
+        Gameplay volume ( Slider )
+        Music volume ( Slider )
+- Player cards:
+    - Attack speed increased ( must )
+    - Attack damage increased ( must )
+    - Attack inacuracy increased ( must )
+    - Magazine capacity increased ( must )
+    - Reload speed increased ( must )
+    - Health increased ( must )
+    - Restore health ( must )
+    - Extra coins ( must )
+
+- Packaged builds, packing and loading assets.
+- Remove editor from build
+- Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.
+
+
+Brain waves:
+Gameplay:
 
 - Multiple waves
-- Player dying
-
-- Card Sounds
 - Level timer ( unsure )
 
 - Baneling ( Saturday )
@@ -54,15 +75,6 @@ Gameplay:
         -recoil
     - Sniper
     - Frag grenade
-- Main menu:
-    Option to choose run biome
-    Button to weapons menu
-    Button to player upgrades
-    Display player coins ( top right )
-    Options ( Top left gear icon ):
-        Mouse Sensitivity ( Slider )
-        Gameplay volume ( Slider )
-        Music volume ( Slider )
 - Player upgrades:
     - Health increase
     - Med kits do more healing
@@ -70,20 +82,12 @@ Gameplay:
     - Wider scoop radius
     - Faster sprint
     - Faster crouch
-- Player cards:
-    - Attack speed increased ( must )
-    - Attack damage increased ( must )
-    - Attack inacuracy increased ( must )
-    - Magazine capacity increased ( must )
-    - Reload speed increased ( must )
-    - Health increased ( must )
-    - Restore health ( must )
-    - Extra coins ( must )
-    - Slow enemies
-    - Poison bullets
-    - Explosive bullets
-    - Reflection damage
-    - Life steal
+
+- Slow enemies
+- Poison bullets
+- Explosive bullets
+- Reflection damage
+- Life steal
 
 Editor:
 - SpawnID  selection
@@ -91,11 +95,7 @@ Editor:
 - Better nav graph creation
 
 Engine:
-- Animation blending
 - ReservationTable
-- Packaged builds, packing and loading assets.
-- Remove editor from build
-- Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.
 
 Rendering:
 - MSAA
