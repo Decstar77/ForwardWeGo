@@ -10,9 +10,7 @@
 #include <vector>
 #include <cmath>
 
-#define STB_TRUETYPE_IMPLEMENTATION
 #include "atto_engine.h"
-#include "stb_truetype/stb_truetype.h"
 
 namespace atto {
 
@@ -833,52 +831,6 @@ namespace atto {
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
             glBindTexture( GL_TEXTURE_2D, 0 );
         }
-    }
-
-    bool AssetManager::LoadFontData( const char * filePath, f32 inFontSize, Serializer & serializer ) {
-        // Read TTF file
-        FILE * f = fopen( filePath, "rb" );
-        if ( !f ) {
-            LOG_ERROR( "LoadFontData — could not open %s", filePath );
-            return false;
-        }
-
-        fseek( f, 0, SEEK_END );
-        const long fileSize = ftell( f );
-        fseek( f, 0, SEEK_SET );
-
-        std::vector<u8> ttfBuffer( fileSize );
-        fread( ttfBuffer.data(), 1, fileSize, f );
-        fclose( f );
-
-        // Bake the font atlas
-        std::vector<u8> atlasBitmap( FONT_ATLAS_WIDTH * FONT_ATLAS_HEIGHT );
-        stbtt_bakedchar bakedCharData[FONT_CHAR_COUNT];
-
-        const i32 result = stbtt_BakeFontBitmap(
-            ttfBuffer.data(), 0,
-            inFontSize,
-            atlasBitmap.data(), FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
-            FONT_FIRST_CHAR, FONT_CHAR_COUNT,
-            bakedCharData
-        );
-
-        if ( result <= 0 ) {
-            LOG_ERROR( "LoadFontData — stbtt_BakeFontBitmap failed for %s (returned %d)", filePath, result );
-        }
-
-        // Write to serializer (must match Font::Serialize order)
-        LargeString pathStr = LargeString::FromLiteral( filePath );
-        serializer( "Path", pathStr );
-        serializer( "FontSize", inFontSize );
-
-        std::vector<u8> charBytes( sizeof( bakedCharData ) );
-        std::memcpy( charBytes.data(), bakedCharData, sizeof( bakedCharData ) );
-        serializer( "CharData", charBytes );
-
-        serializer( "AtlasBitmap", atlasBitmap );
-
-        return true;
     }
 
     void Renderer::DebugLine( const Vec3 & a, const Vec3 & b, const Vec3 & color ) {

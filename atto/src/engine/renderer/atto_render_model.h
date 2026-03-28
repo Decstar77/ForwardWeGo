@@ -112,7 +112,6 @@ namespace atto {
 
     class StaticModel {
     public:
-        void LoadFromFile( const char * filePath, f32 scale = 1.0f );
         void Serialize( Serializer & serializer );
         void CreateFromMesh( const std::vector<Vertex> & vertices, const std::vector<u32> & indices );
         void Destroy();
@@ -136,7 +135,6 @@ namespace atto {
 
     class AnimatedModel {
     public:
-        void LoadFromFile( const char * filePath, f32 scale = 1.0f );
         void Serialize( Serializer & serializer );
         void Destroy();
         void Draw( Shader * shader ) const;

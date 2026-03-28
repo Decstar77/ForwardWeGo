@@ -6,9 +6,6 @@
 #include <fstream>
 #include <filesystem>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image/std_image.h>
-
 namespace atto {
 
     void Serializer::OpStaticModel( const char * key, const StaticModel *& value ) {
@@ -1053,27 +1050,4 @@ namespace atto {
         return files;
     }
 
-    bool AssetManager::LoadTextureData( const char * filePath, Serializer &serializer ) {
-        int w, h, channels;
-        stbi_uc * data = stbi_load( filePath, &w, &h, &channels, STBI_rgb_alpha );
-        if ( !data ) {
-            LOG_ERROR( "Failed to load texture image '%s'", filePath );
-            return false;
-        }
-
-        const size_t dataSize = w * h * 4; // 4 bytes per pixel (RGBA)
-        std::vector<u8> textureData(data, data + dataSize);
-
-        stbi_image_free( data );
-
-        // Must match the order in Texture::Serialize
-        LargeString path = LargeString::FromLiteral( filePath );
-        serializer("Path", path);
-        serializer("Width", w);
-        serializer("Height", h);
-        serializer("Channels", channels);
-        serializer("Data", textureData);
-
-        return true;
-    }
 }

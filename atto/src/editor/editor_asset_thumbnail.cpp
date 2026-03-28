@@ -69,10 +69,8 @@ namespace atto {
 
     void ThumbnailBaker::GenerateThumbnailForModel( const char * modelPath ) {
         LOG_INFO( "Generating thumbnail for %s", modelPath );
-        StaticModel model;
-        model.LoadFromFile( modelPath );
-        GenerateThumbnailForModel( &model );
-        model.Destroy();
+        const StaticModel * model = Engine::Get().GetRenderer().GetOrLoadStaticModel( modelPath );
+        GenerateThumbnailForModel( model );
     }
 
     void ThumbnailBaker::GenerateThumbnailForModel( const StaticModel * model ) {
