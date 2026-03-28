@@ -77,22 +77,22 @@ namespace atto {
         return true;
     }
 
-    static bool CheckALCError( ALCdevice * device, const char * operation ) {
-        ALCenum error = alcGetError( device );
-        if ( error != ALC_NO_ERROR ) {
-            const char * errorStr = "Unknown error";
-            switch ( error ) {
-            case ALC_INVALID_DEVICE: errorStr = "ALC_INVALID_DEVICE"; break;
-            case ALC_INVALID_CONTEXT: errorStr = "ALC_INVALID_CONTEXT"; break;
-            case ALC_INVALID_ENUM: errorStr = "ALC_INVALID_ENUM"; break;
-            case ALC_INVALID_VALUE: errorStr = "ALC_INVALID_VALUE"; break;
-            case ALC_OUT_OF_MEMORY: errorStr = "ALC_OUT_OF_MEMORY"; break;
-            }
-            LOG_ERROR( "OpenAL context error during %s: %s", operation, errorStr );
-            return false;
-        }
-        return true;
-    }
+    //static bool CheckALCError( ALCdevice * device, const char * operation ) {
+    //    ALCenum error = alcGetError( device );
+    //    if ( error != ALC_NO_ERROR ) {
+    //        const char * errorStr = "Unknown error";
+    //        switch ( error ) {
+    //        case ALC_INVALID_DEVICE: errorStr = "ALC_INVALID_DEVICE"; break;
+    //        case ALC_INVALID_CONTEXT: errorStr = "ALC_INVALID_CONTEXT"; break;
+    //        case ALC_INVALID_ENUM: errorStr = "ALC_INVALID_ENUM"; break;
+    //        case ALC_INVALID_VALUE: errorStr = "ALC_INVALID_VALUE"; break;
+    //        case ALC_OUT_OF_MEMORY: errorStr = "ALC_OUT_OF_MEMORY"; break;
+    //        }
+    //        LOG_ERROR( "OpenAL context error during %s: %s", operation, errorStr );
+    //        return false;
+    //    }
+    //    return true;
+    //}
 
     bool AudioSystem::Initialize( const AudioConfig & cfg ) {
         if ( initialized ) {

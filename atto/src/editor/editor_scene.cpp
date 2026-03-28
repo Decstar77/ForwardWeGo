@@ -782,6 +782,8 @@ namespace atto {
         DrawInspectorPanel();
         DrawViewOverlay();
         DrawUnsavedChangesDialog();
+        assetPacker.UpdatePacking();
+        assetPacker.DrawProgressPopup();
         assetBrowser.Draw();
 
         // Handle model drag-drop from asset browser into viewport
@@ -963,7 +965,7 @@ namespace atto {
                 if ( ImGui::MenuItem( "Save", "Ctrl+S" ) ) { SaveMap(); }
                 if ( ImGui::MenuItem( "Save As...", "Ctrl+Shift+S" ) ) { SaveMapAs(); }
                 ImGui::Separator();
-                if ( ImGui::MenuItem( "Pack Assets", "" ) ) { EditorAssetPacker::PackAssets(); }
+                if ( ImGui::MenuItem( "Pack Assets", "", false, !assetPacker.IsPacking() ) ) { assetPacker.BeginPacking(); }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Play", "F5" ) ) {
                     SaveEditorState();

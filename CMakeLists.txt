@@ -125,8 +125,20 @@ set(VENDOR_SOURCES
 
 add_executable(atto ${ATTO_SOURCES} ${VENDOR_SOURCES})
 
+# pocketlzma uses try/catch internally, enable exceptions and suppress vendor warnings for this file
+if(MSVC)
+    set_source_files_properties(atto/src/editor/editor_asset_packer.cpp PROPERTIES
+        COMPILE_OPTIONS "/EHsc"
+    )
+else()
+    set_source_files_properties(atto/src/editor/editor_asset_packer.cpp PROPERTIES
+        COMPILE_OPTIONS "-fexceptions;-Wno-dangling-pointer;-Wno-sign-compare"
+    )
+endif()
+
 target_include_directories(atto PRIVATE
     vendor/stb
+    vendor/pocketlzma
     vendor/glm
     vendor/json
     vendor/audio
@@ -159,7 +171,7 @@ if(MSVC)
 else()
     target_compile_options(atto PRIVATE
         -fno-exceptions
-        -fno-rtti
+        $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
         -Wall
         -Wno-unused-parameter
         -Wno-unused-local-typedefs
