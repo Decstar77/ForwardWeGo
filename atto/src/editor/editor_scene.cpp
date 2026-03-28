@@ -1178,6 +1178,71 @@ namespace atto {
 
                 ImGui::Spacing();
 
+                ImGui::Separator();
+                if ( ImGui::Button( "Generate Nav Points" ) ) {
+                    Snapshot();
+
+                    WaypointGraph & graph = map.GetNavGraph();
+                    f32 padding = 0.25f;
+                    Vec3 brushMin = brush.center - brush.halfExtents + Vec3( padding, 0.0f, padding );
+                    Vec3 brushMax = brush.center + brush.halfExtents - Vec3( padding, 0.0f, padding );
+                    f32 topY = brush.center.y + brush.halfExtents.y;
+                    f32 spacing = 0.5f;
+
+                    f32 extentX = brushMax.x - brushMin.x;
+                    f32 extentZ = brushMax.z - brushMin.z;
+
+                    // Calculate grid dimensions
+                    i32 countX = glm::max( 1, (i32)glm::floor( extentX / spacing ) + 1 );
+                    i32 countZ = glm::max( 1, (i32)glm::floor( extentZ / spacing ) + 1 );
+
+                    // Center the grid within the padded area
+                    f32 gridWidth = (countX - 1) * spacing;
+                    f32 gridDepth = (countZ - 1) * spacing;
+                    f32 startX = (brushMin.x + brushMax.x) * 0.5f - gridWidth * 0.5f;
+                    f32 startZ = (brushMin.z + brushMax.z) * 0.5f - gridDepth * 0.5f;
+
+                    i32 baseIndex = graph.GetNodeCount();
+
+                    // Add all nav points
+                    for ( i32 z = 0; z < countZ; z++ ) {
+                        for ( i32 x = 0; x < countX; x++ ) {
+                            Vec3 pos( startX + x * spacing, topY, startZ + z * spacing );
+                            graph.AddWaypoint( pos );
+                        }
+                    }
+
+                    // Connect adjacent nav points (8 directions)
+                    for ( i32 z = 0; z < countZ; z++ ) {
+                        for ( i32 x = 0; x < countX; x++ ) {
+                            i32 current = baseIndex + z * countX + x;
+
+                            // Right
+                            if ( x + 1 < countX ) {
+                                graph.ConnectWaypoints( current, baseIndex + z * countX + (x + 1) );
+                            }
+                            // Down
+                            if ( z + 1 < countZ ) {
+                                graph.ConnectWaypoints( current, baseIndex + (z + 1) * countX + x );
+                            }
+                            // Down-Right
+                            if ( x + 1 < countX && z + 1 < countZ ) {
+                                graph.ConnectWaypoints( current, baseIndex + (z + 1) * countX + (x + 1) );
+                            }
+                            // Down-Left
+                            if ( x - 1 >= 0 && z + 1 < countZ ) {
+                                graph.ConnectWaypoints( current, baseIndex + (z + 1) * countX + (x - 1) );
+                            }
+                        }
+                    }
+
+                    unsavedChanges = true;
+                    this->selectionMode = EditorSelectionMode::NavGraph;
+                }
+                ImGui::Separator();
+
+                ImGui::Spacing();
+
                 if ( ImGui::Button( "Delete Selected" ) ) {
                     Snapshot();
                     map.RemoveBrush( selectedBrushIndex );

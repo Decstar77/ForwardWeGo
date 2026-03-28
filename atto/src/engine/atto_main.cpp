@@ -32,7 +32,6 @@ int main() {
 
 /*
 TODO:
-- Card Texture clipping
 - Player dying
 - Animation blending
 - Player cards:
