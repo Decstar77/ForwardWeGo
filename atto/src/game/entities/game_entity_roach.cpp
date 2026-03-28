@@ -28,10 +28,10 @@ namespace atto {
         });
     }
 
-    static constexpr f32 RoachMoveSpeed       = 1.8f;  // m/s
+    static constexpr f32 RoachMoveSpeed       = 2.8f;  // m/s
     static constexpr f32 RoachArrivalDist     = 0.65; // snap to waypoint when this close
     static constexpr f32 RoachYawSpeed        = 6.0f;  // rad/s max turn rate
-    static constexpr f32 RoachDetectionRange  = 10.0f; // player detection radius
+    static constexpr f32 RoachDetectionRange  = 50.0f; // player detection radius
     static constexpr f32 RoachAttackRange     = 2.0f;  // melee range
     static constexpr f32 RoachAttackRangeHyst = 2.0f;  // disengage above this
     static constexpr f32 RoachAttackRate      = 1.0f;  // seconds between hits
