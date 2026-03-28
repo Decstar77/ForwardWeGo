@@ -4,6 +4,7 @@
 #include "engine/renderer/atto_render_model.h"
 #include "game/game_map.h"
 #include "editor_asset_browser.h"
+#include "editor_asset_packer.h"
 #include "editor_brush_tools.h"
 
 namespace atto {
@@ -82,9 +83,6 @@ namespace atto {
         // Picking
         i32  EntityPick3D( Vec2 screenPos ) const;
         i32  NavNodePick3D( Vec2 screenPos ) const;
-
-        // Assets
-        std::string ScrapeAssets() const;
 
         // View state
         EditorViewMode      viewMode = EditorViewMode::Cam3D;

@@ -954,10 +954,6 @@ namespace atto {
         return bestIndex;
     }
 
-    std::string EditorScene::ScrapeAssets() const {
-        return "";
-    }
-
     void EditorScene::DrawMainMenuBar() {
         if ( ImGui::BeginMainMenuBar() ) {
             if ( ImGui::BeginMenu( "File" ) ) {
@@ -966,6 +962,8 @@ namespace atto {
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Save", "Ctrl+S" ) ) { SaveMap(); }
                 if ( ImGui::MenuItem( "Save As...", "Ctrl+Shift+S" ) ) { SaveMapAs(); }
+                ImGui::Separator();
+                if ( ImGui::MenuItem( "Pack Assets", "" ) ) { EditorAssetPacker::PackAssets(); }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Play", "F5" ) ) {
                     SaveEditorState();
