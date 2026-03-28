@@ -92,10 +92,10 @@ namespace atto {
         coinTexture       = renderer.GetOrLoadTexture( "assets/textures/coin.png", true );
 
         sndButtonClick.Initialize();
-        sndButtonClick.LoadSounds( { "mainmenu/button-click.wav" } );
+        sndButtonClick.LoadSounds( { "assets/sounds/mainmenu/button-click.wav" } );
 
         sndButtonHover.Initialize();
-        sndButtonHover.LoadSounds( { "mainmenu/button-hover.wav" } );
+        sndButtonHover.LoadSounds( { "assets/sounds/mainmenu/button-hover.wav" } );
 
         Engine::Get().GetInput().SetCursorCaptured( false );
 

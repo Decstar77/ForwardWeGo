@@ -38,7 +38,7 @@ namespace atto {
         ATTO_ASSERT( rng != nullptr, "RNG is null" );
 
         for ( const char * name : names ) {
-            buffers.push_back( audioSystem->GetOrLoadSound( std::format( "assets/sounds/{}", name ).c_str(), mono ) );
+            buffers.push_back( audioSystem->GetOrLoadSound( std::format( "{}", name ).c_str(), mono ) );
             this->names.push_back( std::string( name ) );
         }
     }

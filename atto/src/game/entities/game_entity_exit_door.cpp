@@ -13,7 +13,7 @@ namespace atto {
         modelOpen = renderer.GetOrLoadStaticModel( "assets/models/sm-declan/SM_Bld_Section_Door_06_Open.obj" );
         doorSound.Initialize();
         doorSound.LoadSounds( {
-            "door/main-door-open.wav"
+            "assets/sounds/door/main-door-open.wav"
         } );
     }
 

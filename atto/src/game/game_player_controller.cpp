@@ -26,16 +26,16 @@ namespace atto {
 
         sndFootsteps.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndFootsteps.LoadSounds( {
-            "footsteps/Light-Armor-Concrete-Walking-1.wav",
-            "footsteps/Light-Armor-Concrete-Walking-2.wav",
-            "footsteps/Light-Armor-Concrete-Walking-3.wav",
-            "footsteps/Light-Armor-Concrete-Walking-4.wav",
-            "footsteps/Light-Armor-Concrete-Walking-5.wav",
-            "footsteps/Light-Armor-Concrete-Walking-6.wav",
-            "footsteps/Light-Armor-Concrete-Walking-7.wav",
-            "footsteps/Light-Armor-Concrete-Walking-8.wav",
-            "footsteps/Light-Armor-Concrete-Walking-9.wav",
-            "footsteps/Light-Armor-Concrete-Walking-10.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-1.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-2.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-3.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-4.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-5.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-6.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-7.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-8.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-9.wav",
+            "assets/sounds/footsteps/Light-Armor-Concrete-Walking-10.wav",
         } );
     }
 

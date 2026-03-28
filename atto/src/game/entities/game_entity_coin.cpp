@@ -20,8 +20,8 @@ namespace atto {
 
         sndCollection.Initialize();
         sndCollection.LoadSounds( {
-            "resources/coins1.wav",
-            "resources/coins2.wav",
+            "assets/sounds/resources/coins1.wav",
+            "assets/sounds/resources/coins2.wav",
         } );
     }
 

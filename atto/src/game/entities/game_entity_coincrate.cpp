@@ -14,9 +14,8 @@ namespace atto {
         model = Engine::Get().GetRenderer().GetOrLoadStaticModel( "assets/models/sm/SM_Prop_Crate_02.obj" );
         destroySound.Initialize();
         destroySound.LoadSounds( {
-            //"impacts/metal_sheet.wav"
-            "resources/coins1.wav",
-            "resources/coins2.wav"
+            "assets/sounds/resources/coins1.wav",
+            "assets/sounds/resources/coins2.wav"
         } );
     }
 

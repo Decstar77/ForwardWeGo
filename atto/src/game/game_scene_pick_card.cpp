@@ -45,7 +45,7 @@ namespace atto {
 
         sndCardSlide.Initialize();
         sndCardSlide.LoadSounds( {
-            "card/card-slide-1.ogg",
+            "assets/sounds/card/card-slide-1.ogg",
 
         } );
 

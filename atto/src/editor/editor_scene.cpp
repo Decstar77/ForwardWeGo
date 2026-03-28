@@ -954,6 +954,10 @@ namespace atto {
         return bestIndex;
     }
 
+    std::string EditorScene::ScrapeAssets() const {
+        return "";
+    }
+
     void EditorScene::DrawMainMenuBar() {
         if ( ImGui::BeginMainMenuBar() ) {
             if ( ImGui::BeginMenu( "File" ) ) {

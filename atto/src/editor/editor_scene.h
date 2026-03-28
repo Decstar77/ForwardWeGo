@@ -83,6 +83,9 @@ namespace atto {
         i32  EntityPick3D( Vec2 screenPos ) const;
         i32  NavNodePick3D( Vec2 screenPos ) const;
 
+        // Assets
+        std::string ScrapeAssets() const;
+
         // View state
         EditorViewMode      viewMode = EditorViewMode::Cam3D;
         EditorRenderMode    renderMode = EditorRenderMode::Unlit;

@@ -19,12 +19,12 @@ namespace atto {
 
         sndAttack.Initialize();
         sndAttack.LoadSounds( {
-            "roach/attack.wav"
+            "assets/sounds/roach/attack.wav"
         } );
 
         sndWalk.Initialize();
         sndWalk.LoadSounds( {
-            "roach/walk.wav"
+            "assets/sounds/roach/walk.wav"
         });
     }
 

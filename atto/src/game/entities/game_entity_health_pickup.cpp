@@ -19,7 +19,7 @@ namespace atto {
 
         sndPickup.Initialize();
         sndPickup.LoadSounds( {
-            "resources/heal-01.wav",
+            "assets/sounds/resources/heal-01.wav",
         } );
     }
 

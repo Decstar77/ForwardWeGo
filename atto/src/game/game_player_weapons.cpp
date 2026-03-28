@@ -16,46 +16,46 @@ namespace atto {
 
         sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndEquip.LoadSounds( {
-            "knife/draw-01.wav",
-            "knife/draw-02.wav",
-            "knife/draw-03.wav",
-            "knife/draw-04.wav",
+            "assets/sounds/knife/draw-01.wav",
+            "assets/sounds/knife/draw-02.wav",
+            "assets/sounds/knife/draw-03.wav",
+            "assets/sounds/knife/draw-04.wav",
         } );
 
         sndSwing1.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndSwing1.LoadSounds( {
-            "knife/swing-1_1.wav",
-            "knife/swing-1_2.wav",
-            "knife/swing-1_3.wav",
-            "knife/swing-1_4.wav",
-            "knife/swing-1_5.wav",
+            "assets/sounds/knife/swing-1_1.wav",
+            "assets/sounds/knife/swing-1_2.wav",
+            "assets/sounds/knife/swing-1_3.wav",
+            "assets/sounds/knife/swing-1_4.wav",
+            "assets/sounds/knife/swing-1_5.wav",
         } );
 
         sndSwing2.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndSwing2.LoadSounds( {
-            "knife/swing-3_1.wav",
-            "knife/swing-3_2.wav",
-            "knife/swing-3_3.wav",
-            "knife/swing-3_4.wav",
-            "knife/swing-3_5.wav",
+            "assets/sounds/knife/swing-3_1.wav",
+            "assets/sounds/knife/swing-3_2.wav",
+            "assets/sounds/knife/swing-3_3.wav",
+            "assets/sounds/knife/swing-3_4.wav",
+            "assets/sounds/knife/swing-3_5.wav",
         } );
 
         sndHitMetal1.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndHitMetal1.LoadSounds( {
-            "knife/hit-metal-1_1.wav",
-            "knife/hit-metal-1_2.wav",
-            "knife/hit-metal-1_3.wav",
-            "knife/hit-metal-1_4.wav",
-            "knife/hit-metal-1_5.wav",
+            "assets/sounds/knife/hit-metal-1_1.wav",
+            "assets/sounds/knife/hit-metal-1_2.wav",
+            "assets/sounds/knife/hit-metal-1_3.wav",
+            "assets/sounds/knife/hit-metal-1_4.wav",
+            "assets/sounds/knife/hit-metal-1_5.wav",
         } );
 
         sndHitMetal2.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndHitMetal2.LoadSounds( {
-            "knife/hit-metal-3_1.wav",
-            "knife/hit-metal-3_2.wav",
-            "knife/hit-metal-3_3.wav",
-            "knife/hit-metal-3_4.wav",
-            "knife/hit-metal-3_5.wav",
+            "assets/sounds/knife/hit-metal-3_1.wav",
+            "assets/sounds/knife/hit-metal-3_2.wav",
+            "assets/sounds/knife/hit-metal-3_3.wav",
+            "assets/sounds/knife/hit-metal-3_4.wav",
+            "assets/sounds/knife/hit-metal-3_5.wav",
         } );
     }
 
@@ -190,70 +190,70 @@ namespace atto {
 
         sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndEquip.LoadSounds( {
-            "glock/gun_pistol_general_handling_01.wav",
-            "glock/gun_pistol_general_handling_03.wav",
-            "glock/gun_pistol_general_handling_05.wav",
-            "glock/gun_pistol_general_handling_06.wav",
-            "glock/gun_pistol_general_handling_07.wav",
-            "glock/gun_pistol_general_handling_10.wav",
+            "assets/sounds/glock/gun_pistol_general_handling_01.wav",
+            "assets/sounds/glock/gun_pistol_general_handling_03.wav",
+            "assets/sounds/glock/gun_pistol_general_handling_05.wav",
+            "assets/sounds/glock/gun_pistol_general_handling_06.wav",
+            "assets/sounds/glock/gun_pistol_general_handling_07.wav",
+            "assets/sounds/glock/gun_pistol_general_handling_10.wav",
         } );
 
         sndCock.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndCock.LoadSounds( {
-            "glock/gun_pistol_cock_01.wav",
-            "glock/gun_pistol_cock_02.wav",
-            "glock/gun_pistol_cock_03.wav",
-            "glock/gun_pistol_cock_04.wav",
-            "glock/gun_pistol_cock_05.wav",
-            "glock/gun_pistol_cock_06.wav",
-            "glock/gun_pistol_cock_07.wav",
+            "assets/sounds/glock/gun_pistol_cock_01.wav",
+            "assets/sounds/glock/gun_pistol_cock_02.wav",
+            "assets/sounds/glock/gun_pistol_cock_03.wav",
+            "assets/sounds/glock/gun_pistol_cock_04.wav",
+            "assets/sounds/glock/gun_pistol_cock_05.wav",
+            "assets/sounds/glock/gun_pistol_cock_06.wav",
+            "assets/sounds/glock/gun_pistol_cock_07.wav",
         } );
 
         sndShoot.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndShoot.LoadSounds( {
-            "glock/gun_pistol_shot_01.wav",
-            "glock/gun_pistol_shot_02.wav",
-            "glock/gun_pistol_shot_03.wav",
-            "glock/gun_pistol_shot_04.wav",
-            "glock/gun_pistol_shot_05.wav",
+            "assets/sounds/glock/gun_pistol_shot_01.wav",
+            "assets/sounds/glock/gun_pistol_shot_02.wav",
+            "assets/sounds/glock/gun_pistol_shot_03.wav",
+            "assets/sounds/glock/gun_pistol_shot_04.wav",
+            "assets/sounds/glock/gun_pistol_shot_05.wav",
         } );
 
         sndRemoveMag.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndRemoveMag.LoadSounds( {
-            "glock/gun_pistol_remove_mag_01.wav",
-            "glock/gun_pistol_remove_mag_02.wav",
-            "glock/gun_pistol_remove_mag_03.wav",
-            "glock/gun_pistol_remove_mag_04.wav",
-            "glock/gun_pistol_remove_mag_05.wav",
-            "glock/gun_pistol_remove_mag_06.wav",
+            "assets/sounds/glock/gun_pistol_remove_mag_01.wav",
+            "assets/sounds/glock/gun_pistol_remove_mag_02.wav",
+            "assets/sounds/glock/gun_pistol_remove_mag_03.wav",
+            "assets/sounds/glock/gun_pistol_remove_mag_04.wav",
+            "assets/sounds/glock/gun_pistol_remove_mag_05.wav",
+            "assets/sounds/glock/gun_pistol_remove_mag_06.wav",
         } );
 
         sndInsertMag.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndInsertMag.LoadSounds( {
-            "glock/gun_pistol_insert_mag_01.wav",
-            "glock/gun_pistol_insert_mag_02.wav",
-            "glock/gun_pistol_insert_mag_03.wav",
-            "glock/gun_pistol_insert_mag_04.wav",
-            "glock/gun_pistol_insert_mag_05.wav",
+            "assets/sounds/glock/gun_pistol_insert_mag_01.wav",
+            "assets/sounds/glock/gun_pistol_insert_mag_02.wav",
+            "assets/sounds/glock/gun_pistol_insert_mag_03.wav",
+            "assets/sounds/glock/gun_pistol_insert_mag_04.wav",
+            "assets/sounds/glock/gun_pistol_insert_mag_05.wav",
         } );
 
         sndDry.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndDry.LoadSounds( {
-            "glock/gun_pistol_dry_fire_01.wav",
-            "glock/gun_pistol_dry_fire_02.wav",
-            "glock/gun_pistol_dry_fire_03.wav",
-            "glock/gun_pistol_dry_fire_04.wav",
-            "glock/gun_pistol_dry_fire_05.wav",
-            "glock/gun_pistol_dry_fire_06.wav",
+            "assets/sounds/glock/gun_pistol_dry_fire_01.wav",
+            "assets/sounds/glock/gun_pistol_dry_fire_02.wav",
+            "assets/sounds/glock/gun_pistol_dry_fire_03.wav",
+            "assets/sounds/glock/gun_pistol_dry_fire_04.wav",
+            "assets/sounds/glock/gun_pistol_dry_fire_05.wav",
+            "assets/sounds/glock/gun_pistol_dry_fire_06.wav",
         } );
 
         sndHit.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndHit.LoadSounds( {
-            "bullet-hits/basic_hit_01.wav",
-            "bullet-hits/basic_hit_02.wav",
-            "bullet-hits/basic_hit_03.wav",
-            "bullet-hits/basic_hit_04.wav",
-            "bullet-hits/basic_hit_05.wav",
+            "assets/sounds/bullet-hits/basic_hit_01.wav",
+            "assets/sounds/bullet-hits/basic_hit_02.wav",
+            "assets/sounds/bullet-hits/basic_hit_03.wav",
+            "assets/sounds/bullet-hits/basic_hit_04.wav",
+            "assets/sounds/bullet-hits/basic_hit_05.wav",
         } );
     }
 

@@ -18,9 +18,9 @@ namespace atto {
         particleSparkleTexture = renderer.GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Sparkle.png" );
         sndExplode.Initialize();
         sndExplode.LoadSounds( {
-            "bullet-hits/explosion_large_01.wav",
-            "bullet-hits/explosion_large_02.wav",
-            "bullet-hits/explosion_large_03.wav",
+            "assets/sounds/bullet-hits/explosion_large_01.wav",
+            "assets/sounds/bullet-hits/explosion_large_02.wav",
+            "assets/sounds/bullet-hits/explosion_large_03.wav",
         });
     }
 

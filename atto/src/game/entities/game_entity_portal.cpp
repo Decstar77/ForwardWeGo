@@ -14,11 +14,11 @@ namespace atto {
         textureSparkle = renderer.GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Sparkle.png" );
         sndPortalHum.Initialize();
         sndPortalHum.LoadSounds( {
-            "door/portal-hum02.wav"
+            "assets/sounds/door/portal-hum02.wav"
         }, true );
         sndPortalTavel.Initialize();
         sndPortalTavel.LoadSounds( {
-            "door/portal-travel.wav"
+            "assets/sounds/door/portal-travel.wav"
         } );
     }
 
