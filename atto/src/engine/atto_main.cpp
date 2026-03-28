@@ -32,7 +32,6 @@ int main() {
 
 /*
 TODO:
-- Player dying
 - Player cards:
     - Attack speed increased ( must )
     - Attack damage increased ( must )
@@ -50,7 +49,6 @@ TODO:
 
 Brain waves:
 Gameplay:
-
 - Multiple waves
 - Level timer ( unsure )
 
