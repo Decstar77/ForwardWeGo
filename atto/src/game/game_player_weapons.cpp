@@ -90,13 +90,13 @@ namespace atto {
 
         // Attack input — not allowed while sprinting
         if ( input.IsMouseButtonDown( MouseButton::Left ) && isIdleWalkOrRun && !isSprinting ) {
-            animator.PlayAnimation( *model, "Armature|Knife_Attack_1_Anim", false );
+            animator.PlayAnimation( *model, "Armature|Knife_Attack_1_Anim", false, 0.05f );
             sndSwing1.Play( 0.5f );
             isAttacking = true;
         }
 
         if ( input.IsMouseButtonDown( MouseButton::Right ) && isIdleWalkOrRun && !isSprinting ) {
-            animator.PlayAnimation( *model, "Armature|Knife_Attack_3_Anim", false );
+            animator.PlayAnimation( *model, "Armature|Knife_Attack_3_Anim", false, 0.05f );
             sndSwing2.Play( 0.5f );
             isAttacking = true;
         }
@@ -154,13 +154,13 @@ namespace atto {
         // Locomotion transitions
         if ( !isAttacking ) {
             if ( !isMoving && curAnim != "Armature|Knife_Idle_Anim" ) {
-                animator.PlayAnimation( *model, "Armature|Knife_Idle_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Knife_Idle_Anim", true, 0.15f );
             }
             else if ( isMoving && isSprinting && curAnim != "Armature|Knife_Run_Anim" ) {
-                animator.PlayAnimation( *model, "Armature|Knife_Run_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Knife_Run_Anim", true, 0.15f );
             }
             else if ( isMoving && !isSprinting && curAnim != "Armature|Knife_Walk_Anim" ) {
-                animator.PlayAnimation( *model, "Armature|Knife_Walk_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Knife_Walk_Anim", true, 0.15f );
             }
         }
 
@@ -294,7 +294,7 @@ namespace atto {
             && ( ( isIdleWalkOrRun && !isSprinting ) || ( isFiring && animator.GetPercentComplete() >= 0.125 ) )
             && !isReloading ) {
             if ( ammo > 0 ) {
-                animator.PlayAnimation( *model, "Armature|Glock_Fire_Anim", false );
+                animator.PlayAnimation( *model, "Armature|Glock_Fire_Anim", false, 0.05f );
                 isAttacking = true;
 
                 ammo--;
@@ -451,13 +451,13 @@ namespace atto {
         // Locomotion transitions
         if ( !isAttacking && !isReloading ) {
             if ( !isMoving && curAnim != "Armature|Glock_Idle_Anim" ) {
-                animator.PlayAnimation( *model, "Armature|Glock_Idle_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Glock_Idle_Anim", true, 0.15f );
             }
             else if ( isMoving && isSprinting && curAnim != "Armature|Glock_Run_Anim" ) {
-                animator.PlayAnimation( *model, "Armature|Glock_Run_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Glock_Run_Anim", true, 0.15f );
             }
             else if ( isMoving && !isSprinting && curAnim != "Armature|Glock_Walk_Anim" ) {
-                animator.PlayAnimation( *model, "Armature|Glock_Walk_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Glock_Walk_Anim", true, 0.15f );
             }
         }
 

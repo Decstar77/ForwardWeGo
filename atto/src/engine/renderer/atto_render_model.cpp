@@ -658,13 +658,27 @@ namespace atto {
         }
     }
 
-    void Animator::PlayAnimation( const AnimatedModel & model, const char * animationName, bool loop ) {
+    void Animator::PlayAnimation( const AnimatedModel & model, const char * animationName, bool loop, f32 blendTime ) {
         const i32 index = model.GetAnimationIndex( animationName );
         ATTO_ASSERT( index >= 0, "Invalid animation index" );
-        PlayAnimation( model, index, loop );
+        PlayAnimation( model, index, loop, blendTime );
     }
 
-    void Animator::PlayAnimation( const AnimatedModel & animModel, i32 animationIndex, bool loop ) {
+    void Animator::PlayAnimation( const AnimatedModel & animModel, i32 animationIndex, bool loop, f32 blendTime ) {
+        // Save current state for crossfade blending
+        if ( currentClip && blendTime > 0.0f ) {
+            prevClip = currentClip;
+            prevTime = currentTime;
+            prevLooping = looping;
+            blendDuration = blendTime;
+            blendTimer = 0.0f;
+        }
+        else {
+            prevClip = nullptr;
+            blendDuration = 0.0f;
+            blendTimer = 0.0f;
+        }
+
         model = &animModel;
         looping = loop;
         currentTime = 0.0f;
@@ -684,6 +698,29 @@ namespace atto {
             return;
         }
 
+        // Advance crossfade blend
+        if ( prevClip && blendDuration > 0.0f ) {
+            blendTimer += dt;
+            if ( blendTimer >= blendDuration ) {
+                blendTimer = blendDuration;
+                prevClip = nullptr; // Blend complete
+            }
+        }
+
+        // Advance previous animation (keeps playing during blend)
+        if ( prevClip ) {
+            prevTime += dt * prevClip->ticksPerSecond;
+            if ( prevLooping ) {
+                prevTime = fmod( prevTime, prevClip->duration );
+            }
+            else {
+                if ( prevTime > prevClip->duration ) {
+                    prevTime = prevClip->duration;
+                }
+            }
+        }
+
+        // Advance current animation
         f32 ticksPerSecond = currentClip->ticksPerSecond;
         currentTime += dt * ticksPerSecond;
 
@@ -702,15 +739,30 @@ namespace atto {
     void Animator::CalculateBoneTransform( const BoneNode & node, const Mat4 & parentTransform ) {
         Mat4 nodeTransform = node.transformation;
 
-        const BoneAnimationChannel * channel = FindChannel( node.name );
+        const BoneAnimationChannel * channel = FindChannel( currentClip, node.name );
         if ( channel ) {
             Vec3 position = InterpolatePosition( currentTime, *channel );
             Quat rotation = InterpolateRotation( currentTime, *channel );
-            Vec3 scale = InterpolateScale( currentTime, *channel );
+            Vec3 scale    = InterpolateScale( currentTime, *channel );
+
+            // Crossfade blend with previous animation
+            if ( prevClip && blendDuration > 0.0f ) {
+                f32 t = blendTimer / blendDuration; // 0 = full prev, 1 = full current
+                const BoneAnimationChannel * prevChannel = FindChannel( prevClip, node.name );
+                if ( prevChannel ) {
+                    Vec3 prevPos   = InterpolatePosition( prevTime, *prevChannel );
+                    Quat prevRot   = InterpolateRotation( prevTime, *prevChannel );
+                    Vec3 prevScale = InterpolateScale( prevTime, *prevChannel );
+
+                    position = Lerp( prevPos, position, t );
+                    rotation = glm::normalize( glm::slerp( prevRot, rotation, t ) );
+                    scale    = Lerp( prevScale, scale, t );
+                }
+            }
 
             Mat4 translationMatrix = glm::translate( Mat4( 1.0f ), position );
-            Mat4 rotationMatrix = glm::mat4_cast( rotation );
-            Mat4 scaleMatrix = glm::scale( Mat4( 1.0f ), scale );
+            Mat4 rotationMatrix    = glm::mat4_cast( rotation );
+            Mat4 scaleMatrix       = glm::scale( Mat4( 1.0f ), scale );
 
             nodeTransform = translationMatrix * rotationMatrix * scaleMatrix;
         }
@@ -729,10 +781,10 @@ namespace atto {
         }
     }
 
-    const BoneAnimationChannel * Animator::FindChannel( const std::string & nodeName ) const {
-        if ( !currentClip ) return nullptr;
+    const BoneAnimationChannel * Animator::FindChannel( const AnimationClip * clip, const std::string & nodeName ) {
+        if ( !clip ) return nullptr;
 
-        for ( const auto & channel : currentClip->channels ) {
+        for ( const auto & channel : clip->channels ) {
             if ( channel.boneName == nodeName ) {
                 return &channel;
             }

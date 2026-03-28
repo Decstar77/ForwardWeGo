@@ -167,8 +167,8 @@ namespace atto {
     public:
         Animator();
 
-        void PlayAnimation( const AnimatedModel & model, const char * animationName, bool loop );
-        void PlayAnimation( const AnimatedModel & model, i32 animationIndex, bool loop );
+        void PlayAnimation( const AnimatedModel & model, const char * animationName, bool loop, f32 blendTime = 0.1f );
+        void PlayAnimation( const AnimatedModel & model, i32 animationIndex, bool loop, f32 blendTime = 0.1f );
         void Update( f32 dt );
 
         const Mat4 * GetFinalBoneMatrices() const { return finalBoneMatrices; }
@@ -186,13 +186,20 @@ namespace atto {
         static Quat InterpolateRotation( f32 animTime, const BoneAnimationChannel & channel );
         static Vec3 InterpolateScale( f32 animTime, const BoneAnimationChannel & channel );
 
-        const BoneAnimationChannel * FindChannel( const std::string & nodeName ) const;
+        static const BoneAnimationChannel * FindChannel( const AnimationClip * clip, const std::string & nodeName );
 
         Mat4                    finalBoneMatrices[MAX_BONES];
-        const AnimatedModel * model = nullptr;
-        const AnimationClip * currentClip = nullptr;
+        const AnimatedModel *   model = nullptr;
+        const AnimationClip *   currentClip = nullptr;
         f32                     currentTime = 0.0f;
         bool                    looping = true;
+
+        // Crossfade blending state
+        const AnimationClip *   prevClip = nullptr;
+        f32                     prevTime = 0.0f;
+        bool                    prevLooping = true;
+        f32                     blendDuration = 0.0f;
+        f32                     blendTimer = 0.0f;
     };
 
     enum class BrushType : i32 {
