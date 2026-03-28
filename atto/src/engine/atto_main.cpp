@@ -43,7 +43,6 @@ TODO:
     - Restore health ( must )
     - Extra coins ( must )
 - Spitter
-- Player reload bug
 - Packaged builds, packing and loading assets.
 - Remove editor from build
 - Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.

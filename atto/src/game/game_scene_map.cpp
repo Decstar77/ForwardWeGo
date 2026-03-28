@@ -20,12 +20,23 @@ namespace atto {
         hitMarkerTexture = renderer.GetOrLoadTexture( "assets/textures/crosshair/crosshair086.png" );
         hudFont          = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 26.0f );
         hudFontSmall     = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 20.0f );
+        gameOverFont     = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 48.0f );
 
         Engine::Get().GetAudioSystem().SetMuted( false );
     }
 
     void GameMapScene::OnUpdate( f32 deltaTime ) {
         Input & input = Engine::Get().GetInput();
+
+        // Game over — wait then transition to main menu
+        if ( isDead ) {
+            deathTimer += deltaTime;
+            if ( deathTimer >= GameOverDuration ) {
+                input.SetCursorCaptured( false );
+                Engine::Get().TransitionToScene( "GameSceneMainMenu", "" );
+            }
+            return;
+        }
 
         if ( input.IsKeyPressed( Key::Escape ) ) {
             Engine::Get().TransitionToScene( "Editor", map.GetPath() );
@@ -63,6 +74,12 @@ namespace atto {
         i32 pendingHeal = map.FlushPlayerHeal();
         if ( pendingHeal > 0 ) {
             player.Heal( pendingHeal );
+        }
+
+        // Check for player death
+        if ( !player.IsAlive() ) {
+            isDead = true;
+            deathTimer = 0.0f;
         }
     }
 
@@ -162,9 +179,20 @@ namespace atto {
             }
         }
 
+        // Game over overlay
+        if ( isDead ) {
+            f32 t = Min( deathTimer / 0.5f, 1.0f ); // Fade in over 0.5s
+            ui.DrawRect( ui.GetCenterX(), ui.GetCenterY(),
+                         (i32)ui.GetWidth(), (i32)ui.GetHeight(),
+                         Vec4( 0.0f, 0.0f, 0.0f, 0.6f * t ) );
+            ui.DrawText( gameOverFont, ui.GetCenterX(), ui.GetCenterY(),
+                         "GAME OVER", Vec4( 1.0f, 0.2f, 0.2f, t ),
+                         UIAlignH::Center, UIAlignV::Center );
+        }
+
         ui.End( renderer );
 
-        renderer.RenderDamageVignette( player.GetDamageVignetteAlpha() );
+        renderer.RenderDamageVignette( isDead ? 1.0f : player.GetDamageVignetteAlpha() );
     }
 
     void GameMapScene::OnShutdown() {

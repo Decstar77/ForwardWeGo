@@ -26,7 +26,12 @@ namespace atto {
         const Texture *     hitMarkerTexture = nullptr;
         const Font *        hudFont          = nullptr;
         const Font *        hudFontSmall     = nullptr;
+        const Font *        gameOverFont     = nullptr;
         f32                 fps              = 0.0f;
+
+        bool                isDead           = false;
+        f32                 deathTimer       = 0.0f;
+        static constexpr f32 GameOverDuration = 3.0f;
     };
 
 }
