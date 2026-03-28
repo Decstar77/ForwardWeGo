@@ -111,7 +111,7 @@ namespace atto {
                 color = Vec3( 0.5f, 1.0f, 0.5f );
             }
             else if ( brushes[i].type == BrushType::Collision ) {
-                color = Vec3( 1.0f, 0.0f, 0.0f );
+                color = Vec3( 0.0f, 0.0f, 1.0f );
             }
             else if ( brushes[i].type == BrushType::Trigger ) {
                 color = Vec3( 1.0f, 0.0f, 0.0f );
