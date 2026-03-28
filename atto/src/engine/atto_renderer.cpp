@@ -569,8 +569,11 @@ namespace atto {
             }
         }
 
+        BinarySerializer serializer( true );
+        Engine::Get().GetAssetManager().LoadStaticModelData( filePath, loadScale, serializer );
+        serializer.Reset( false );
         StaticModel & model = staticModels.ConstructEmpty();
-        model.LoadFromFile( filePath, loadScale );
+        model.Serialize( serializer );
         return &model;
     }
 
@@ -582,8 +585,11 @@ namespace atto {
             }
         }
 
+        BinarySerializer serializer( true );
+        Engine::Get().GetAssetManager().LoadAnimatedModelData( filePath, loadScale, serializer );
+        serializer.Reset( false );
         AnimatedModel & model = animatedModels.ConstructEmpty();
-        model.LoadFromFile( filePath, loadScale );
+        model.Serialize( serializer );
         return &model;
     }
 
@@ -668,10 +674,13 @@ namespace atto {
             }
         }
 
-        Font & font = fonts.AddEmpty();
-        if ( !font.LoadFromFile( path, fontSize ) ) {
+        BinarySerializer serializer( true );
+        if ( !Engine::Get().GetAssetManager().LoadFontData( path, fontSize, serializer ) ) {
             LOG_ERROR( "Failed to load font: %s at size %.1f", path, fontSize );
         }
+        serializer.Reset( false );
+        Font & font = fonts.AddEmpty();
+        font.Serialize( serializer );
         return &font;
     }
 
@@ -789,6 +798,85 @@ namespace atto {
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
         glBindTexture( GL_TEXTURE_2D, 0 );
+
+        return true;
+    }
+
+    void Font::Serialize( Serializer & serializer ) {
+        serializer( "Path", path );
+        serializer( "FontSize", fontSize );
+
+        // charData as raw bytes (stbtt_bakedchar is POD)
+        std::vector<u8> charBytes;
+        if ( serializer.IsSaving() ) {
+            charBytes.resize( sizeof( charData ) );
+            std::memcpy( charBytes.data(), charData, sizeof( charData ) );
+        }
+        serializer( "CharData", charBytes );
+
+        // Atlas bitmap
+        std::vector<u8> atlasBitmap;
+        serializer( "AtlasBitmap", atlasBitmap );
+
+        if ( serializer.IsLoading() ) {
+            std::memcpy( charData, charBytes.data(), sizeof( charData ) );
+
+            // Upload bitmap to OpenGL
+            glGenTextures( 1, &atlasHandle );
+            glBindTexture( GL_TEXTURE_2D, atlasHandle );
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_RED,
+                          FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
+                          0, GL_RED, GL_UNSIGNED_BYTE, atlasBitmap.data() );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+            glBindTexture( GL_TEXTURE_2D, 0 );
+        }
+    }
+
+    bool AssetManager::LoadFontData( const char * filePath, f32 inFontSize, Serializer & serializer ) {
+        // Read TTF file
+        FILE * f = fopen( filePath, "rb" );
+        if ( !f ) {
+            LOG_ERROR( "LoadFontData — could not open %s", filePath );
+            return false;
+        }
+
+        fseek( f, 0, SEEK_END );
+        const long fileSize = ftell( f );
+        fseek( f, 0, SEEK_SET );
+
+        std::vector<u8> ttfBuffer( fileSize );
+        fread( ttfBuffer.data(), 1, fileSize, f );
+        fclose( f );
+
+        // Bake the font atlas
+        std::vector<u8> atlasBitmap( FONT_ATLAS_WIDTH * FONT_ATLAS_HEIGHT );
+        stbtt_bakedchar bakedCharData[FONT_CHAR_COUNT];
+
+        const i32 result = stbtt_BakeFontBitmap(
+            ttfBuffer.data(), 0,
+            inFontSize,
+            atlasBitmap.data(), FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
+            FONT_FIRST_CHAR, FONT_CHAR_COUNT,
+            bakedCharData
+        );
+
+        if ( result <= 0 ) {
+            LOG_ERROR( "LoadFontData — stbtt_BakeFontBitmap failed for %s (returned %d)", filePath, result );
+        }
+
+        // Write to serializer (must match Font::Serialize order)
+        LargeString pathStr = LargeString::FromLiteral( filePath );
+        serializer( "Path", pathStr );
+        serializer( "FontSize", inFontSize );
+
+        std::vector<u8> charBytes( sizeof( bakedCharData ) );
+        std::memcpy( charBytes.data(), bakedCharData, sizeof( bakedCharData ) );
+        serializer( "CharData", charBytes );
+
+        serializer( "AtlasBitmap", atlasBitmap );
 
         return true;
     }

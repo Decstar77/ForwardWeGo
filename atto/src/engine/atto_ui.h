@@ -19,9 +19,12 @@ namespace atto {
     constexpr i32 FONT_FIRST_CHAR   = 32;  // space
     constexpr i32 FONT_CHAR_COUNT   = 96;  // ASCII 32-127
 
+    class Serializer;
+
     class Font {
     public:
         bool LoadFromFile( const char * filePath, f32 fontSize );
+        void Serialize( Serializer & serializer );
         bool IsValid() const { return atlasHandle != 0; }
 
         const LargeString & GetPath()     const { return path; }

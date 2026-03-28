@@ -9,6 +9,8 @@
 namespace atto {
 
     class StaticModel;
+    class AnimatedModel;
+    class Font;
 
     // Type trait to detect if a type has a Serialize(Serializer&) method
     template<typename T, typename = void>
@@ -60,8 +62,10 @@ namespace atto {
         inline void operator() ( const char * key, SmallString & value ) { Op( key, value ); }
         inline void operator() ( const char * key, LargeString & value ) { Op( key, value ); }
 
-        // Special case: const StaticModel * (saves path string, loads via Renderer)
+        // Special case: resource pointers (saves path string, loads via Renderer)
         inline void operator() ( const char * key, const StaticModel *& value ) { OpStaticModel( key, value ); }
+        inline void operator() ( const char * key, const AnimatedModel *& value ) { OpAnimatedModel( key, value ); }
+        inline void operator() ( const char * key, const Font *& value ) { OpFont( key, value ); }
 
         // Primitive vector types
         inline void operator() ( const char * key, std::vector<u8> & value ) { OpArrayPrimitive( key, value ); }
@@ -195,6 +199,8 @@ namespace atto {
 
         // Special-case operations (not pure virtual — have default implementations)
         virtual void OpStaticModel( const char * key, const StaticModel *& value );
+        virtual void OpAnimatedModel( const char * key, const AnimatedModel *& value );
+        virtual void OpFont( const char * key, const Font *& value );
 
     protected:
         bool isSaving;
@@ -341,6 +347,9 @@ namespace atto {
         std::string     SaveFilePicker( const std::string & basePath, const std::string & extensions );  // "png;jpg;fbx"
 
         bool            LoadTextureData( const char * filePath, Serializer & serializer );
+        bool            LoadStaticModelData( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadAnimatedModelData( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadFontData( const char * filePath, f32 fontSize, Serializer & serializer );
 
         std::vector< std::string > GetFilesInFolderRecursive( const char * path, const char * ext );
     };

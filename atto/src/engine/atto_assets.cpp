@@ -31,6 +31,51 @@ namespace atto {
         }
     }
 
+    void Serializer::OpAnimatedModel( const char * key, const AnimatedModel *& value ) {
+        if ( IsSaving() ) {
+            std::string path;
+            if ( value ) {
+                path = value->GetPath();
+            }
+            Op( key, path );
+        }
+        else {
+            std::string path;
+            Op( key, path );
+            if ( !path.empty() ) {
+                value = Engine::Get().GetRenderer().GetOrLoadAnimatedModel( path.c_str() );
+            }
+            else {
+                value = nullptr;
+            }
+        }
+    }
+
+    void Serializer::OpFont( const char * key, const Font *& value ) {
+        if ( IsSaving() ) {
+            std::string path;
+            f32 size = 0.0f;
+            if ( value ) {
+                path = value->GetPath().GetCStr();
+                size = value->GetFontSize();
+            }
+            Op( key, path );
+            Op( "fontSize", size );
+        }
+        else {
+            std::string path;
+            f32 size = 0.0f;
+            Op( key, path );
+            Op( "fontSize", size );
+            if ( !path.empty() && size > 0.0f ) {
+                value = Engine::Get().GetRenderer().GetOrLoadFont( path.c_str(), size );
+            }
+            else {
+                value = nullptr;
+            }
+        }
+    }
+
     struct JsonSerializer::JsonContainer {
         nlohmann::json json;
     };

@@ -53,6 +53,8 @@ namespace atto {
         void Op( const char * key, LargeString & value ) override;
 
         void OpStaticModel( const char * key, const StaticModel *& value ) override;
+        void OpAnimatedModel( const char * key, const AnimatedModel *& value ) override;
+        void OpFont( const char * key, const Font *& value ) override;
 
     private:
         EditorAssetBrowser * assetBrowser = nullptr;

@@ -159,6 +159,85 @@ namespace atto {
     }
 
     // =========================================================================
+    // Material data (for serialization — stores paths instead of loaded textures)
+    // =========================================================================
+
+    struct MaterialData {
+        Vec3        albedo = Vec3( 0.8f );
+        f32         metalic = 0.0f;
+        f32         roughness = 0.5f;
+        std::string albedoTexturePath;
+        std::string metalicTexturePath;
+    };
+
+    static MaterialData ExtractMaterialData( aiMesh * mesh, const aiScene * scene ) {
+        MaterialData mat;
+
+        if ( mesh->mMaterialIndex >= scene->mNumMaterials ) {
+            return mat;
+        }
+
+        const aiMaterial * aiMat = scene->mMaterials[mesh->mMaterialIndex];
+
+        aiColor4D baseColor;
+        if ( aiMat->Get( AI_MATKEY_BASE_COLOR, baseColor ) == AI_SUCCESS ) {
+            mat.albedo = Vec3( baseColor.r, baseColor.g, baseColor.b );
+        }
+        else {
+            aiColor4D diffuse;
+            if ( aiMat->Get( AI_MATKEY_COLOR_DIFFUSE, diffuse ) == AI_SUCCESS ) {
+                mat.albedo = Vec3( diffuse.r, diffuse.g, diffuse.b );
+            }
+        }
+
+        ai_real metallic = 0.0f;
+        if ( aiMat->Get( AI_MATKEY_METALLIC_FACTOR, metallic ) == AI_SUCCESS ) {
+            mat.metalic = static_cast<f32>( metallic );
+        }
+
+        ai_real roughness = 0.5f;
+        if ( aiMat->Get( AI_MATKEY_ROUGHNESS_FACTOR, roughness ) == AI_SUCCESS ) {
+            mat.roughness = static_cast<f32>( roughness );
+        }
+
+        aiString texPath;
+        if ( aiMat->GetTexture( aiTextureType_DIFFUSE, 0, &texPath ) ) {
+            mat.albedoTexturePath = texPath.C_Str();
+        }
+        else if ( aiMat->GetTexture( aiTextureType_BASE_COLOR, 0, &texPath ) ) {
+            mat.albedoTexturePath = texPath.C_Str();
+        }
+
+        if ( aiMat->GetTexture( aiTextureType_SPECULAR, 0, &texPath ) ) {
+            mat.metalicTexturePath = texPath.C_Str();
+        }
+
+        return mat;
+    }
+
+    static void SerializeMaterialData( Serializer & serializer, MaterialData & mat ) {
+        serializer( "Albedo", mat.albedo );
+        serializer( "Metalic", mat.metalic );
+        serializer( "Roughness", mat.roughness );
+        serializer( "AlbedoTexture", mat.albedoTexturePath );
+        serializer( "MetalicTexture", mat.metalicTexturePath );
+    }
+
+    static Material MaterialDataToMaterial( const MaterialData & data ) {
+        Material mat;
+        mat.albedo = data.albedo;
+        mat.metalic = data.metalic;
+        mat.roughness = data.roughness;
+        if ( !data.albedoTexturePath.empty() ) {
+            mat.albedoTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.albedoTexturePath.c_str() );
+        }
+        if ( !data.metalicTexturePath.empty() ) {
+            mat.metalicTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.metalicTexturePath.c_str() );
+        }
+        return mat;
+    }
+
+    // =========================================================================
     // StaticModel loading helpers
     // =========================================================================
 
@@ -357,6 +436,133 @@ namespace atto {
         for ( const auto & mesh : meshes ) {
             mesh.Draw( shader );
         }
+    }
+
+    void StaticModel::Serialize( Serializer & serializer ) {
+        Destroy();
+
+        serializer( "Path", path );
+
+        i32 meshCount = 0;
+        serializer( "MeshCount", meshCount );
+
+        for ( i32 i = 0; i < meshCount; i++ ) {
+            std::vector<u8> vertexBytes;
+            std::vector<u8> indexBytes;
+            MaterialData matData;
+
+            serializer( "Vertices", vertexBytes );
+            serializer( "Indices", indexBytes );
+            SerializeMaterialData( serializer, matData );
+
+            i32 vertCount = static_cast<i32>( vertexBytes.size() / sizeof( Vertex ) );
+            i32 idxCount  = static_cast<i32>( indexBytes.size() / sizeof( u32 ) );
+
+            std::vector<Vertex> vertices( vertCount );
+            std::memcpy( vertices.data(), vertexBytes.data(), vertexBytes.size() );
+
+            std::vector<u32> indices( idxCount );
+            std::memcpy( indices.data(), indexBytes.data(), indexBytes.size() );
+
+            Mesh mesh;
+            mesh.Create( vertices, indices );
+            mesh.SetMaterial( MaterialDataToMaterial( matData ) );
+            meshes.push_back( std::move( mesh ) );
+        }
+
+        ComputeBounds();
+    }
+
+    bool AssetManager::LoadStaticModelData( const char * filePath, f32 scale, Serializer & serializer ) {
+        Assimp::Importer importer;
+
+        const aiScene * scene = importer.ReadFile( filePath,
+            aiProcess_Triangulate |
+            aiProcess_GenSmoothNormals |
+            aiProcess_FlipUVs |
+            aiProcess_CalcTangentSpace
+        );
+
+        if ( !scene || ( scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ) || !scene->mRootNode ) {
+            LOG_ERROR( "Assimp: %s", importer.GetErrorString() );
+            return false;
+        }
+
+        LargeString path = LargeString::FromLiteral( filePath );
+        serializer( "Path", path );
+
+        // Collect all meshes from node tree
+        struct MeshDataEntry {
+            std::vector<Vertex> vertices;
+            std::vector<u32>    indices;
+            MaterialData        material;
+        };
+
+        std::vector<MeshDataEntry> meshEntries;
+
+        // Lambda to recursively collect mesh data
+        std::function<void( aiNode * )> collectMeshes = [&]( aiNode * node ) {
+            for ( u32 i = 0; i < node->mNumMeshes; i++ ) {
+                aiMesh * mesh = scene->mMeshes[node->mMeshes[i]];
+                MeshDataEntry entry;
+
+                entry.vertices.reserve( mesh->mNumVertices );
+                for ( u32 v = 0; v < mesh->mNumVertices; v++ ) {
+                    Vertex vertex = {};
+                    vertex.position.x = mesh->mVertices[v].x * scale;
+                    vertex.position.y = mesh->mVertices[v].y * scale;
+                    vertex.position.z = mesh->mVertices[v].z * scale;
+
+                    if ( mesh->HasNormals() ) {
+                        vertex.normal.x = mesh->mNormals[v].x;
+                        vertex.normal.y = mesh->mNormals[v].y;
+                        vertex.normal.z = mesh->mNormals[v].z;
+                    }
+
+                    if ( mesh->mTextureCoords[0] ) {
+                        vertex.texCoords.x = mesh->mTextureCoords[0][v].x;
+                        vertex.texCoords.y = mesh->mTextureCoords[0][v].y;
+                    }
+
+                    entry.vertices.push_back( vertex );
+                }
+
+                for ( u32 f = 0; f < mesh->mNumFaces; f++ ) {
+                    aiFace & face = mesh->mFaces[f];
+                    for ( u32 j = 0; j < face.mNumIndices; j++ ) {
+                        entry.indices.push_back( face.mIndices[j] );
+                    }
+                }
+
+                entry.material = ExtractMaterialData( mesh, scene );
+                meshEntries.push_back( std::move( entry ) );
+            }
+            for ( u32 i = 0; i < node->mNumChildren; i++ ) {
+                collectMeshes( node->mChildren[i] );
+            }
+        };
+
+        collectMeshes( scene->mRootNode );
+
+        i32 meshCount = static_cast<i32>( meshEntries.size() );
+        serializer( "MeshCount", meshCount );
+
+        for ( const MeshDataEntry & entry : meshEntries ) {
+            std::vector<u8> vertexBytes( entry.vertices.size() * sizeof( Vertex ) );
+            std::memcpy( vertexBytes.data(), entry.vertices.data(), vertexBytes.size() );
+
+            std::vector<u8> indexBytes( entry.indices.size() * sizeof( u32 ) );
+            std::memcpy( indexBytes.data(), entry.indices.data(), indexBytes.size() );
+
+            serializer( "Vertices", vertexBytes );
+            serializer( "Indices", indexBytes );
+
+            MaterialData mat = entry.material;
+            SerializeMaterialData( serializer, mat );
+        }
+
+        LOG_INFO( "Loaded model data '%s' (%d meshes)", filePath, meshCount );
+        return true;
     }
 
     // =========================================================================
@@ -646,6 +852,284 @@ namespace atto {
             }
         }
         return -1;
+    }
+
+    // =========================================================================
+    // AnimatedModel serialization helpers
+    // =========================================================================
+
+    static void SerializeBoneNode( Serializer & serializer, BoneNode & node ) {
+        serializer( "Name", node.name );
+        serializer( "Transform", node.transformation );
+        i32 childCount = static_cast<i32>( node.children.size() );
+        serializer( "ChildCount", childCount );
+        if ( serializer.IsLoading() ) {
+            node.children.resize( childCount );
+        }
+        for ( i32 i = 0; i < childCount; i++ ) {
+            SerializeBoneNode( serializer, node.children[i] );
+        }
+    }
+
+    static void SerializeAnimationChannel( Serializer & serializer, BoneAnimationChannel & channel ) {
+        serializer( "BoneName", channel.boneName );
+
+        // Position keyframes as raw bytes (POD: f32 time + Vec3 position = 16 bytes)
+        if ( serializer.IsSaving() ) {
+            std::vector<u8> posBytes( channel.positionKeys.size() * sizeof( PositionKeyframe ) );
+            std::memcpy( posBytes.data(), channel.positionKeys.data(), posBytes.size() );
+            serializer( "PosKeys", posBytes );
+        }
+        else {
+            std::vector<u8> posBytes;
+            serializer( "PosKeys", posBytes );
+            channel.positionKeys.resize( posBytes.size() / sizeof( PositionKeyframe ) );
+            std::memcpy( channel.positionKeys.data(), posBytes.data(), posBytes.size() );
+        }
+
+        // Rotation keyframes (POD: f32 time + Quat rotation = 20 bytes)
+        if ( serializer.IsSaving() ) {
+            std::vector<u8> rotBytes( channel.rotationKeys.size() * sizeof( RotationKeyframe ) );
+            std::memcpy( rotBytes.data(), channel.rotationKeys.data(), rotBytes.size() );
+            serializer( "RotKeys", rotBytes );
+        }
+        else {
+            std::vector<u8> rotBytes;
+            serializer( "RotKeys", rotBytes );
+            channel.rotationKeys.resize( rotBytes.size() / sizeof( RotationKeyframe ) );
+            std::memcpy( channel.rotationKeys.data(), rotBytes.data(), rotBytes.size() );
+        }
+
+        // Scale keyframes (POD: f32 time + Vec3 scale = 16 bytes)
+        if ( serializer.IsSaving() ) {
+            std::vector<u8> scaleBytes( channel.scaleKeys.size() * sizeof( ScaleKeyframe ) );
+            std::memcpy( scaleBytes.data(), channel.scaleKeys.data(), scaleBytes.size() );
+            serializer( "ScaleKeys", scaleBytes );
+        }
+        else {
+            std::vector<u8> scaleBytes;
+            serializer( "ScaleKeys", scaleBytes );
+            channel.scaleKeys.resize( scaleBytes.size() / sizeof( ScaleKeyframe ) );
+            std::memcpy( channel.scaleKeys.data(), scaleBytes.data(), scaleBytes.size() );
+        }
+    }
+
+    static void SerializeAnimationClip( Serializer & serializer, AnimationClip & clip ) {
+        serializer( "Name", clip.name );
+        serializer( "Duration", clip.duration );
+        serializer( "TicksPerSecond", clip.ticksPerSecond );
+        i32 channelCount = static_cast<i32>( clip.channels.size() );
+        serializer( "ChannelCount", channelCount );
+        if ( serializer.IsLoading() ) {
+            clip.channels.resize( channelCount );
+        }
+        for ( i32 i = 0; i < channelCount; i++ ) {
+            SerializeAnimationChannel( serializer, clip.channels[i] );
+        }
+    }
+
+    void AnimatedModel::Serialize( Serializer & serializer ) {
+        Destroy();
+
+        serializer( "Path", path );
+
+        // Meshes
+        i32 meshCount = 0;
+        serializer( "MeshCount", meshCount );
+
+        for ( i32 i = 0; i < meshCount; i++ ) {
+            std::vector<u8> vertexBytes;
+            std::vector<u8> indexBytes;
+            MaterialData matData;
+
+            serializer( "Vertices", vertexBytes );
+            serializer( "Indices", indexBytes );
+            SerializeMaterialData( serializer, matData );
+
+            i32 vertCount = static_cast<i32>( vertexBytes.size() / sizeof( AnimationVertex ) );
+            i32 idxCount  = static_cast<i32>( indexBytes.size() / sizeof( u32 ) );
+
+            std::vector<AnimationVertex> vertices( vertCount );
+            std::memcpy( vertices.data(), vertexBytes.data(), vertexBytes.size() );
+
+            std::vector<u32> indices( idxCount );
+            std::memcpy( indices.data(), indexBytes.data(), indexBytes.size() );
+
+            AnimatedMesh mesh;
+            mesh.Create( vertices, indices );
+            mesh.SetMaterial( MaterialDataToMaterial( matData ) );
+            meshes.push_back( std::move( mesh ) );
+        }
+
+        // Bone info map
+        i32 boneMapCount = 0;
+        serializer( "BoneMapCount", boneMapCount );
+        for ( i32 i = 0; i < boneMapCount; i++ ) {
+            std::string boneName;
+            BoneInfo info;
+            serializer( "BoneName", boneName );
+            serializer( "BoneId", info.id );
+            serializer( "BoneOffset", info.offsetMatrix );
+            boneInfoMap[boneName] = info;
+        }
+
+        serializer( "BoneCounter", boneCounter );
+        serializer( "GlobalInverseTransform", globalInverseTransform );
+
+        // Bone hierarchy
+        SerializeBoneNode( serializer, rootNode );
+
+        // Animations
+        i32 animCount = 0;
+        serializer( "AnimCount", animCount );
+        if ( serializer.IsLoading() ) {
+            animations.resize( animCount );
+        }
+        for ( i32 i = 0; i < animCount; i++ ) {
+            SerializeAnimationClip( serializer, animations[i] );
+        }
+    }
+
+    bool AssetManager::LoadAnimatedModelData( const char * filePath, f32 scale, Serializer & serializer ) {
+        Assimp::Importer importer;
+
+        const aiScene * scene = importer.ReadFile( filePath,
+            aiProcess_Triangulate |
+            aiProcess_GenSmoothNormals |
+            aiProcess_FlipUVs |
+            aiProcess_LimitBoneWeights
+        );
+
+        if ( !scene || ( scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ) || !scene->mRootNode ) {
+            LOG_ERROR( "Assimp: %s", importer.GetErrorString() );
+            return false;
+        }
+
+        LargeString pathStr = LargeString::FromLiteral( filePath );
+        serializer( "Path", pathStr );
+
+        // Collect skinned meshes
+        struct SkinnedMeshEntry {
+            std::vector<AnimationVertex> vertices;
+            std::vector<u32>             indices;
+            MaterialData                 material;
+        };
+
+        std::vector<SkinnedMeshEntry> meshEntries;
+        std::unordered_map<std::string, BoneInfo> boneMap;
+        i32 boneCount = 0;
+
+        std::function<void( aiNode * )> collectMeshes = [&]( aiNode * node ) {
+            for ( u32 i = 0; i < node->mNumMeshes; i++ ) {
+                aiMesh * mesh = scene->mMeshes[node->mMeshes[i]];
+                SkinnedMeshEntry entry;
+
+                entry.vertices.resize( mesh->mNumVertices );
+                for ( u32 v = 0; v < mesh->mNumVertices; v++ ) {
+                    AnimationVertex & vertex = entry.vertices[v];
+                    vertex.position.x = mesh->mVertices[v].x * scale;
+                    vertex.position.y = mesh->mVertices[v].y * scale;
+                    vertex.position.z = mesh->mVertices[v].z * scale;
+
+                    if ( mesh->HasNormals() ) {
+                        vertex.normal.x = mesh->mNormals[v].x;
+                        vertex.normal.y = mesh->mNormals[v].y;
+                        vertex.normal.z = mesh->mNormals[v].z;
+                    }
+
+                    if ( mesh->mTextureCoords[0] ) {
+                        vertex.texCoords.x = mesh->mTextureCoords[0][v].x;
+                        vertex.texCoords.y = mesh->mTextureCoords[0][v].y;
+                    }
+                }
+
+                for ( u32 f = 0; f < mesh->mNumFaces; f++ ) {
+                    aiFace & face = mesh->mFaces[f];
+                    for ( u32 j = 0; j < face.mNumIndices; j++ ) {
+                        entry.indices.push_back( face.mIndices[j] );
+                    }
+                }
+
+                // Extract bone data
+                ExtractBoneData( mesh, entry.vertices, boneMap, boneCount );
+
+                // Normalize weights
+                for ( AnimationVertex & v : entry.vertices ) {
+                    f32 totalWeight = 0.0f;
+                    for ( i32 b = 0; b < MAX_BONES_PER_VERTEX; b++ ) {
+                        if ( v.boneIDs[b] >= 0 ) {
+                            totalWeight += v.boneWeights[b];
+                        }
+                    }
+                    if ( totalWeight > 0.0f && Abs( totalWeight - 1.0f ) > 1e-6f ) {
+                        f32 invTotal = 1.0f / totalWeight;
+                        for ( i32 b = 0; b < MAX_BONES_PER_VERTEX; b++ ) {
+                            v.boneWeights[b] *= invTotal;
+                        }
+                    }
+                }
+
+                entry.material = ExtractMaterialData( mesh, scene );
+                meshEntries.push_back( std::move( entry ) );
+            }
+            for ( u32 i = 0; i < node->mNumChildren; i++ ) {
+                collectMeshes( node->mChildren[i] );
+            }
+        };
+
+        collectMeshes( scene->mRootNode );
+
+        // Write meshes
+        i32 meshCount = static_cast<i32>( meshEntries.size() );
+        serializer( "MeshCount", meshCount );
+
+        for ( const SkinnedMeshEntry & entry : meshEntries ) {
+            std::vector<u8> vertexBytes( entry.vertices.size() * sizeof( AnimationVertex ) );
+            std::memcpy( vertexBytes.data(), entry.vertices.data(), vertexBytes.size() );
+
+            std::vector<u8> indexBytes( entry.indices.size() * sizeof( u32 ) );
+            std::memcpy( indexBytes.data(), entry.indices.data(), indexBytes.size() );
+
+            serializer( "Vertices", vertexBytes );
+            serializer( "Indices", indexBytes );
+
+            MaterialData mat = entry.material;
+            SerializeMaterialData( serializer, mat );
+        }
+
+        // Write bone info map
+        i32 boneMapCount = static_cast<i32>( boneMap.size() );
+        serializer( "BoneMapCount", boneMapCount );
+        for ( const auto & pair : boneMap ) {
+            std::string boneName = pair.first;
+            BoneInfo info = pair.second;
+            serializer( "BoneName", boneName );
+            serializer( "BoneId", info.id );
+            serializer( "BoneOffset", info.offsetMatrix );
+        }
+
+        serializer( "BoneCounter", boneCount );
+
+        Mat4 globalInverse = glm::inverse( AiMat4ToGlm( scene->mRootNode->mTransformation ) );
+        serializer( "GlobalInverseTransform", globalInverse );
+
+        // Write bone hierarchy
+        BoneNode rootBoneNode = BuildBoneHierarchy( scene->mRootNode );
+        SerializeBoneNode( serializer, rootBoneNode );
+
+        // Write animations
+        std::vector<AnimationClip> clips;
+        ExtractAnimations( scene, clips );
+        i32 animCount = static_cast<i32>( clips.size() );
+        serializer( "AnimCount", animCount );
+        for ( i32 i = 0; i < animCount; i++ ) {
+            SerializeAnimationClip( serializer, clips[i] );
+        }
+
+        LOG_INFO( "Loaded animated model data '%s' (%d meshes, %d bones, %d animations)",
+            filePath, meshCount, boneCount, animCount );
+
+        return true;
     }
 
     // =========================================================================

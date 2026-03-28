@@ -1,5 +1,6 @@
 #include "editor_property_serializer.h"
 #include "editor_asset_browser.h"
+#include "engine/atto_engine.h"
 
 #include <imgui.h>
 #include <cstdio>
@@ -448,6 +449,17 @@ namespace atto {
         }
 
         ImGui::PopID();
+    }
+
+    void ImguiPropertySerializer::OpAnimatedModel( const char * key, const AnimatedModel *& value ) {
+        const char * currentPath = value ? value->GetPath() : "<none>";
+        ImGui::Text( "%s: %s", key, currentPath );
+    }
+
+    void ImguiPropertySerializer::OpFont( const char * key, const Font *& value ) {
+        const char * currentPath = value ? value->GetPath().GetCStr() : "<none>";
+        f32 size = value ? value->GetFontSize() : 0.0f;
+        ImGui::Text( "%s: %s (%.1f)", key, currentPath, size );
     }
 
 }
