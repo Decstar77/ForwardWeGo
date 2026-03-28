@@ -350,6 +350,9 @@ namespace atto {
         bool            LoadStaticModelData( const char * filePath, f32 scale, Serializer & serializer );
         bool            LoadAnimatedModelData( const char * filePath, f32 scale, Serializer & serializer );
         bool            LoadFontData( const char * filePath, f32 fontSize, Serializer & serializer );
+        bool            LoadWAV( const char * path, bool mono, Serializer & serializer );
+        bool            LoadOGG( const char * path, bool mono, Serializer & serializer );
+        bool            LoadSound( const char * path, bool mono, Serializer & serializer );  // Auto-detects format
 
         std::vector< std::string > GetFilesInFolderRecursive( const char * path, const char * ext );
     };

@@ -9,6 +9,11 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype/stb_truetype.h"
 
+#define STB_VORBIS_HEADER_ONLY
+#include <stb_vorbis/stb_vorbis.c>
+
+#include <audio/AudioFile.h>
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -500,4 +505,140 @@ namespace atto {
         return true;
     }
 
+    // =========================================================================
+    // WAV raw loading (AudioFile library)
+    // =========================================================================
+
+    bool AssetManager::LoadWAV( const char * path, bool mono, Serializer & serializer ) {
+        AudioFile<float> audioFile;
+        if ( !audioFile.load( path ) ) {
+            LOG_ERROR( "Failed to load WAV file: %s", path );
+            return false;
+        }
+
+        i32 channels = audioFile.getNumChannels();
+        i32 sampleRate = static_cast<i32>( audioFile.getSampleRate() );
+        i32 numSamples = audioFile.getNumSamplesPerChannel();
+
+        std::vector<i16> samples;
+
+        if ( mono && channels == 2 ) {
+            // Downmix stereo to mono
+            samples.resize( numSamples );
+            for ( i32 i = 0; i < numSamples; ++i ) {
+                f32 mixed = ( audioFile.samples[0][i] + audioFile.samples[1][i] ) * 0.5f;
+                mixed = mixed < -1.0f ? -1.0f : ( mixed > 1.0f ? 1.0f : mixed );
+                samples[i] = static_cast<i16>( mixed * 32767.0f );
+            }
+            channels = 1;
+        }
+        else {
+            // Interleave channels and convert to i16
+            i32 totalSamples = numSamples * channels;
+            samples.resize( totalSamples );
+            for ( i32 i = 0; i < numSamples; ++i ) {
+                for ( i32 ch = 0; ch < channels; ++ch ) {
+                    f32 sample = audioFile.samples[ch][i];
+                    sample = sample < -1.0f ? -1.0f : ( sample > 1.0f ? 1.0f : sample );
+                    samples[i * channels + ch] = static_cast<i16>( sample * 32767.0f );
+                }
+            }
+        }
+
+        // Write to serializer (must match the read order in GetOrLoadSoundHandle)
+        std::string name = mono ? std::string( path ) + ":mono" : std::string( path );
+        serializer( "Name", name );
+        serializer( "Channels", channels );
+        serializer( "SampleRate", sampleRate );
+
+        i32 sampleCount = static_cast<i32>( samples.size() );
+        serializer( "SampleCount", sampleCount );
+
+        std::vector<u8> sampleBytes( sampleCount * sizeof( i16 ) );
+        std::memcpy( sampleBytes.data(), samples.data(), sampleBytes.size() );
+        serializer( "Samples", sampleBytes );
+
+        return true;
+    }
+
+    // =========================================================================
+    // OGG raw loading (stb_vorbis)
+    // =========================================================================
+
+    bool AssetManager::LoadOGG( const char * path, bool mono, Serializer & serializer ) {
+        int channels = 0;
+        int sampleRate = 0;
+        short * rawSamples = nullptr;
+
+        int numSamples = stb_vorbis_decode_filename( path, &channels, &sampleRate, &rawSamples );
+        if ( numSamples <= 0 ) {
+            LOG_ERROR( "Failed to load OGG file: %s", path );
+            return false;
+        }
+
+        std::vector<i16> samples;
+        i32 finalChannels = channels;
+
+        if ( mono && channels == 2 ) {
+            // Downmix stereo to mono
+            samples.resize( numSamples );
+            for ( i32 i = 0; i < numSamples; ++i ) {
+                i32 mixed = ( static_cast<i32>( rawSamples[i * 2] ) + static_cast<i32>( rawSamples[i * 2 + 1] ) ) / 2;
+                samples[i] = static_cast<i16>( mixed );
+            }
+            finalChannels = 1;
+        }
+        else {
+            i32 totalSamples = numSamples * channels;
+            samples.assign( rawSamples, rawSamples + totalSamples );
+        }
+
+        free( rawSamples );
+
+        // Write to serializer (must match the read order in GetOrLoadSoundHandle)
+        std::string name = mono ? std::string( path ) + ":mono" : std::string( path );
+        serializer( "Name", name );
+        serializer( "Channels", finalChannels );
+        serializer( "SampleRate", sampleRate );
+
+        i32 sampleCount = static_cast<i32>( samples.size() );
+        serializer( "SampleCount", sampleCount );
+
+        std::vector<u8> sampleBytes( sampleCount * sizeof( i16 ) );
+        std::memcpy( sampleBytes.data(), samples.data(), sampleBytes.size() );
+        serializer( "Samples", sampleBytes );
+
+        return true;
+    }
+
+    // =========================================================================
+    // Sound loading (auto-detect format)
+    // =========================================================================
+
+    // Case-insensitive string comparison (portable)
+    static bool StrEqualsIgnoreCase( const char * a, const char * b ) {
+        while ( *a && *b ) {
+            char ca = *a;
+            char cb = *b;
+            if ( ca >= 'A' && ca <= 'Z' ) ca += 'a' - 'A';
+            if ( cb >= 'A' && cb <= 'Z' ) cb += 'a' - 'A';
+            if ( ca != cb ) return false;
+            ++a;
+            ++b;
+        }
+        return *a == *b;
+    }
+
+    bool AssetManager::LoadSound( const char * path, bool mono, Serializer & serializer ) {
+        const char * ext = strrchr( path, '.' );
+        if ( ext ) {
+            if ( StrEqualsIgnoreCase( ext, ".ogg" ) ) {
+                return LoadOGG( path, mono, serializer );
+            }
+            else if ( StrEqualsIgnoreCase( ext, ".wav" ) ) {
+                return LoadWAV( path, mono, serializer );
+            }
+        }
+        return LoadWAV( path, mono, serializer );
+    }
 } // namespace atto

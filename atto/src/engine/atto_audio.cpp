@@ -11,16 +11,9 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-// For loading audio files
-#include <audio/AudioFile.h>
-#define STB_VORBIS_HEADER_ONLY
-#include <stb_vorbis/stb_vorbis.c>
-
 #include <cstring>
 #include <cstdlib>
 #include <format>
-
-#include "engine/atto_engine.h"
 
 namespace atto {
 
@@ -216,245 +209,6 @@ namespace atto {
         LOG_INFO( "AudioSystem shutdown" );
     }
 
-    AudioBuffer * AudioSystem::LoadWAV( const char * path, bool mono ) {
-        if ( !initialized ) {
-            LOG_ERROR( "AudioSystem not initialized" );
-            return nullptr;
-        }
-
-        // Use AudioFile library to load WAV
-        AudioFile<float> audioFile;
-        if ( !audioFile.load( path ) ) {
-            LOG_ERROR( "Failed to load WAV file: %s", path );
-            return nullptr;
-        }
-
-        i32 channels = audioFile.getNumChannels();
-        i32 sampleRate = static_cast<i32>(audioFile.getSampleRate());
-        i32 numSamples = audioFile.getNumSamplesPerChannel();
-
-        // Downmix stereo to mono if requested (required for OpenAL 3D spatialization)
-        if ( mono && channels == 2 ) {
-            i16 * samples = static_cast<i16 *>(malloc( numSamples * sizeof( i16 ) ));
-            if ( !samples ) {
-                LOG_ERROR( "Failed to allocate memory for audio samples" );
-                return nullptr;
-            }
-
-            for ( i32 i = 0; i < numSamples; ++i ) {
-                f32 mixed = ( audioFile.samples[0][i] + audioFile.samples[1][i] ) * 0.5f;
-                mixed = mixed < -1.0f ? -1.0f : (mixed > 1.0f ? 1.0f : mixed);
-                samples[i] = static_cast<i16>( mixed * 32767.0f );
-            }
-
-            channels = 1;
-
-            // Find a free buffer slot
-            u32 bufferIndex = 0;
-            bool found = false;
-            for ( u32 i = 1; i < MAX_BUFFERS; ++i ) {
-                u32 idx = (nextBufferIndex + i) % MAX_BUFFERS;
-                if ( idx == 0 ) idx = 1;
-                if ( buffers[idx].alBuffer == 0 ) {
-                    bufferIndex = idx;
-                    found = true;
-                    break;
-                }
-            }
-
-            if ( !found ) {
-                LOG_ERROR( "No free audio buffer slots available" );
-                free( samples );
-                return nullptr;
-            }
-
-            AudioBuffer * handle = &buffers[bufferIndex];
-            handle->name = std::string( path ) + ":mono";
-            bool success = CreateBuffer( handle, samples, numSamples, 1, sampleRate );
-            free( samples );
-
-            if ( !success ) {
-                return nullptr;
-            }
-
-            nextBufferIndex = bufferIndex;
-
-            LOG_DEBUG( "Loaded WAV (downmixed to mono): %s (%.2fs, %dHz)",
-                path, buffers[bufferIndex].duration, sampleRate );
-
-            return handle;
-        }
-
-        // Convert float samples to i16
-        i32 totalSamples = numSamples * channels;
-        i16 * samples = static_cast<i16 *>(malloc( totalSamples * sizeof( i16 ) ));
-        if ( !samples ) {
-            LOG_ERROR( "Failed to allocate memory for audio samples" );
-            return nullptr;
-        }
-
-        // Interleave channels and convert to i16
-        for ( i32 i = 0; i < numSamples; ++i ) {
-            for ( i32 ch = 0; ch < channels; ++ch ) {
-                f32 sample = audioFile.samples[ch][i];
-                // Clamp to [-1, 1] and convert to i16
-                sample = sample < -1.0f ? -1.0f : (sample > 1.0f ? 1.0f : sample);
-                samples[i * channels + ch] = static_cast<i16>( sample * 32767.0f );
-            }
-        }
-
-        // Find a free buffer slot
-        u32 bufferIndex = 0;
-        bool found = false;
-        for ( u32 i = 1; i < MAX_BUFFERS; ++i ) {
-            u32 idx = (nextBufferIndex + i) % MAX_BUFFERS;
-            if ( idx == 0 ) idx = 1;  // Skip index 0
-            if ( buffers[idx].alBuffer == 0 ) {
-                bufferIndex = idx;
-                found = true;
-                break;
-            }
-        }
-
-        if ( !found ) {
-            LOG_ERROR( "No free audio buffer slots available" );
-            free( samples );
-            return nullptr;
-        }
-
-        AudioBuffer * handle = &buffers[bufferIndex];
-        handle->name = path;
-        bool success = CreateBuffer( handle, samples, totalSamples, channels, sampleRate );
-        free( samples );
-
-        if ( !success ) {
-            return nullptr;
-        }
-
-        nextBufferIndex = bufferIndex;
-
-        LOG_DEBUG( "Loaded WAV: %s (%.2fs, %dHz, %dch)",
-            path, buffers[bufferIndex].duration, sampleRate, channels );
-
-        return handle;
-    }
-
-    AudioBuffer * AudioSystem::LoadOGG( const char * path, bool mono ) {
-        if ( !initialized ) {
-            LOG_ERROR( "AudioSystem not initialized" );
-            return nullptr;
-        }
-
-        // Use stb_vorbis to load OGG
-        int channels = 0;
-        int sampleRate = 0;
-        short * samples = nullptr;
-
-        int numSamples = stb_vorbis_decode_filename( path, &channels, &sampleRate, &samples );
-        if ( numSamples <= 0 ) {
-            LOG_ERROR( "Failed to load OGG file: %s", path );
-            return nullptr;
-        }
-
-        // Downmix stereo to mono if requested (required for OpenAL 3D spatialization)
-        i32 finalChannels = channels;
-        i32 finalTotalSamples = numSamples * channels;
-        i16 * finalSamples = samples;
-        i16 * monoSamples = nullptr;
-
-        if ( mono && channels == 2 ) {
-            monoSamples = static_cast<i16 *>(malloc( numSamples * sizeof( i16 ) ));
-            if ( !monoSamples ) {
-                LOG_ERROR( "Failed to allocate memory for mono downmix" );
-                free( samples );
-                return nullptr;
-            }
-
-            for ( i32 i = 0; i < numSamples; ++i ) {
-                i32 mixed = ( static_cast<i32>(samples[i * 2]) + static_cast<i32>(samples[i * 2 + 1]) ) / 2;
-                monoSamples[i] = static_cast<i16>( mixed );
-            }
-
-            finalChannels = 1;
-            finalTotalSamples = numSamples;
-            finalSamples = monoSamples;
-        }
-
-        // Find a free buffer slot
-        u32 bufferIndex = 0;
-        bool found = false;
-        for ( u32 i = 1; i < MAX_BUFFERS; ++i ) {
-            u32 idx = (nextBufferIndex + i) % MAX_BUFFERS;
-            if ( idx == 0 ) idx = 1;
-            if ( buffers[idx].alBuffer == 0 ) {
-                bufferIndex = idx;
-                found = true;
-                break;
-            }
-        }
-
-        if ( !found ) {
-            LOG_ERROR( "No free audio buffer slots available" );
-            free( samples );
-            free( monoSamples );
-            return nullptr;
-        }
-
-        AudioBuffer * handle = &buffers[bufferIndex];
-        handle->name = mono ? std::string( path ) + ":mono" : std::string( path );
-        bool success = CreateBuffer( handle, finalSamples, finalTotalSamples, finalChannels, sampleRate );
-        free( samples );
-        free( monoSamples );
-
-        if ( !success ) {
-            return nullptr;
-        }
-
-        nextBufferIndex = bufferIndex;
-
-        if ( mono && channels == 2 ) {
-            LOG_DEBUG( "Loaded OGG (downmixed to mono): %s (%.2fs, %dHz)",
-                path, buffers[bufferIndex].duration, sampleRate );
-        }
-        else {
-            LOG_DEBUG( "Loaded OGG: %s (%.2fs, %dHz, %dch)",
-                path, buffers[bufferIndex].duration, sampleRate, channels );
-        }
-
-        return handle;
-    }
-
-    // Case-insensitive string comparison (portable)
-    static bool StrEqualsIgnoreCase( const char * a, const char * b ) {
-        while ( *a && *b ) {
-            char ca = *a;
-            char cb = *b;
-            // Convert to lowercase
-            if ( ca >= 'A' && ca <= 'Z' ) ca += 'a' - 'A';
-            if ( cb >= 'A' && cb <= 'Z' ) cb += 'a' - 'A';
-            if ( ca != cb ) return false;
-            ++a;
-            ++b;
-        }
-        return *a == *b;
-    }
-
-    AudioBuffer * AudioSystem::LoadSound( const char * path, bool mono ) {
-        // Check file extension
-        const char * ext = strrchr( path, '.' );
-        if ( ext ) {
-            if ( StrEqualsIgnoreCase( ext, ".ogg" ) ) {
-                return LoadOGG( path, mono );
-            }
-            else if ( StrEqualsIgnoreCase( ext, ".wav" ) ) {
-                return LoadWAV( path, mono );
-            }
-        }
-
-        // Default to WAV
-        return LoadWAV( path, mono );
-    }
-
     bool AudioSystem::CreateBuffer( AudioBuffer * handle, const i16 * data, i32 sampleCount, i32 channels, i32 sampleRate ) {
         AudioBuffer & buffer = *handle;
 
@@ -539,8 +293,60 @@ namespace atto {
             }
         }
 
-        // Not found, load it
-        AudioBuffer * handle = LoadSound( path, mono );
+        if ( !initialized ) {
+            LOG_ERROR( "AudioSystem not initialized" );
+            return nullptr;
+        }
+
+        // Load raw audio data into serializer
+        BinarySerializer serializer( true );
+        if ( !Engine::Get().GetAssetManager().LoadSound( path, mono, serializer ) ) {
+            return nullptr;
+        }
+        serializer.Reset( false );
+
+        // Read back from serializer
+        std::string name;
+        i32 channels = 0;
+        i32 sampleRate = 0;
+        i32 sampleCount = 0;
+        serializer( "Name", name );
+        serializer( "Channels", channels );
+        serializer( "SampleRate", sampleRate );
+        serializer( "SampleCount", sampleCount );
+
+        std::vector<u8> sampleBytes;
+        serializer( "Samples", sampleBytes );
+
+        // Find a free buffer slot
+        u32 bufferIndex = 0;
+        bool found = false;
+        for ( u32 i = 1; i < MAX_BUFFERS; ++i ) {
+            u32 idx = ( nextBufferIndex + i ) % MAX_BUFFERS;
+            if ( idx == 0 ) idx = 1;
+            if ( buffers[idx].alBuffer == 0 ) {
+                bufferIndex = idx;
+                found = true;
+                break;
+            }
+        }
+
+        if ( !found ) {
+            LOG_ERROR( "No free audio buffer slots available" );
+            return nullptr;
+        }
+
+        AudioBuffer * handle = &buffers[bufferIndex];
+        handle->name = name;
+        bool success = CreateBuffer( handle, reinterpret_cast<const i16 *>( sampleBytes.data() ), sampleCount, channels, sampleRate );
+
+        if ( !success ) {
+            return nullptr;
+        }
+
+        nextBufferIndex = bufferIndex;
+
+        LOG_DEBUG( "Loaded sound: %s (%.2fs, %dHz, %dch)", path, handle->duration, sampleRate, channels );
 
         return handle;
     }

@@ -91,9 +91,6 @@ namespace atto {
 
         // Buffer management - load sound data
         // When mono=true, stereo files are downmixed to mono (required for 3D positional audio)
-        AudioBuffer *       LoadWAV( const char * path, bool mono = false );
-        AudioBuffer *       LoadOGG( const char * path, bool mono = false );
-        AudioBuffer *       LoadSound( const char * path, bool mono = false );  // Auto-detects format
         void                DestroyBuffer( AudioBuffer * buffer  );
 
         AudioBuffer *       GetOrLoadSound( const char * path, bool mono = false );
