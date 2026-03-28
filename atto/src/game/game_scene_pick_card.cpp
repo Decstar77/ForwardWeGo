@@ -41,21 +41,7 @@ namespace atto {
         sndCardSlide.Initialize();
         sndCardSlide.LoadSounds( {
             "card/card-slide-1.ogg",
-            "card/card-slide-2.ogg",
-            "card/card-slide-3.ogg",
-            "card/card-slide-4.ogg",
-            "card/card-slide-5.ogg",
-            "card/card-slide-6.ogg",
-            "card/card-slide-7.ogg",
-            "card/card-slide-8.ogg",
-        } );
 
-        sndCardPlace.Initialize();
-        sndCardPlace.LoadSounds( {
-            "card/card-place-1.ogg",
-            "card/card-place-2.ogg",
-            "card/card-place-3.ogg",
-            "card/card-slide-4.ogg",
         } );
 
         Engine::Get().GetInput().SetCursorCaptured( false );
@@ -86,7 +72,8 @@ namespace atto {
             cards[i].targetY = centerY;
             cards[i].x       = cards[i].targetX;
             cards[i].y       = (f32)winSize.y + cardH;
-            cards[i].hovered = false;
+            cards[i].hovered     = false;
+            cards[i].soundPlayed = false;
         }
     }
 
@@ -129,6 +116,21 @@ namespace atto {
                 f32 eased = EaseOutCubic( t );
                 f32 startY = (f32)winSize.y + cardH;
                 cards[i].y = Lerp( startY, cards[i].targetY, eased );
+
+                if ( t >= 0.0f && cards[0].soundPlayed == false ) {
+                    cards[0].soundPlayed = true;
+                    sndCardSlide.Play();
+                }
+
+                if ( t >= 0.5f && cards[1].soundPlayed == false ) {
+                    cards[1].soundPlayed = true;
+                    sndCardSlide.Play();
+                }
+
+                if ( t >= 1.0f && cards[2].soundPlayed == false ) {
+                    cards[2].soundPlayed = true;
+                    sndCardSlide.Play();
+                }
             }
 
             f32 lastCardFinish = ( NumCards - 1 ) * 0.1f + SlideInDuration;
@@ -157,6 +159,9 @@ namespace atto {
                         chosenCard = i;
                         phase = PickCardPhase::SlideOut;
                         phaseTimer = 0.0f;
+                        for ( i32 j = 0; j < NumCards; j++ ) {
+                            cards[j].soundPlayed = false;
+                        }
                         break;
                     }
                 }
@@ -164,8 +169,14 @@ namespace atto {
         }
         else if ( phase == PickCardPhase::SlideOut ) {
             for ( i32 i = 0; i < NumCards; i++ ) {
-                f32 t = Saturate( phaseTimer / SlideOutDuration );
+                f32 cardDelay = i * 0.1f;
+                f32 t = Saturate( ( phaseTimer - cardDelay ) / SlideOutDuration );
                 f32 eased = EaseInCubic( t );
+
+                if ( t > 0.0f && !cards[i].soundPlayed ) {
+                    cards[i].soundPlayed = true;
+                    sndCardSlide.Play();
+                }
 
                 if ( i == chosenCard ) {
                     f32 exitY = -cardH * 1.5f;
@@ -177,7 +188,8 @@ namespace atto {
                 }
             }
 
-            if ( phaseTimer >= SlideOutDuration + 0.15f ) {
+            f32 lastCardFinish = ( NumCards - 1 ) * 0.1f + SlideOutDuration;
+            if ( phaseTimer >= lastCardFinish + 0.15f ) {
                 // TODO: Apply card effect to global state
                 if ( !nextMap.empty() ) {
                     Engine::Get().TransitionToScene( "GameMapScene", nextMap.c_str() );

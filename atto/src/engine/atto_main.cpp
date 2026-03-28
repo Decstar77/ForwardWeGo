@@ -29,19 +29,12 @@ int main() {
 /*
 TODO:
 - Hands leak render models
-- Player reload bug
+- Card Texture clipping
+
 - Player dying
-- Card Sounds
+
 - Animation blending
-- Main menu:
-    Option to choose run biome
-    Button to weapons menu
-    Button to player upgrades
-    Display player coins ( top right )
-    Options ( Top left gear icon ):
-        Mouse Sensitivity ( Slider )
-        Gameplay volume ( Slider )
-        Music volume ( Slider )
+
 - Player cards:
     - Attack speed increased ( must )
     - Attack damage increased ( must )
@@ -52,6 +45,7 @@ TODO:
     - Restore health ( must )
     - Extra coins ( must )
 
+- Player reload bug
 - Packaged builds, packing and loading assets.
 - Remove editor from build
 - Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.

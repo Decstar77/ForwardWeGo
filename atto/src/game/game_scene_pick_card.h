@@ -12,6 +12,7 @@ namespace atto {
         f32             y;          // current screen y
         f32             targetY;    // resting screen y
         bool            hovered;
+        bool            soundPlayed;
     };
 
     enum class PickCardPhase {
@@ -55,7 +56,6 @@ namespace atto {
         const Texture * cardEmptyGem = nullptr;
         const Texture * cardFullGem = nullptr;
 
-        SoundCollection sndCardPlace;
         SoundCollection sndCardSlide;
 
         f32 GetUIScale() const;
