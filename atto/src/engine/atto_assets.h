@@ -2,6 +2,7 @@
 
 #include "atto_core.h"
 #include "atto_math.h"
+#include "atto_containers.h"
 
 #include <type_traits>
 
@@ -52,6 +53,8 @@ namespace atto {
         inline void operator() ( const char * key, Mat2 & value ) { Op( key, value ); }
         inline void operator() ( const char * key, Mat3 & value ) { Op( key, value ); }
         inline void operator() ( const char * key, Mat4 & value ) { Op( key, value ); }
+        inline void operator() ( const char * key, SmallString & value ) { Op( key, value ); }
+        inline void operator() ( const char * key, LargeString & value ) { Op( key, value ); }
 
         // Special case: const StaticModel * (saves path string, loads via Renderer)
         inline void operator() ( const char * key, const StaticModel *& value ) { OpStaticModel( key, value ); }
@@ -181,6 +184,8 @@ namespace atto {
         virtual void Op( const char * key, Mat2 & value ) = 0;
         virtual void Op( const char * key, Mat3 & value ) = 0;
         virtual void Op( const char * key, Mat4 & value ) = 0;
+        virtual void Op( const char * key, SmallString & value ) = 0;
+        virtual void Op( const char * key, LargeString & value ) = 0;
 
         // Special-case operations (not pure virtual — have default implementations)
         virtual void OpStaticModel( const char * key, const StaticModel *& value );
@@ -240,10 +245,76 @@ namespace atto {
         virtual void Op( const char * key, Mat2 & value ) override;
         virtual void Op( const char * key, Mat3 & value ) override;
         virtual void Op( const char * key, Mat4 & value ) override;
+        virtual void Op( const char * key, SmallString & value ) override;
+        virtual void Op( const char * key, LargeString & value ) override;
 
     protected:
         struct JsonContainer;
         std::unique_ptr<JsonContainer> jsonContainer;
+    };
+
+    class BinarySerializer : public Serializer {
+    public:
+        BinarySerializer( bool isSaving );
+        virtual ~BinarySerializer();
+
+        BinarySerializer( const BinarySerializer & ) = delete;
+        BinarySerializer & operator=( const BinarySerializer & ) = delete;
+        BinarySerializer( BinarySerializer && ) = delete;
+        BinarySerializer & operator=( BinarySerializer && ) = delete;
+
+        const std::vector<u8> & GetBuffer() const { return *bufferPtr; }
+        void SetBuffer( const u8 * data, usize size );
+        void SetBuffer( const std::vector<u8> & data );
+
+        std::unique_ptr<Serializer> CreateSubSerializer() override;
+        void SetObject( const char * key, Serializer * serializer ) override;
+        std::unique_ptr<Serializer> GetObject( const char * key ) override;
+
+        void BeginArray( const char * key, i32 & count ) override;
+        void AppendArrayElement( const char * key, Serializer * serializer ) override;
+        std::unique_ptr<Serializer> GetArrayElement( const char * key, i32 index ) override;
+
+        void OpArrayPrimitive( const char * key, std::vector<i32> & value ) override;
+        void OpArrayPrimitive( const char * key, std::vector<u64> & value ) override;
+        void OpArrayPrimitive( const char * key, std::vector<f32> & value ) override;
+        void OpArrayPrimitive( const char * key, std::vector<bool> & value ) override;
+        void OpArrayPrimitive( const char * key, std::vector<std::string> & value ) override;
+        void OpArrayPrimitive( const char * key, std::vector<Vec2> & value ) override;
+        void OpArrayPrimitive( const char * key, std::vector<Vec3> & value ) override;
+        void OpArrayPrimitive( const char * key, std::vector<Vec4> & value ) override;
+
+        void Op( const char * key, i8 & value ) override;
+        void Op( const char * key, u8 & value ) override;
+        void Op( const char * key, i32 & value ) override;
+        void Op( const char * key, i64 & value ) override;
+        void Op( const char * key, u32 & value ) override;
+        void Op( const char * key, u64 & value ) override;
+        void Op( const char * key, f64 & value ) override;
+        void Op( const char * key, f32 & value ) override;
+        void Op( const char * key, bool & value ) override;
+        void Op( const char * key, std::string & value ) override;
+        void Op( const char * key, Vec2 & value ) override;
+        void Op( const char * key, Vec3 & value ) override;
+        void Op( const char * key, Vec4 & value ) override;
+        void Op( const char * key, Mat2 & value ) override;
+        void Op( const char * key, Mat3 & value ) override;
+        void Op( const char * key, Mat4 & value ) override;
+        void Op( const char * key, SmallString & value ) override;
+        void Op( const char * key, LargeString & value ) override;
+
+    protected:
+        void WriteBytes( const void * data, usize size );
+        void ReadBytes( void * data, usize size );
+
+    private:
+        // Sub-serializer constructor for loading (shares parent buffer + readPos)
+        BinarySerializer( std::vector<u8> * buf, usize * rPos );
+
+        std::vector<u8>  ownedBuffer;
+        std::vector<u8> * bufferPtr;
+        usize            ownedReadPos = 0;
+        usize *          readPosPtr;
     };
 
     class AssetManager {
@@ -259,6 +330,8 @@ namespace atto {
 
         std::string     OpenFilePicker( const std::string & basePath );
         std::string     SaveFilePicker( const std::string & basePath, const std::string & extensions );  // "png;jpg;fbx"
+
+
 
         std::vector< std::string > GetFilesInFolderRecursive( const char * path, const char * ext );
     };

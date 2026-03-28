@@ -385,6 +385,24 @@ namespace atto {
         }
     }
 
+    void ImguiPropertySerializer::Op( const char * key, SmallString & value ) {
+        char buffer[SmallString::CAPCITY];
+        snprintf( buffer, sizeof( buffer ), "%s", value.GetCStr() );
+        if ( ImGui::InputText( key, buffer, sizeof( buffer ) ) ) {
+            value = buffer;
+            changed = true;
+        }
+    }
+
+    void ImguiPropertySerializer::Op( const char * key, LargeString & value ) {
+        char buffer[LargeString::CAPCITY];
+        snprintf( buffer, sizeof( buffer ), "%s", value.GetCStr() );
+        if ( ImGui::InputText( key, buffer, sizeof( buffer ) ) ) {
+            value = buffer;
+            changed = true;
+        }
+    }
+
     // ============================================================
     // Special-case: StaticModel pointer
     // ============================================================

@@ -48,6 +48,8 @@ namespace atto {
         void Op( const char * key, Mat2 & value ) override;
         void Op( const char * key, Mat3 & value ) override;
         void Op( const char * key, Mat4 & value ) override;
+        void Op( const char * key, SmallString & value ) override;
+        void Op( const char * key, LargeString & value ) override;
 
         void OpStaticModel( const char * key, const StaticModel *& value ) override;
 

@@ -490,12 +490,427 @@ namespace atto {
         }
     }
 
+    void JsonSerializer::Op( const char * key, SmallString & value ) {
+        if ( isSaving ) {
+            jsonContainer->json[key] = value.GetCStr();
+        }
+        else {
+            if ( jsonContainer->json.contains( key ) ) {
+                value = jsonContainer->json[key].get<std::string>().c_str();
+            }
+            else {
+                LOG_WARN( "Key %s not found in JSON", key );
+            }
+        }
+    }
+
+    void JsonSerializer::Op( const char * key, LargeString & value ) {
+        if ( isSaving ) {
+            jsonContainer->json[key] = value.GetCStr();
+        }
+        else {
+            if ( jsonContainer->json.contains( key ) ) {
+                value = jsonContainer->json[key].get<std::string>().c_str();
+            }
+            else {
+                LOG_WARN( "Key %s not found in JSON", key );
+            }
+        }
+    }
+
     std::string JsonSerializer::ToString() const {
         return jsonContainer->json.dump( 4, ' ', true, nlohmann::json::error_handler_t::strict );
     }
 
     void JsonSerializer::FromString( const std::string & json ) {
         jsonContainer->json = nlohmann::json::parse( json );
+    }
+
+    // ============================================================
+    // BinarySerializer
+    // ============================================================
+
+    BinarySerializer::BinarySerializer( bool isSaving )
+        : Serializer( isSaving )
+        , bufferPtr( &ownedBuffer )
+        , readPosPtr( &ownedReadPos ) {
+    }
+
+    BinarySerializer::BinarySerializer( std::vector<u8> * buf, usize * rPos )
+        : Serializer( false )
+        , bufferPtr( buf )
+        , readPosPtr( rPos ) {
+    }
+
+    BinarySerializer::~BinarySerializer() = default;
+
+    void BinarySerializer::SetBuffer( const u8 * data, usize size ) {
+        ownedBuffer.assign( data, data + size );
+        bufferPtr = &ownedBuffer;
+        ownedReadPos = 0;
+        readPosPtr = &ownedReadPos;
+    }
+
+    void BinarySerializer::SetBuffer( const std::vector<u8> & data ) {
+        ownedBuffer = data;
+        bufferPtr = &ownedBuffer;
+        ownedReadPos = 0;
+        readPosPtr = &ownedReadPos;
+    }
+
+    void BinarySerializer::WriteBytes( const void * data, usize size ) {
+        const u8 * bytes = static_cast<const u8 *>( data );
+        bufferPtr->insert( bufferPtr->end(), bytes, bytes + size );
+    }
+
+    void BinarySerializer::ReadBytes( void * data, usize size ) {
+        if ( *readPosPtr + size <= bufferPtr->size() ) {
+            std::memcpy( data, bufferPtr->data() + *readPosPtr, size );
+            *readPosPtr += size;
+        }
+        else {
+            LOG_WARN( "BinarySerializer: read past end of buffer" );
+            std::memset( data, 0, size );
+            *readPosPtr = bufferPtr->size();
+        }
+    }
+
+    // Primitive Ops
+    void BinarySerializer::Op( const char * key, i8 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, u8 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, i32 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, i64 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, u32 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, u64 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, f32 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, f64 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( value ) ); }
+        else { ReadBytes( &value, sizeof( value ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, bool & value ) {
+        u8 v = value ? 1 : 0;
+        if ( isSaving ) { WriteBytes( &v, sizeof( v ) ); }
+        else { ReadBytes( &v, sizeof( v ) ); value = v != 0; }
+    }
+
+    void BinarySerializer::Op( const char * key, std::string & value ) {
+        if ( isSaving ) {
+            u32 len = static_cast<u32>( value.size() );
+            WriteBytes( &len, sizeof( len ) );
+            if ( len > 0 ) {
+                WriteBytes( value.data(), len );
+            }
+        }
+        else {
+            u32 len = 0;
+            ReadBytes( &len, sizeof( len ) );
+            value.resize( len );
+            if ( len > 0 ) {
+                ReadBytes( value.data(), len );
+            }
+        }
+    }
+
+    void BinarySerializer::Op( const char * key, Vec2 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( Vec2 ) ); }
+        else { ReadBytes( &value, sizeof( Vec2 ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, Vec3 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( Vec3 ) ); }
+        else { ReadBytes( &value, sizeof( Vec3 ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, Vec4 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( Vec4 ) ); }
+        else { ReadBytes( &value, sizeof( Vec4 ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, Mat2 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( Mat2 ) ); }
+        else { ReadBytes( &value, sizeof( Mat2 ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, Mat3 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( Mat3 ) ); }
+        else { ReadBytes( &value, sizeof( Mat3 ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, Mat4 & value ) {
+        if ( isSaving ) { WriteBytes( &value, sizeof( Mat4 ) ); }
+        else { ReadBytes( &value, sizeof( Mat4 ) ); }
+    }
+
+    void BinarySerializer::Op( const char * key, SmallString & value ) {
+        if ( isSaving ) {
+            u32 len = static_cast<u32>( value.GetLength() );
+            WriteBytes( &len, sizeof( len ) );
+            if ( len > 0 ) {
+                WriteBytes( value.GetCStr(), len );
+            }
+        }
+        else {
+            u32 len = 0;
+            ReadBytes( &len, sizeof( len ) );
+            value.Clear();
+            if ( len > 0 ) {
+                char temp[SmallString::CAPCITY] = {};
+                u32 readLen = len < static_cast<u32>( SmallString::CAPCITY - 1 ) ? len : static_cast<u32>( SmallString::CAPCITY - 1 );
+                ReadBytes( temp, len );
+                temp[readLen] = '\0';
+                value = temp;
+            }
+        }
+    }
+
+    void BinarySerializer::Op( const char * key, LargeString & value ) {
+        if ( isSaving ) {
+            u32 len = static_cast<u32>( value.GetLength() );
+            WriteBytes( &len, sizeof( len ) );
+            if ( len > 0 ) {
+                WriteBytes( value.GetCStr(), len );
+            }
+        }
+        else {
+            u32 len = 0;
+            ReadBytes( &len, sizeof( len ) );
+            value.Clear();
+            if ( len > 0 ) {
+                char temp[LargeString::CAPCITY] = {};
+                u32 readLen = len < static_cast<u32>( LargeString::CAPCITY - 1 ) ? len : static_cast<u32>( LargeString::CAPCITY - 1 );
+                ReadBytes( temp, len );
+                temp[readLen] = '\0';
+                value = temp;
+            }
+        }
+    }
+
+    // Object serialization
+    std::unique_ptr<Serializer> BinarySerializer::CreateSubSerializer() {
+        if ( isSaving ) {
+            return std::make_unique<BinarySerializer>( true );
+        }
+        // For loading, sub shares parent's buffer and read position
+        std::unique_ptr<BinarySerializer> sub( new BinarySerializer( bufferPtr, readPosPtr ) );
+        return sub;
+    }
+
+    void BinarySerializer::SetObject( const char * key, Serializer * serializer ) {
+        BinarySerializer * binSer = static_cast<BinarySerializer *>( serializer );
+        WriteBytes( binSer->bufferPtr->data(), binSer->bufferPtr->size() );
+    }
+
+    std::unique_ptr<Serializer> BinarySerializer::GetObject( const char * key ) {
+        // For loading, sub shares parent's buffer and read position
+        std::unique_ptr<BinarySerializer> sub( new BinarySerializer( bufferPtr, readPosPtr ) );
+        return sub;
+    }
+
+    // Array serialization
+    void BinarySerializer::BeginArray( const char * key, i32 & count ) {
+        if ( isSaving ) {
+            WriteBytes( &count, sizeof( count ) );
+        }
+        else {
+            ReadBytes( &count, sizeof( count ) );
+        }
+    }
+
+    void BinarySerializer::AppendArrayElement( const char * key, Serializer * serializer ) {
+        BinarySerializer * binSer = static_cast<BinarySerializer *>( serializer );
+        WriteBytes( binSer->bufferPtr->data(), binSer->bufferPtr->size() );
+    }
+
+    std::unique_ptr<Serializer> BinarySerializer::GetArrayElement( const char * key, i32 index ) {
+        // For loading, sub shares parent's buffer and read position
+        std::unique_ptr<BinarySerializer> sub( new BinarySerializer( bufferPtr, readPosPtr ) );
+        return sub;
+    }
+
+    // Primitive array operations
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<i32> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            if ( count > 0 ) {
+                WriteBytes( value.data(), count * sizeof( i32 ) );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            if ( count > 0 ) {
+                ReadBytes( value.data(), count * sizeof( i32 ) );
+            }
+        }
+    }
+
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<u64> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            if ( count > 0 ) {
+                WriteBytes( value.data(), count * sizeof( u64 ) );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            if ( count > 0 ) {
+                ReadBytes( value.data(), count * sizeof( u64 ) );
+            }
+        }
+    }
+
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<f32> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            if ( count > 0 ) {
+                WriteBytes( value.data(), count * sizeof( f32 ) );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            if ( count > 0 ) {
+                ReadBytes( value.data(), count * sizeof( f32 ) );
+            }
+        }
+    }
+
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<bool> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            for ( u32 i = 0; i < count; i++ ) {
+                u8 v = value[i] ? 1 : 0;
+                WriteBytes( &v, sizeof( v ) );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            for ( u32 i = 0; i < count; i++ ) {
+                u8 v = 0;
+                ReadBytes( &v, sizeof( v ) );
+                value[i] = v != 0;
+            }
+        }
+    }
+
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<std::string> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            for ( u32 i = 0; i < count; i++ ) {
+                u32 len = static_cast<u32>( value[i].size() );
+                WriteBytes( &len, sizeof( len ) );
+                if ( len > 0 ) {
+                    WriteBytes( value[i].data(), len );
+                }
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            for ( u32 i = 0; i < count; i++ ) {
+                u32 len = 0;
+                ReadBytes( &len, sizeof( len ) );
+                value[i].resize( len );
+                if ( len > 0 ) {
+                    ReadBytes( value[i].data(), len );
+                }
+            }
+        }
+    }
+
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<Vec2> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            if ( count > 0 ) {
+                WriteBytes( value.data(), count * sizeof( Vec2 ) );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            if ( count > 0 ) {
+                ReadBytes( value.data(), count * sizeof( Vec2 ) );
+            }
+        }
+    }
+
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<Vec3> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            if ( count > 0 ) {
+                WriteBytes( value.data(), count * sizeof( Vec3 ) );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            if ( count > 0 ) {
+                ReadBytes( value.data(), count * sizeof( Vec3 ) );
+            }
+        }
+    }
+
+    void BinarySerializer::OpArrayPrimitive( const char * key, std::vector<Vec4> & value ) {
+        if ( isSaving ) {
+            u32 count = static_cast<u32>( value.size() );
+            WriteBytes( &count, sizeof( count ) );
+            if ( count > 0 ) {
+                WriteBytes( value.data(), count * sizeof( Vec4 ) );
+            }
+        }
+        else {
+            u32 count = 0;
+            ReadBytes( &count, sizeof( count ) );
+            value.resize( count );
+            if ( count > 0 ) {
+                ReadBytes( value.data(), count * sizeof( Vec4 ) );
+            }
+        }
     }
 
     AssetManager::AssetManager() {
