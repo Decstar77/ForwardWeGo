@@ -193,6 +193,15 @@ namespace atto {
         bool                    looping = true;
     };
 
+    enum class BrushType : i32 {
+        Solid = 0,      // Drawn and has collision
+        Trigger = 1,    // Not drawn and no collision
+        Collision = 2,  // Not drawn but has collision
+    };
+
+    inline const char * BrushTypeNames[] = { "Solid", "Trigger", "Collision" };
+    constexpr i32 BrushTypeCount = 3;
+
     class Brush {
     public:
         void ToStaticModel( StaticModel & model ) const;
@@ -201,6 +210,10 @@ namespace atto {
         bool IsPointInside( Vec3 point ) const;
         bool IsPointInside( Vec3 point, i32 hAxis, i32 vAxis ) const;
 
+        bool IsDrawn() const { return type == BrushType::Solid; }
+        bool HasCollision() const { return type != BrushType::Trigger; }
+
+        BrushType type = BrushType::Solid;
         Vec3 center = Vec3( 0.0f );
         Vec3 halfExtents = Vec3( 0.5f );
         std::string texturePath;

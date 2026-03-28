@@ -900,6 +900,9 @@ namespace atto {
     }
 
     void Brush::Serialize( Serializer & serializer ) {
+        i32 typeInt = static_cast<i32>( type );
+        serializer( "type", typeInt );
+        type = static_cast<BrushType>( typeInt );
         serializer( "center", center );
         serializer( "halfExtents", halfExtents );
         serializer( "texturePath", texturePath );

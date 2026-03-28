@@ -103,6 +103,9 @@ namespace atto {
             if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
+            if ( !brushes[i].IsDrawn() && i != selectedBrush ) {
+                continue;
+            }
             Vec3 color = (i == selectedBrush) ? Vec3( 0.5f, 1.0f, 0.5f ) : Vec3( 1.0f, 1.0f, 1.0f );
             for ( i32 j = 0; j < brushModels[i].GetMeshCount(); j++ ) {
                 brushModels[i].GetMesh( j ).GetMaterial().albedo = color;
@@ -251,6 +254,9 @@ namespace atto {
 
         for ( i32 iter = 0; iter < 4; iter++ ) {
             for ( i32 i = 0; i < static_cast<i32>( brushCollsion.size() ); i++ ) {
+                if ( !brushes[i].HasCollision() ) {
+                    continue;
+                }
                 SweepResult result;
                 if ( CollisionSweep::CapsuleAlignedBox( cap, brushCollsion[i], result ) ) {
                     Vec3 push = result.normal * result.pen;
@@ -272,6 +278,9 @@ namespace atto {
         result.normal = Vec3( 0.0f );
 
         for ( i32 i = 0; i < static_cast<i32>( brushCollsion.size() ); i++ ) {
+            if ( !brushes[i].HasCollision() ) {
+                continue;
+            }
             f32 distance = FLT_MAX;
             Vec3 normal = Vec3( 0.0f );
             if ( Raycast::TestAlignedBox( start, direction, brushCollsion[i], distance, normal ) ) {
@@ -308,6 +317,9 @@ namespace atto {
     bool GameMap::IsPlayerStartColliding() const {
         Capsule cap = playerStart.GetCapsule();
         for ( i32 i = 0; i < static_cast<i32>( brushes.size() ); i++ ) {
+            if ( !brushes[i].HasCollision() ) {
+                continue;
+            }
             AlignedBox box = AlignedBox::FromCenterSize( brushes[i].center, brushes[i].halfExtents * 2.0f );
             if ( IntersectionTest::CapsuleAlignedBox( cap, box ) ) {
                 return true;

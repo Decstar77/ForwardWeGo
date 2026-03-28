@@ -29,16 +29,20 @@ int main() {
 /*
 TODO:
 Gameplay:
-- Player reload bug
+
 - Trigger brushes
 - Collision brushes
+
+- Hands leak render models
+- Player reload bug
 
 - Multiple waves
 - Player dying
 
+- Card Sounds
 - Level timer ( unsure )
-- Hands leak render models
-- Baneling ( Friday )
+
+- Baneling ( Saturday )
 - Level hazard ( unsure )
 - Impact sounds:
     - Flesh bullet hit sound

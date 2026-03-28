@@ -1111,6 +1111,15 @@ namespace atto {
                 ImGui::Text( "Brush %d Properties", selectedBrushIndex );
                 ImGui::Spacing();
 
+                i32 brushTypeIndex = static_cast<i32>( brush.type );
+                if ( ImGui::Combo( "Type", &brushTypeIndex, BrushTypeNames, BrushTypeCount ) ) {
+                    Snapshot();
+                    brush.type = static_cast<BrushType>( brushTypeIndex );
+                    map.RebuildBrushModel( selectedBrushIndex );
+                    map.RebuildBrushCollision( selectedBrushIndex );
+                    unsavedChanges = true;
+                }
+
                 ImguiPropertySerializer propSerializer;
                 brush.Serialize( propSerializer );
 
