@@ -552,7 +552,7 @@ namespace atto {
             renderer.UseUnlitShader();
         }
 
-        map.Render( renderer, 0.0, selectedBrushIndex );
+        map.Render( renderer, 0.0, selectedBrushIndex, true );
 
         if ( selectionMode == EditorSelectionMode::NavGraph ) {
             // Highlight the selected node: yellow normally, orange when in connect mode

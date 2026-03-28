@@ -97,16 +97,25 @@ namespace atto {
         }
     }
 
-    void GameMap::Render( Renderer & renderer, f32 dt, i32 selectedBrush ) {
+    void GameMap::Render( Renderer & renderer, f32 dt, i32 selectedBrush, bool editorMode ) {
         Mat4 identity( 1.0f );
         for ( i32 i = 0; i < static_cast<i32>( brushModels.size() ); i++ ) {
             if ( !brushModels[i].IsLoaded() ) {
                 continue;
             }
-            if ( !brushes[i].IsDrawn() && i != selectedBrush ) {
+            if ( !brushes[i].IsDrawn() && !editorMode ) {
                 continue;
             }
-            Vec3 color = (i == selectedBrush) ? Vec3( 0.5f, 1.0f, 0.5f ) : Vec3( 1.0f, 1.0f, 1.0f );
+            Vec3 color = Vec3( 1.0f, 1.0f, 1.0f );
+            if ( i == selectedBrush ) {
+                color = Vec3( 0.5f, 1.0f, 0.5f );
+            }
+            else if ( brushes[i].type == BrushType::Collision ) {
+                color = Vec3( 1.0f, 0.0f, 0.0f );
+            }
+            else if ( brushes[i].type == BrushType::Trigger ) {
+                color = Vec3( 1.0f, 0.0f, 0.0f );
+            }
             for ( i32 j = 0; j < brushModels[i].GetMeshCount(); j++ ) {
                 brushModels[i].GetMesh( j ).GetMaterial().albedo = color;
                 brushModels[i].GetMesh( j ).GetMaterial().albedoTexture = brushTextures[i];

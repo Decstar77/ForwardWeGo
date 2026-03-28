@@ -35,7 +35,7 @@ namespace atto {
         void Shutdown();
 
         void Update( f32 dt );
-        void Render( Renderer & renderer, f32 dt, i32 selectedBrush = -1 );
+        void Render( Renderer & renderer, f32 dt, i32 selectedBrush = -1, bool editorMode = false );
 
         void Serialize( Serializer & serializer );
 
