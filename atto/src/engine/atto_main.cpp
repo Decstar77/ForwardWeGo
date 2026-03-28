@@ -33,7 +33,6 @@ int main() {
 /*
 TODO:
 - Player dying
-- Animation blending
 - Player cards:
     - Attack speed increased ( must )
     - Attack damage increased ( must )

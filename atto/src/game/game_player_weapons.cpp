@@ -261,6 +261,7 @@ namespace atto {
         animator.PlayAnimation( *model, "Armature|Glock_Draw_Anim", false );
         isAttacking  = false;
         isEquipped   = false;
+        isReloading  = false;
         reloadQueued = false;
         sndEquip.Play();
     }
