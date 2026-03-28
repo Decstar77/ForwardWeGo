@@ -18,11 +18,11 @@ namespace atto {
         bool ConsumeHit() { bool h = didHitEntity; didHitEntity = false; return h; }
 
     private:
-        AnimatedModel   model;
-        Animator        animator;
-        bool            isAttacking  = false;
-        bool            isEquipped   = true;
-        bool            didHitEntity = false;
+        const AnimatedModel *   model = nullptr;
+        Animator                animator;
+        bool                    isAttacking  = false;
+        bool                    isEquipped   = true;
+        bool                    didHitEntity = false;
 
         SoundCollection sndEquip;
         SoundCollection sndSwing1;
@@ -46,11 +46,11 @@ namespace atto {
         void SpawnParticles( FPSCamera & camera, GameMap & map );
 
     private:
-        AnimatedModel   model;
-        Animator        animator;
-        const Texture * particleTextureSmoke = nullptr;
-        const Texture * particleTextureTrace1 = nullptr;
-        const Texture * particleTextureTrace2 = nullptr;
+        const AnimatedModel   * model = nullptr;
+        Animator                animator;
+        const Texture *         particleTextureSmoke = nullptr;
+        const Texture *         particleTextureTrace1 = nullptr;
+        const Texture *         particleTextureTrace2 = nullptr;
 
         static constexpr i32 MaxAmmo = 12;
 

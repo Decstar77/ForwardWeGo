@@ -282,7 +282,7 @@ namespace atto {
         if ( page == MainMenuPage::Main ) {
             // Title with gentle bob
             f32 titleY = vpH * 0.2f + sinf( titleBob * 1.5f ) * 5.0f * scale;
-            ui.DrawText( titleFont, ui.GetCenterX(), titleY, "FORWARD WE GO",
+            ui.DrawText( titleFont, ui.GetCenterX(), titleY, "POLYGON SHOOTER",
                          Vec4( 1.0f, 0.9f, 0.3f, 1.0f ), UIAlignH::Center, UIAlignV::Center );
 
             // Subtitle

@@ -14,10 +14,10 @@ namespace atto {
     // Texture
     // =========================================================================
 
-    void Texture::LoadFromFile( const char * filePath, bool flip ) {
+    void Texture::LoadFromFile( const char * filePath, const TextureCreateInfo info ) {
         Destroy();
 
-        stbi_set_flip_vertically_on_load( flip );
+        stbi_set_flip_vertically_on_load( info.flip );
 
         int w, h, channels;
         stbi_uc * data = stbi_load( filePath, &w, &h, &channels, STBI_rgb_alpha );
@@ -32,8 +32,8 @@ namespace atto {
         glGenTextures( 1, &handle );
         glBindTexture( GL_TEXTURE_2D, handle );
 
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, info.wrapType == TextureWrapType::REPEAT ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, info.wrapType == TextureWrapType::REPEAT ? GL_REPEAT : GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 

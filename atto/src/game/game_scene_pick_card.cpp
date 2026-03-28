@@ -25,18 +25,23 @@ namespace atto {
         titleFont    = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 36.0f );
         cardNameFont = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 16.0f );
         cardDescFont = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 12.0f );
-        backGroundTexture = renderer.GetOrLoadTexture( "assets/textures/ai-gen/background001.png", true );
-        cardFrontTexture = renderer.GetOrLoadTexture( "assets/textures/cards/front.png", true );
-        cardAttackSpeedIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-speed-increase.png", true );
-        cardAttackDamageIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-damage-increase.png", true );
-        cardAttackAccuracyIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-accuracy-increase.png", true );
-        cardReloadSpeedIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/reload-speed-increase.png", true );
-        cardAmmoCapacityIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/ammo-capacity-increase.png", true );
-        cardMaxHealthIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/max-health-increase.png", true );
-        cardRestoreHealthTexture = renderer.GetOrLoadTexture( "assets/textures/cards/restore-health.png", true );
-        cardExtraCoinsTexture = renderer.GetOrLoadTexture( "assets/textures/coin.png", true );
-        cardEmptyGem =  renderer.GetOrLoadTexture( "assets/textures/cards/empty-gem.png", true );
-        cardFullGem =  renderer.GetOrLoadTexture( "assets/textures/cards/full-gem.png", true );
+
+        TextureCreateInfo textureCreateInfo = {};
+        textureCreateInfo.flip = true;
+        textureCreateInfo.wrapType = TextureWrapType::CLAMP;
+
+        backGroundTexture = renderer.GetOrLoadTexture( "assets/textures/ai-gen/background001.png", textureCreateInfo );
+        cardFrontTexture = renderer.GetOrLoadTexture( "assets/textures/cards/front.png", textureCreateInfo );
+        cardAttackSpeedIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-speed-increase.png", textureCreateInfo );
+        cardAttackDamageIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-damage-increase.png", textureCreateInfo );
+        cardAttackAccuracyIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/attack-accuracy-increase.png", textureCreateInfo );
+        cardReloadSpeedIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/reload-speed-increase.png", textureCreateInfo );
+        cardAmmoCapacityIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/ammo-capacity-increase.png", textureCreateInfo );
+        cardMaxHealthIncreaseTexture = renderer.GetOrLoadTexture( "assets/textures/cards/max-health-increase.png", textureCreateInfo );
+        cardRestoreHealthTexture = renderer.GetOrLoadTexture( "assets/textures/cards/restore-health.png", textureCreateInfo );
+        cardExtraCoinsTexture = renderer.GetOrLoadTexture( "assets/textures/coin.png", textureCreateInfo );
+        cardEmptyGem =  renderer.GetOrLoadTexture( "assets/textures/cards/empty-gem.png", textureCreateInfo );
+        cardFullGem =  renderer.GetOrLoadTexture( "assets/textures/cards/full-gem.png", textureCreateInfo );
 
         sndCardSlide.Initialize();
         sndCardSlide.LoadSounds( {

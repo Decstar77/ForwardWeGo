@@ -557,6 +557,8 @@ namespace atto {
     void AnimatedModel::LoadFromFile( const char * filePath, f32 scale ) {
         Destroy();
 
+        path = LargeString::FromLiteral( filePath );
+
         Assimp::Importer importer;
 
         const aiScene * scene = importer.ReadFile( filePath,
@@ -600,6 +602,7 @@ namespace atto {
         rootNode = BoneNode{};
         globalInverseTransform = Mat4( 1.0f );
         animations.clear();
+        path.Clear();
     }
 
     void AnimatedModel::Draw( Shader * shader ) const {

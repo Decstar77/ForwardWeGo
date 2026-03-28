@@ -18,7 +18,11 @@ int main() {
     }
 
     RegisterAllScenes();
+#if 1
+    engine.Run( "Editor" );
+#else
     engine.Run( "GameSceneMainMenu" );
+#endif
 
     engine.Shutdown();
 
@@ -28,13 +32,9 @@ int main() {
 
 /*
 TODO:
-- Hands leak render models
 - Card Texture clipping
-
 - Player dying
-
 - Animation blending
-
 - Player cards:
     - Attack speed increased ( must )
     - Attack damage increased ( must )
@@ -44,11 +44,12 @@ TODO:
     - Health increased ( must )
     - Restore health ( must )
     - Extra coins ( must )
-
+- Spitter
 - Player reload bug
 - Packaged builds, packing and loading assets.
 - Remove editor from build
 - Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.
+- Enscriptmn build
 
 
 Brain waves:
@@ -57,11 +58,11 @@ Gameplay:
 - Multiple waves
 - Level timer ( unsure )
 
-- Baneling ( Saturday )
 - Level hazard ( unsure )
 - Impact sounds:
     - Flesh bullet hit sound
     - Metal bullet hit sound
+
 - Weapons:
     - Glock:
         - Spawn bullet shell
@@ -69,6 +70,7 @@ Gameplay:
         -recoil
     - Sniper
     - Frag grenade
+
 - Player upgrades:
     - Health increase
     - Med kits do more healing

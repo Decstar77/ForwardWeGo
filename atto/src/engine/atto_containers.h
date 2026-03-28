@@ -62,6 +62,7 @@ namespace atto {
         T *             Add( const T & value );
         T *             Add_MemCpyPtr( const T * value );
         T &             AddEmpty();
+        T &             ConstructEmpty();
         T *             AddUnique( const T & value );
         b8              AddIfPossible( const T & t );
 
@@ -202,6 +203,13 @@ namespace atto {
         }
 
         return data[ index ];
+    }
+
+    template<typename T, i32 capcity>
+    T & FixedList<T, capcity>::ConstructEmpty() {
+        i32 index = count; count++;
+        ATTO_ASSERT( index >= 0 && index < capcity, "Array, add to many items" );
+        return *new (&data[index]) T();
     }
 
     template<typename T, i32 capcity>

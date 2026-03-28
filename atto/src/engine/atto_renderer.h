@@ -53,7 +53,9 @@ namespace atto {
         void DrawText( const Font * font, const char * text, f32 x, f32 y, Vec4 color, i32 viewportW, i32 viewportH );
 
         const Texture * GetOrLoadTexture( const char * filePath, bool flip = false );
+        const Texture * GetOrLoadTexture( const char * filePath, TextureCreateInfo createInfo );
         const StaticModel * GetOrLoadStaticModel( const char * filePath, f32 loadScale = 1.0f );
+        const AnimatedModel * GetOrLoadAnimatedModel( const char * filePath, f32 loadScale = 1.0f );
         const Font * GetOrLoadFont( const char * path, f32 fontSize );
 
         // Billboard rendering — queued for sorted transparent pass
@@ -188,13 +190,16 @@ namespace atto {
 
         // This could be std::vector< std::unquie_ptr<Texture>> ??
         // Textures
-        FixedList<Texture, 1024> textures;
+        FixedList<Texture, 64> textures;
 
         // Static models
-        FixedList<StaticModel, 1024> staticModels;
+        FixedList<StaticModel, 128> staticModels;
+
+        // Animated models
+        FixedList<AnimatedModel, 32> animatedModels;
 
         // Fonts
-        FixedList<Font, 64> fonts;
+        FixedList<Font, 32> fonts;
 
         // Text rendering resources
         Shader textShader;

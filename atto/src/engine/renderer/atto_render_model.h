@@ -145,6 +145,7 @@ namespace atto {
         i32  GetMeshCount() const { return static_cast<i32>(meshes.size()); }
         i32  GetBoneCount() const { return boneCounter; }
         i32  GetAnimationCount() const { return static_cast<i32>(animations.size()); }
+        const char * GetPath() const { return path.GetCStr(); }
 
         const std::unordered_map<std::string, BoneInfo> & GetBoneInfoMap() const { return boneInfoMap; }
         const BoneNode & GetRootNode() const { return rootNode; }
@@ -153,6 +154,7 @@ namespace atto {
         const i32                                           GetAnimationIndex( const char * name ) const;
 
     private:
+        LargeString                                 path = {};
         std::vector<AnimatedMesh>                   meshes;
         std::unordered_map<std::string, BoneInfo>   boneInfoMap;
         i32                                         boneCounter = 0;

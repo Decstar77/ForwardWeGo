@@ -8,8 +8,10 @@ namespace atto {
     // =========================================================================
 
     void PlayerWeaponKnife::OnStart() {
-        model.LoadFromFile( "assets/player/arms/knife.glb" );
-        animator.PlayAnimation( model, "Armature|Knife_Idle_Anim", true );
+        Renderer & renderer = Engine::Get().GetRenderer();
+
+        model = renderer.GetOrLoadAnimatedModel( "assets/player/arms/knife.glb" );
+        animator.PlayAnimation( *model, "Armature|Knife_Idle_Anim", true );
         isEquipped = true;
 
         sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
@@ -58,7 +60,7 @@ namespace atto {
     }
 
     void PlayerWeaponKnife::OnEquip() {
-        animator.PlayAnimation( model, "Armature|Knife_Draw_Anim", false );
+        animator.PlayAnimation( *model, "Armature|Knife_Draw_Anim", false );
         isAttacking = false;
         isEquipped  = false;
         sndEquip.Play();
@@ -74,7 +76,7 @@ namespace atto {
                 const char * idleAnim = !isMoving   ? "Armature|Knife_Idle_Anim"
                                       : isSprinting ? "Armature|Knife_Run_Anim"
                                       :               "Armature|Knife_Walk_Anim";
-                animator.PlayAnimation( model, idleAnim, true );
+                animator.PlayAnimation( *model, idleAnim, true );
             }
             animator.Update( dt );
             return;
@@ -88,13 +90,13 @@ namespace atto {
 
         // Attack input — not allowed while sprinting
         if ( input.IsMouseButtonDown( MouseButton::Left ) && isIdleWalkOrRun && !isSprinting ) {
-            animator.PlayAnimation( model, "Armature|Knife_Attack_1_Anim", false );
+            animator.PlayAnimation( *model, "Armature|Knife_Attack_1_Anim", false );
             sndSwing1.Play( 0.5f );
             isAttacking = true;
         }
 
         if ( input.IsMouseButtonDown( MouseButton::Right ) && isIdleWalkOrRun && !isSprinting ) {
-            animator.PlayAnimation( model, "Armature|Knife_Attack_3_Anim", false );
+            animator.PlayAnimation( *model, "Armature|Knife_Attack_3_Anim", false );
             sndSwing2.Play( 0.5f );
             isAttacking = true;
         }
@@ -146,19 +148,19 @@ namespace atto {
             const char * returnAnim = !isMoving   ? "Armature|Knife_Idle_Anim"
                                     : isSprinting ? "Armature|Knife_Run_Anim"
                                     :               "Armature|Knife_Walk_Anim";
-            animator.PlayAnimation( model, returnAnim, true );
+            animator.PlayAnimation( *model, returnAnim, true );
         }
 
         // Locomotion transitions
         if ( !isAttacking ) {
             if ( !isMoving && curAnim != "Armature|Knife_Idle_Anim" ) {
-                animator.PlayAnimation( model, "Armature|Knife_Idle_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Knife_Idle_Anim", true );
             }
             else if ( isMoving && isSprinting && curAnim != "Armature|Knife_Run_Anim" ) {
-                animator.PlayAnimation( model, "Armature|Knife_Run_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Knife_Run_Anim", true );
             }
             else if ( isMoving && !isSprinting && curAnim != "Armature|Knife_Walk_Anim" ) {
-                animator.PlayAnimation( model, "Armature|Knife_Walk_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Knife_Walk_Anim", true );
             }
         }
 
@@ -170,7 +172,7 @@ namespace atto {
         Mat4 cameraWorld     = glm::inverse( camera.GetViewMatrix() );
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
         Mat4 armsMatrix      = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
-        renderer.RenderAnimatedModel( model, animator, armsMatrix );
+        renderer.RenderAnimatedModel( *model, animator, armsMatrix );
     }
 
     // =========================================================================
@@ -178,12 +180,12 @@ namespace atto {
     // =========================================================================
 
     void PlayerWeaponGlock::OnStart() {
-        particleTextureSmoke = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Smoke_01.png" );
-        particleTextureTrace1 = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/kenny/trace_06.png" );
-        particleTextureTrace2 = Engine::Get().GetRenderer().GetOrLoadTexture( "assets/textures/fx/kenny/smoke_01.png" );
-
-        model.LoadFromFile( "assets/player/arms/glock.glb" );
-        animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
+        Renderer & renderer = Engine::Get().GetRenderer();
+        model = renderer.GetOrLoadAnimatedModel( "assets/player/arms/glock.glb" );
+        particleTextureSmoke = renderer.GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Smoke_01.png" );
+        particleTextureTrace1 = renderer.GetOrLoadTexture( "assets/textures/fx/kenny/trace_06.png" );
+        particleTextureTrace2 = renderer.GetOrLoadTexture( "assets/textures/fx/kenny/smoke_01.png" );
+        animator.PlayAnimation( *model, "Armature|Glock_Idle_Anim", true );
         isEquipped = true;
 
         sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
@@ -256,7 +258,7 @@ namespace atto {
     }
 
     void PlayerWeaponGlock::OnEquip() {
-        animator.PlayAnimation( model, "Armature|Glock_Draw_Anim", false );
+        animator.PlayAnimation( *model, "Armature|Glock_Draw_Anim", false );
         isAttacking  = false;
         isEquipped   = false;
         reloadQueued = false;
@@ -276,7 +278,7 @@ namespace atto {
                 const char * idleAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                       : isSprinting ? "Armature|Glock_Run_Anim"
                                       :               "Armature|Glock_Walk_Anim";
-                animator.PlayAnimation( model, idleAnim, true );
+                animator.PlayAnimation( *model, idleAnim, true );
             }
             animator.Update( dt );
             return;
@@ -292,7 +294,7 @@ namespace atto {
             && ( ( isIdleWalkOrRun && !isSprinting ) || ( isFiring && animator.GetPercentComplete() >= 0.125 ) )
             && !isReloading ) {
             if ( ammo > 0 ) {
-                animator.PlayAnimation( model, "Armature|Glock_Fire_Anim", false );
+                animator.PlayAnimation( *model, "Armature|Glock_Fire_Anim", false );
                 isAttacking = true;
 
                 ammo--;
@@ -382,7 +384,7 @@ namespace atto {
         // R to reload manually
         if ( input.IsKeyPressed( Key::R ) && !isReloading && ammo < MaxAmmo ) {
             if ( isIdleWalkOrRun ) {
-                animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
+                animator.PlayAnimation( *model, "Armature|Glock_Reload_Anim", false );
                 isReloading      = true;
                 reloadQueued     = false;
                 reloadSnd1Played = false;
@@ -423,14 +425,14 @@ namespace atto {
             const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                     : isSprinting ? "Armature|Glock_Run_Anim"
                                     :               "Armature|Glock_Walk_Anim";
-            animator.PlayAnimation( model, returnAnim, true );
+            animator.PlayAnimation( *model, returnAnim, true );
         }
 
         // Fire finished — start queued reload or return to locomotion
         if ( curAnim == "Armature|Glock_Fire_Anim" && animator.IsFinished() ) {
             isAttacking = false;
             if ( reloadQueued && ammo < MaxAmmo ) {
-                animator.PlayAnimation( model, "Armature|Glock_Reload_Anim", false );
+                animator.PlayAnimation( *model, "Armature|Glock_Reload_Anim", false );
                 isReloading      = true;
                 reloadQueued     = false;
                 reloadSnd1Played = false;
@@ -442,20 +444,20 @@ namespace atto {
                 const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                         : isSprinting ? "Armature|Glock_Run_Anim"
                                         :               "Armature|Glock_Walk_Anim";
-                animator.PlayAnimation( model, returnAnim, true );
+                animator.PlayAnimation( *model, returnAnim, true );
             }
         }
 
         // Locomotion transitions
         if ( !isAttacking && !isReloading ) {
             if ( !isMoving && curAnim != "Armature|Glock_Idle_Anim" ) {
-                animator.PlayAnimation( model, "Armature|Glock_Idle_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Glock_Idle_Anim", true );
             }
             else if ( isMoving && isSprinting && curAnim != "Armature|Glock_Run_Anim" ) {
-                animator.PlayAnimation( model, "Armature|Glock_Run_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Glock_Run_Anim", true );
             }
             else if ( isMoving && !isSprinting && curAnim != "Armature|Glock_Walk_Anim" ) {
-                animator.PlayAnimation( model, "Armature|Glock_Walk_Anim", true );
+                animator.PlayAnimation( *model, "Armature|Glock_Walk_Anim", true );
             }
         }
 
@@ -468,7 +470,7 @@ namespace atto {
         Mat4 cameraWorld     = glm::inverse( camera.GetViewMatrix() );
         Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
         Mat4 armsMatrix      = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
-        renderer.RenderAnimatedModel( model, animator, armsMatrix );
+        renderer.RenderAnimatedModel( *model, animator, armsMatrix );
     }
 
     void PlayerWeaponGlock::SpawnParticles( FPSCamera & camera, GameMap & map ) {

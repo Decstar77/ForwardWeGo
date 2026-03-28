@@ -6,9 +6,19 @@
 
 namespace atto {
 
+    enum class TextureWrapType {
+        CLAMP,
+        REPEAT
+    };
+
+    struct TextureCreateInfo {
+        bool                flip = false;
+        TextureWrapType     wrapType = TextureWrapType::REPEAT;
+    };
+
     class Texture {
     public:
-        void LoadFromFile( const char * filePath, bool flip = false );
+        void LoadFromFile( const char * filePath, TextureCreateInfo info );
         void Destroy();
         void Bind( i32 slot = 0 ) const;
         void Unbind( i32 slot = 0 ) const;

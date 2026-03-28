@@ -539,6 +539,12 @@ namespace atto {
     }
 
     const Texture * Renderer::GetOrLoadTexture( const char * filePath, bool flip ) {
+        TextureCreateInfo defaultInfo = {};
+        defaultInfo.flip = flip;
+        return GetOrLoadTexture( filePath, defaultInfo );
+    }
+
+    const Texture * Renderer::GetOrLoadTexture( const char * filePath, TextureCreateInfo createInfo ) {
         const int count = textures.GetCount();
         for ( int i = 0; i < count; i++ ) {
             if ( textures[i].GetPath() == filePath ) {
@@ -547,7 +553,7 @@ namespace atto {
         }
 
         Texture & texture = textures.AddEmpty();
-        texture.LoadFromFile( filePath, flip );
+        texture.LoadFromFile( filePath, createInfo );
         return &texture;
     }
 
@@ -559,7 +565,20 @@ namespace atto {
             }
         }
 
-        StaticModel & model = staticModels.AddEmpty();
+        StaticModel & model = staticModels.ConstructEmpty();
+        model.LoadFromFile( filePath, loadScale );
+        return &model;
+    }
+
+    const AnimatedModel * Renderer::GetOrLoadAnimatedModel( const char * filePath, f32 loadScale ) {
+        const int count = animatedModels.GetCount();
+        for ( int i = 0 ; i < count; i++ ) {
+            if ( animatedModels[i].GetPath()  == filePath ) {
+                return &animatedModels[i];
+            }
+        }
+
+        AnimatedModel & model = animatedModels.ConstructEmpty();
         model.LoadFromFile( filePath, loadScale );
         return &model;
     }
