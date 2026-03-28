@@ -194,10 +194,10 @@ namespace atto {
 
             // Feature first
             const i32 featureYOffset = static_cast<i32>( card.y - 55 * scale );
-            const i32 featureSize = static_cast<i32>( 140 * scale );
+            const i32 featureSize = static_cast<i32>( 145 * scale );
             const Texture * featureTexture = PlayerCardTypeToFeatureTexture( card.type );
             // Feature image
-            ui.DrawSprite( featureTexture, card.x , featureYOffset, featureSize + 10 * scale, featureSize );
+            ui.DrawSprite( featureTexture, card.x , featureYOffset, featureSize + 5 * scale, featureSize );
 
             // Card front frame
             ui.DrawSprite( cardFrontTexture, card.x, card.y, cardW, cardH );
