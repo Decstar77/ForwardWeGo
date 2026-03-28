@@ -1093,13 +1093,15 @@ namespace atto {
 
             i32 brushCount = map.GetBrushCount();
 
-            for ( i32 i = 0; i < brushCount; i++ ) {
-                char label[64];
-                snprintf( label, sizeof( label ), "Brush %d", i );
+            if ( ImGui::CollapsingHeader( "Brush list" ) ) {
+                for ( i32 i = 0; i < brushCount; i++ ) {
+                    char label[64];
+                    snprintf( label, sizeof( label ), "Brush %d", i );
 
-                bool isSelected = (selectedBrushIndex == i);
-                if ( ImGui::Selectable( label, isSelected ) ) {
-                    selectedBrushIndex = i;
+                    bool isSelected = (selectedBrushIndex == i);
+                    if ( ImGui::Selectable( label, isSelected ) ) {
+                        selectedBrushIndex = i;
+                    }
                 }
             }
 
