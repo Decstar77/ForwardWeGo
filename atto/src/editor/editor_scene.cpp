@@ -1179,15 +1179,17 @@ namespace atto {
                 ImGui::Spacing();
 
                 ImGui::Separator();
+                ImGui::Text( "Nav Generation" );
+                ImGui::DragFloat( "Spacing", &navGenSpacing, 0.05f, 0.1f, 5.0f, "%.2f m" );
+                ImGui::DragFloat( "Padding", &navGenPadding, 0.05f, 0.0f, 5.0f, "%.2f m" );
                 if ( ImGui::Button( "Generate Nav Points" ) ) {
                     Snapshot();
 
                     WaypointGraph & graph = map.GetNavGraph();
-                    f32 padding = 0.25f;
-                    Vec3 brushMin = brush.center - brush.halfExtents + Vec3( padding, 0.0f, padding );
-                    Vec3 brushMax = brush.center + brush.halfExtents - Vec3( padding, 0.0f, padding );
+                    Vec3 brushMin = brush.center - brush.halfExtents + Vec3( navGenPadding, 0.0f, navGenPadding );
+                    Vec3 brushMax = brush.center + brush.halfExtents - Vec3( navGenPadding, 0.0f, navGenPadding );
                     f32 topY = brush.center.y + brush.halfExtents.y;
-                    f32 spacing = 0.5f;
+                    f32 spacing = glm::max( 0.1f, navGenSpacing );
 
                     f32 extentX = brushMax.x - brushMin.x;
                     f32 extentZ = brushMax.z - brushMin.z;

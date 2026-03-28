@@ -142,6 +142,10 @@ namespace atto {
         f32  snapSize = 1.0f;
 
         EditorAssetBrowser assetBrowser;
+
+        // Nav generation settings
+        f32 navGenSpacing = 0.5f;
+        f32 navGenPadding = 0.25f;
     };
 
 } // namespace atto
