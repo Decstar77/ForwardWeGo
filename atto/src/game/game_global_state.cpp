@@ -15,6 +15,16 @@ namespace atto {
         return playerCoins;
     }
 
+    void GameGlobalState::SetGameplayVolume( f32 vol ) {
+        gameplayVolume = Clamp( vol, 0.0f, 1.0f );
+        Engine::Get().GetAudioSystem().SetSFXVolume( gameplayVolume );
+    }
+
+    void GameGlobalState::SetMusicVolume( f32 vol ) {
+        musicVolume = Clamp( vol, 0.0f, 1.0f );
+        Engine::Get().GetAudioSystem().SetMusicVolume( musicVolume );
+    }
+
     GameGlobalState::GameGlobalState() {
     }
 }

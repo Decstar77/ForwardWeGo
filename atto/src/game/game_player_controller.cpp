@@ -1,5 +1,6 @@
 #include "game_player_controller.h"
 #include "game_map.h"
+#include "game_global_state.h"
 
 namespace atto {
     void PlayerStart::Serialize( Serializer & serializer ) {
@@ -53,9 +54,10 @@ namespace atto {
         }
         else {
             Vec2 mouseDelta = input.GetMouseDelta();
+            f32 sens = GameGlobalState::Get().GetMouseSensitivity();
             camera.Rotate(
-                mouseDelta.x * camera.GetLookSensitivity() * DEG_TO_RAD,
-                -mouseDelta.y * camera.GetLookSensitivity() * DEG_TO_RAD
+                mouseDelta.x * sens * DEG_TO_RAD,
+                -mouseDelta.y * sens * DEG_TO_RAD
             );
         }
 

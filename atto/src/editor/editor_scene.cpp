@@ -485,6 +485,16 @@ namespace atto {
                 Engine::Get().TransitionToScene( "GameScenePickCard", currentMapPath.c_str() );
             }
         }
+
+        if ( input.IsKeyPressed( Key::F7 ) ) {
+            SaveEditorState();
+            if ( unsavedChanges == true ) {
+                showUnsavedChangesDialog = true;
+                pendingAction = UnsavedChangesAction::Play;
+            } else {
+                Engine::Get().TransitionToScene( "GameSceneMainMenu", currentMapPath.c_str() );
+            }
+        }
     }
 
     Mat4 EditorScene::GetOrthoViewProjectionMatrix() const {

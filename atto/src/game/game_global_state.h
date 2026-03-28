@@ -12,10 +12,25 @@ namespace atto {
         i32     GetPlayerCoins() const;
         void    AddPlayerCoins( i32 amount );
 
+        // Settings
+        f32     GetMouseSensitivity() const { return mouseSensitivity; }
+        void    SetMouseSensitivity( f32 sens ) { mouseSensitivity = Clamp( sens, 0.01f, 1.0f ); }
+
+        f32     GetGameplayVolume() const { return gameplayVolume; }
+        void    SetGameplayVolume( f32 vol );
+
+        f32     GetMusicVolume() const { return musicVolume; }
+        void    SetMusicVolume( f32 vol );
+
     private:
         GameGlobalState();
 
         i32 playerCoins = 200;
+
+        // Settings
+        f32 mouseSensitivity = 0.1f;
+        f32 gameplayVolume   = 1.0f;
+        f32 musicVolume      = 1.0f;
     };
 }
 

@@ -18,7 +18,7 @@ int main() {
     }
 
     RegisterAllScenes();
-    engine.Run( "Editor" );
+    engine.Run( "GameSceneMainMenu" );
 
     engine.Shutdown();
 
