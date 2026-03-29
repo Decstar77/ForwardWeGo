@@ -30,6 +30,7 @@ namespace atto {
         bool vsync = true;
         bool resizable = true;
         bool fullscreen = false;
+        bool packedAssets = false;
     };
 
     // Main engine class

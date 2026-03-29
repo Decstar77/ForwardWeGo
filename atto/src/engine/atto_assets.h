@@ -330,6 +330,7 @@ namespace atto {
         std::vector<u8> * bufferPtr;
         usize            ownedReadPos = 0;
         usize *          readPosPtr;
+        usize            startReadPos = 0;  // sub-serializer: read position at creation
     };
 
     constexpr u32 PACK_MAGIC   = 0x4F545441; // 'ATTO'

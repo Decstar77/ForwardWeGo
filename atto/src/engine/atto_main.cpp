@@ -13,6 +13,12 @@ int main() {
     config.vsync = true;
     config.resizable = true;
 
+#if ATTO_SHIPPING
+    config.packedAssets = true;
+#else
+    config.packedAssets = true;
+#endif
+
     if ( !engine.Initialize( config ) ) {
         return -1;
     }
@@ -21,8 +27,8 @@ int main() {
 #if ATTO_SHIPPING
     engine.Run( "GameSceneMainMenu", "assets/maps/game/game-level-001.map" );
 #else
-    //engine.Run( "GameSceneMainMenu", "assets/maps/game/game-level-001.map" );
-    engine.Run( "Editor", nullptr );
+    engine.Run( "GameSceneMainMenu", "assets/maps/game/game-level-001.map" );
+    //engine.Run( "Editor", nullptr );
 #endif
 
     engine.Shutdown();

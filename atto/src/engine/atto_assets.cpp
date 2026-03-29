@@ -598,16 +598,22 @@ namespace atto {
     BinarySerializer::BinarySerializer( std::vector<u8> * buf, usize * rPos )
         : Serializer( false )
         , bufferPtr( buf )
-        , readPosPtr( rPos ) {
+        , readPosPtr( rPos )
+        , startReadPos( *rPos ) {
     }
 
     BinarySerializer::~BinarySerializer() = default;
 
     void BinarySerializer::Reset( bool saving ) {
         isSaving = saving;
-        ownedReadPos = 0;
-        readPosPtr = &ownedReadPos;
-        bufferPtr = &ownedBuffer;
+        if ( readPosPtr == &ownedReadPos ) {
+            // Top-level serializer: full reset
+            ownedReadPos = 0;
+            bufferPtr = &ownedBuffer;
+        } else {
+            // Sub-serializer (shares parent buffer): rewind to starting position
+            *readPosPtr = startReadPos;
+        }
     }
 
     void BinarySerializer::SetBuffer( const u8 * data, usize size ) {

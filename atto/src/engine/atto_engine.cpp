@@ -109,12 +109,7 @@ namespace atto {
         // Initialize subsystems
         rng.Initialize();
         input.Initialize( window );
-
-#if ATTO_RAW_ASSETS
-        assetManager.Initialize( false );
-#else
-        assetManager.Initialize( true );
-#endif
+        assetManager.Initialize( config.packedAssets );
 
         // Set window icon
         {
