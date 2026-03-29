@@ -1007,6 +1007,9 @@ namespace atto {
         usingPackedAssets = usePackedAssets;
         if ( usingPackedAssets ) {
             packedAssetData = ReadBinaryFile( "assets/packed/game.bin" );
+            if ( packedAssetData.empty() == true ) {
+                packedAssetData = ReadBinaryFile( "game.bin" );
+            }
             return packedAssetData.empty() == false;
         }
 
