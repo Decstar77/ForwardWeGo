@@ -379,6 +379,7 @@ namespace atto {
         bool            LoadStaticModelData( const char * filePath, Serializer & serializer );
         bool            LoadAnimatedModelData( const char * filePath, Serializer & serializer );
         bool            LoadFontData( const char * filePath, f32 fontSize, Serializer & serializer );
+        std::string     LoadShaderText( const char * filePath );
 
         bool            LoadSound( const char * path, bool mono, Serializer & serializer );
 
@@ -389,12 +390,15 @@ namespace atto {
         bool            LoadSoundRaw( const char * path, bool mono, Serializer & serializer );
         bool            LoadWAV( const char * path, bool mono, Serializer & serializer );
         bool            LoadOGG( const char * path, bool mono, Serializer & serializer );
+        std::string     LoadShaderTextRaw( const char * filePath );
 
         bool            LoadTextureDataPacked( const char * filePath, Serializer & serializer );
         bool            LoadStaticModelDataPacked( const char * filePath, Serializer & serializer );
         bool            LoadAnimatedModelDataPacked( const char * filePath, Serializer & serializer );
         bool            LoadFontDataPacked( const char * filePath, f32 fontSize, Serializer & serializer );
         bool            LoadSoundPacked( const char * path, bool mono, Serializer & serializer );
+        std::string     LoadShaderTextPacked( const char * filePath );
+
 
         std::vector< std::string > GetFilesInFolderRecursive( const char * path, const char * ext );
 

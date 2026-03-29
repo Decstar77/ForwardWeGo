@@ -111,4 +111,12 @@ namespace atto {
                                         Serializer & serializer ) {
         return LoadFromPack( packedAssetData, path, serializer );
     }
+
+    std::string AssetManager::LoadShaderTextPacked( const char * filePath ) {
+        std::vector<u8> data;
+        if ( !ExtractPackedAsset( packedAssetData, filePath, data ) ) {
+            return {};
+        }
+        return std::string( reinterpret_cast<const char *>( data.data() ), data.size() );
+    }
 }

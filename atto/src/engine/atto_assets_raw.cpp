@@ -645,6 +645,11 @@ namespace atto {
         }
         return LoadWAV( path, mono, serializer );
     }
+
+    std::string AssetManager::LoadShaderTextRaw( const char * filePath ) {
+        return ReadTextFile( filePath );
+    }
+
 } // namespace atto
 
 #endif

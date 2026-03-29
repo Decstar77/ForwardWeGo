@@ -97,15 +97,15 @@ namespace atto {
     }
 
     bool Shader::CreateFromFiles( const char * vertexPath, const char * fragmentPath ) {
-        std::string vertSrc = Engine::Get().GetAssetManager().ReadTextFile( vertexPath );
+        std::string vertSrc = Engine::Get().GetAssetManager().LoadShaderText( vertexPath );
         if ( vertSrc.empty() ) {
-            LOG_ERROR( "Failed to read vertex shader file: %s", vertexPath );
+            LOG_ERROR( "Failed to load vertex shader: %s", vertexPath );
             return false;
         }
 
-        std::string fragSrc = Engine::Get().GetAssetManager().ReadTextFile( fragmentPath );
+        std::string fragSrc = Engine::Get().GetAssetManager().LoadShaderText( fragmentPath );
         if ( fragSrc.empty() ) {
-            LOG_ERROR( "Failed to read fragment shader file: %s", fragmentPath );
+            LOG_ERROR( "Failed to load fragment shader: %s", fragmentPath );
             return false;
         }
 

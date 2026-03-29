@@ -1139,4 +1139,15 @@ namespace atto {
         }
         return false;
     }
+
+    std::string AssetManager::LoadShaderText( const char * filePath ) {
+        if ( usingPackedAssets ) {
+            return LoadShaderTextPacked( filePath );
+        } else {
+#if ATTO_RAW_ASSETS
+            return LoadShaderTextRaw( filePath );
+#endif
+        }
+        return {};
+    }
 }

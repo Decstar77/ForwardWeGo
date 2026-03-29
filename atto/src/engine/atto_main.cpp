@@ -18,10 +18,10 @@ int main() {
     }
 
     RegisterAllScenes();
-#if 1
-    engine.Run( "Editor" );
-#else
+#if ATTO_SHIPPING
     engine.Run( "GameSceneMainMenu" );
+#else
+    engine.Run( "Editor" );
 #endif
 
     engine.Shutdown();
