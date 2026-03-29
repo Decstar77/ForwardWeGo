@@ -4,10 +4,18 @@
 namespace atto {
 
     void GameMapScene::OnStart( const char * args ) {
-        JsonSerializer serializer( false );
-        serializer.FromString( Engine::Get().GetAssetManager().ReadTextFile( args ) );
+        AssetManager & assetManager = Engine::Get().GetAssetManager();
         map.SetPath( args );
-        map.Serialize( serializer );
+        if ( assetManager.IsUsingPackedAssets() ) {
+            BinarySerializer serializer( true );
+            assetManager.LoadMapDataPacked( args, serializer );
+            serializer.Reset( false );
+            map.Serialize( serializer );
+        } else {
+            JsonSerializer serializer( false );
+            serializer.FromString( assetManager.ReadTextFile( args ) );
+            map.Serialize( serializer );
+        }
         map.Initialize();
 
         Renderer & renderer = Engine::Get().GetRenderer();

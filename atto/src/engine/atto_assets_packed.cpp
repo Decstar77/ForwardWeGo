@@ -112,6 +112,10 @@ namespace atto {
         return LoadFromPack( packedAssetData, path, serializer );
     }
 
+    bool AssetManager::LoadMapDataPacked( const char * filePath, Serializer & serializer ) {
+        return LoadFromPack( packedAssetData, filePath, serializer );
+    }
+
     std::string AssetManager::LoadShaderTextPacked( const char * filePath ) {
         std::vector<u8> data;
         if ( !ExtractPackedAsset( packedAssetData, filePath, data ) ) {

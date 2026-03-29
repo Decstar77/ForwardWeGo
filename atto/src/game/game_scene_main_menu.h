@@ -36,6 +36,8 @@ namespace atto {
         UICanvas        ui;
         MainMenuPage    page = MainMenuPage::Main;
 
+        std::string     args;
+
         // Fonts
         const Font *    titleFont       = nullptr;
         const Font *    buttonFont      = nullptr;

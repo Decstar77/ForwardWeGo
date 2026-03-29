@@ -348,6 +348,8 @@ namespace atto {
                 sub( "Type", typeStr );
                 EntityType entityType = StringToEntityType( typeStr.c_str() );
 
+                sub.Reset( false );
+
                 auto entity = MakeEntity( entityType );
                 if ( entity ) {
                     entity->SetMap( this );

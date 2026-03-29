@@ -81,6 +81,8 @@ namespace atto {
     // =========================================================================
 
     void GameSceneMainMenu::OnStart( const char * args ) {
+        this->args = args;
+
         Renderer & renderer = Engine::Get().GetRenderer();
 
         titleFont       = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 48.0f );
@@ -131,7 +133,7 @@ namespace atto {
             if ( playHovered && mousePressed ) {
                 sndButtonClick.Play( 0.5f );
                 // TODO: Transition to map selection or first map
-                Engine::Get().TransitionToScene( "Editor", "" );
+                Engine::Get().TransitionToScene( "GameMapScene", args.c_str() );
             }
 
             // Bottom-left buttons

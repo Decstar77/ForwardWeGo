@@ -21,6 +21,7 @@ int main() {
 #if ATTO_SHIPPING
     engine.Run( "GameSceneMainMenu", "assets/maps/game/game-level-001.map" );
 #else
+    //engine.Run( "GameSceneMainMenu", "assets/maps/game/game-level-001.map" );
     engine.Run( "Editor", nullptr );
 #endif
 
@@ -43,8 +44,6 @@ TODO:
 - Spitter
 - Enemy death sound
 - Packaged builds, packing and loading assets.
-- Remove editor from build
-- Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.
 - Enscriptmn build
 
 Brain waves:

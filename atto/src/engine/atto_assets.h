@@ -367,6 +367,8 @@ namespace atto {
         bool            Initialize( bool usePackedAssets = false );
         void            Shutdown();
 
+        bool            IsUsingPackedAssets() const { return usingPackedAssets; }
+
         void            WriteTextFile( const std::string & path, const std::string & content );
         std::string     ReadTextFile( const std::string & path );
 
@@ -398,6 +400,7 @@ namespace atto {
         bool            LoadFontDataPacked( const char * filePath, f32 fontSize, Serializer & serializer );
         bool            LoadSoundPacked( const char * path, bool mono, Serializer & serializer );
         std::string     LoadShaderTextPacked( const char * filePath );
+        bool            LoadMapDataPacked( const char * filePath, Serializer & serializer );
 
 
         std::vector< std::string > GetFilesInFolderRecursive( const char * path, const char * ext );

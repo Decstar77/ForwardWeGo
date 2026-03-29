@@ -12,6 +12,7 @@
 #include <shellapi.h>
 
 #include "pocketlzma.hpp"
+#include "game/game_map.h"
 
 namespace atto {
 
@@ -102,6 +103,16 @@ namespace atto {
             uniquePaths.insert( p );
         }
 
+        // Third pass: explicitly add every .map file under assets/maps/game/ —
+        // these are passed as runtime args so they won't appear in source scraping.
+        for ( const std::string & rawPath : mapFiles ) {
+            std::string normalized = rawPath;
+            for ( char & c : normalized ) { if ( c == '\\' ) c = '/'; }
+            if ( normalized.rfind( "assets/maps/game/", 0 ) == 0 ) {
+                uniquePaths.insert( normalized );
+            }
+        }
+
         std::vector<std::string> result( uniquePaths.begin(), uniquePaths.end() );
 
         LOG_INFO( "Assets found: %d", (i32)result.size() );
@@ -148,6 +159,7 @@ namespace atto {
         AnimatedModel,
         Font,
         Audio,
+        Map,
     };
 
     static PackAssetType DetermineAssetType( const std::string & path ) {
@@ -176,6 +188,9 @@ namespace atto {
         }
         if ( extLower == ".wav" || extLower == ".ogg" ) {
             return PackAssetType::Audio;
+        }
+        if ( extLower == ".map" ) {
+            return PackAssetType::Map;
         }
 
         return PackAssetType::Raw;
@@ -271,6 +286,23 @@ namespace atto {
                 BinarySerializer serializer( true );
                 if ( assetManager.LoadSoundRaw( path.c_str(), false, serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
+                    rawData.assign( buf.begin(), buf.end() );
+                    loaded = true;
+                }
+            } break;
+
+            case PackAssetType::Map: {
+                const std::string jsonText = assetManager.ReadTextFile( path );
+                if ( !jsonText.empty() ) {
+                    JsonSerializer jsonSer( false );
+                    jsonSer.FromString( jsonText );
+                    GameMap tempMap;
+                    tempMap.Serialize( jsonSer );
+
+                    BinarySerializer binSer( true );
+                    tempMap.Serialize( binSer );
+
+                    const auto & buf = binSer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;
                 }
