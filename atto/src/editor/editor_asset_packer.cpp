@@ -73,6 +73,46 @@ namespace atto {
         LOG_INFO( "Packing %d assets...", (i32)assetPaths.size() );
     }
 
+    enum class PackAssetType {
+        Raw,
+        Texture,
+        StaticModel,
+        AnimatedModel,
+        Font,
+        Audio,
+    };
+
+    static PackAssetType DetermineAssetType( const std::string & path ) {
+        const char * ext = strrchr( path.c_str(), '.' );
+        if ( !ext ) {
+            return PackAssetType::Raw;
+        }
+
+        std::string extLower = ext;
+        for ( char & c : extLower ) {
+            if ( c >= 'A' && c <= 'Z' ) c += 'a' - 'A';
+        }
+
+        if ( extLower == ".png" || extLower == ".jpg" || extLower == ".jpeg" ||
+             extLower == ".tga" || extLower == ".bmp" || extLower == ".hdr" ) {
+            return PackAssetType::Texture;
+        }
+        if ( extLower == ".glb" ) {
+            return PackAssetType::AnimatedModel;
+        }
+        if ( extLower == ".fbx" || extLower == ".obj" || extLower == ".gltf" ) {
+            return PackAssetType::StaticModel;
+        }
+        if ( extLower == ".ttf" || extLower == ".otf" ) {
+            return PackAssetType::Font;
+        }
+        if ( extLower == ".wav" || extLower == ".ogg" ) {
+            return PackAssetType::Audio;
+        }
+
+        return PackAssetType::Raw;
+    }
+
     bool EditorAssetPacker::UpdatePacking() {
         if ( !packing ) {
             return false;
@@ -85,20 +125,78 @@ namespace atto {
         }
 
         const std::string & path = assetPaths[currentIndex];
+        AssetManager & assetManager = Engine::Get().GetAssetManager();
+        PackAssetType assetType = DetermineAssetType( path );
 
-        std::ifstream file( path, std::ios::binary | std::ios::ate );
-        if ( !file.is_open() ) {
-            LOG_WARN( "PackAssets: Could not open '%s', skipping", path.c_str() );
-            currentIndex++;
-            return true;
+        std::vector<u8> rawData;
+        bool loaded = false;
+
+        switch ( assetType ) {
+            case PackAssetType::Texture: {
+                BinarySerializer serializer( true );
+                if ( assetManager.LoadTextureData( path.c_str(), serializer ) ) {
+                    const auto & buf = serializer.GetBuffer();
+                    rawData.assign( buf.begin(), buf.end() );
+                    loaded = true;
+                }
+            } break;
+
+            case PackAssetType::StaticModel: {
+                BinarySerializer serializer( true );
+                if ( assetManager.LoadStaticModelData( path.c_str(), 1.0f, serializer ) ) {
+                    const auto & buf = serializer.GetBuffer();
+                    rawData.assign( buf.begin(), buf.end() );
+                    loaded = true;
+                }
+            } break;
+
+            case PackAssetType::AnimatedModel: {
+                BinarySerializer serializer( true );
+                if ( assetManager.LoadAnimatedModelData( path.c_str(), 1.0f, serializer ) ) {
+                    const auto & buf = serializer.GetBuffer();
+                    rawData.assign( buf.begin(), buf.end() );
+                    loaded = true;
+                }
+            } break;
+
+            case PackAssetType::Font: {
+                BinarySerializer serializer( true );
+                f32 defaultFontSize = 24.0f;
+                if ( assetManager.LoadFontData( path.c_str(), defaultFontSize, serializer ) ) {
+                    const auto & buf = serializer.GetBuffer();
+                    rawData.assign( buf.begin(), buf.end() );
+                    loaded = true;
+                }
+            } break;
+
+            case PackAssetType::Audio: {
+                BinarySerializer serializer( true );
+                if ( assetManager.LoadSound( path.c_str(), false, serializer ) ) {
+                    const auto & buf = serializer.GetBuffer();
+                    rawData.assign( buf.begin(), buf.end() );
+                    loaded = true;
+                }
+            } break;
+
+            case PackAssetType::Raw:
+                break;
         }
 
-        std::streamsize fileSize = file.tellg();
-        file.seekg( 0 );
+        // Fallback: raw file copy for unrecognized types or if loading failed
+        if ( !loaded ) {
+            std::ifstream file( path, std::ios::binary | std::ios::ate );
+            if ( !file.is_open() ) {
+                LOG_WARN( "PackAssets: Could not open '%s', skipping", path.c_str() );
+                currentIndex++;
+                return true;
+            }
 
-        std::vector<u8> rawData( (usize)fileSize );
-        file.read( reinterpret_cast<char *>( rawData.data() ), fileSize );
-        file.close();
+            std::streamsize fileSize = file.tellg();
+            file.seekg( 0 );
+            rawData.resize( (usize)fileSize );
+            file.read( reinterpret_cast<char *>( rawData.data() ), fileSize );
+            file.close();
+        }
 
         plz::PocketLzma lzma( plz::Preset::Default );
         std::vector<u8> compressed;
