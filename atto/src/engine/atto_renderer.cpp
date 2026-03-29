@@ -552,7 +552,7 @@ namespace atto {
         }
 
         BinarySerializer serializer( true );
-        Engine::Get().GetAssetManager().LoadTextureData( filePath, serializer );
+        Engine::Get().GetAssetManager().LoadTextureDataRaw( filePath, serializer );
         serializer.Reset( false ); // Switch to loading mode
         Texture & texture = textures.AddEmpty();
         texture.Serialize( serializer, createInfo );
@@ -568,7 +568,7 @@ namespace atto {
         }
 
         BinarySerializer serializer( true );
-        Engine::Get().GetAssetManager().LoadStaticModelData( filePath, loadScale, serializer );
+        Engine::Get().GetAssetManager().LoadStaticModelDataRaw( filePath, loadScale, serializer );
         serializer.Reset( false );
         StaticModel & model = staticModels.ConstructEmpty();
         model.Serialize( serializer );
@@ -584,7 +584,7 @@ namespace atto {
         }
 
         BinarySerializer serializer( true );
-        Engine::Get().GetAssetManager().LoadAnimatedModelData( filePath, loadScale, serializer );
+        Engine::Get().GetAssetManager().LoadAnimatedModelDataRaw( filePath, loadScale, serializer );
         serializer.Reset( false );
         AnimatedModel & model = animatedModels.ConstructEmpty();
         model.Serialize( serializer );
@@ -673,7 +673,7 @@ namespace atto {
         }
 
         BinarySerializer serializer( true );
-        if ( !Engine::Get().GetAssetManager().LoadFontData( path, fontSize, serializer ) ) {
+        if ( !Engine::Get().GetAssetManager().LoadFontDataRaw( path, fontSize, serializer ) ) {
             LOG_ERROR( "Failed to load font: %s at size %.1f", path, fontSize );
         }
         serializer.Reset( false );

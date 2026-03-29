@@ -300,7 +300,7 @@ namespace atto {
 
         // Load raw audio data into serializer
         BinarySerializer serializer( true );
-        if ( !Engine::Get().GetAssetManager().LoadSound( path, mono, serializer ) ) {
+        if ( !Engine::Get().GetAssetManager().LoadSoundRaw( path, mono, serializer ) ) {
             return nullptr;
         }
         serializer.Reset( false );

@@ -332,16 +332,45 @@ namespace atto {
         usize *          readPosPtr;
     };
 
+    constexpr u32 PACK_MAGIC   = 0x4F545441; // 'ATTO'
+    constexpr u32 PACK_VERSION = 1;
+
+    struct PackHeader {
+        u32 magic;
+        u32 version;
+        u32 assetCount;
+        u32 _pad0;
+        u64 tableOffset;    // byte offset to the asset entry table
+    };
+
+    struct AssetEntry {
+        u64 pathHash;           // FNV-1a hash of the asset path
+        u64 offset;             // absolute byte offset into the pack file
+        u32 compressedSize;
+        u32 uncompressedSize;
+        u8  compressionType;    // 0 = none, 1 = lzma
+        u8  _pad0[3];
+        u32 pathLength;         // length of the path string that follows this entry
+    };
+
+    struct PackedAssetData {
+        std::string     path;
+        AssetEntry      entry;
+        std::vector<u8> data;
+    };
+
     class AssetManager {
     public:
         AssetManager();
         ~AssetManager();
 
-        bool            Initialize();
+        bool            Initialize( bool usePackedAssets = false );
         void            Shutdown();
 
         void            WriteTextFile( const std::string & path, const std::string & content );
         std::string     ReadTextFile( const std::string & path );
+
+        std::vector<u8> ReadBinaryFile( const char * path );
 
         std::string     OpenFilePicker( const std::string & basePath );
         std::string     SaveFilePicker( const std::string & basePath, const std::string & extensions );  // "png;jpg;fbx"
@@ -350,11 +379,26 @@ namespace atto {
         bool            LoadStaticModelData( const char * filePath, f32 scale, Serializer & serializer );
         bool            LoadAnimatedModelData( const char * filePath, f32 scale, Serializer & serializer );
         bool            LoadFontData( const char * filePath, f32 fontSize, Serializer & serializer );
+
+        bool            LoadTextureDataRaw( const char * filePath, Serializer & serializer );
+        bool            LoadStaticModelDataRaw( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadAnimatedModelDataRaw( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadFontDataRaw( const char * filePath, f32 fontSize, Serializer & serializer );
+        bool            LoadSoundRaw( const char * path, bool mono, Serializer & serializer );
         bool            LoadWAV( const char * path, bool mono, Serializer & serializer );
         bool            LoadOGG( const char * path, bool mono, Serializer & serializer );
-        bool            LoadSound( const char * path, bool mono, Serializer & serializer );  // Auto-detects format
+
+        bool            LoadTextureDataPacked( const char * filePath, Serializer & serializer );
+        bool            LoadStaticModelDataPacked( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadAnimatedModelDataPacked( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadFontDataPacked( const char * filePath, f32 fontSize, Serializer & serializer );
+        bool            LoadSoundPacked( const char * path, bool mono, Serializer & serializer );
 
         std::vector< std::string > GetFilesInFolderRecursive( const char * path, const char * ext );
+
+    private:
+        bool            usingPackedAssets = false;
+        std::vector<u8> packedAssetData;
     };
 
 }

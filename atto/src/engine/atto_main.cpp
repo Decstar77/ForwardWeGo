@@ -29,7 +29,6 @@ int main() {
     return 0;
 }
 
-
 /*
 TODO:
 - Player cards:
@@ -42,6 +41,7 @@ TODO:
     - Restore health ( must )
     - Extra coins ( must )
 - Spitter
+- Enemy death sound
 - Packaged builds, packing and loading assets.
 - Remove editor from build
 - Remove loading raw asset files from build, remove assimp/ audio file / stb include etc.

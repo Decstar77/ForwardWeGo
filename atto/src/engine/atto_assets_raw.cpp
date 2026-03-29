@@ -30,7 +30,7 @@ namespace atto {
     // Texture raw loading (stb_image)
     // =========================================================================
 
-    bool AssetManager::LoadTextureData( const char * filePath, Serializer & serializer ) {
+    bool AssetManager::LoadTextureDataRaw( const char * filePath, Serializer & serializer ) {
         int w, h, channels;
         stbi_uc * data = stbi_load( filePath, &w, &h, &channels, STBI_rgb_alpha );
         if ( !data ) {
@@ -217,7 +217,7 @@ namespace atto {
     // StaticModel raw loading (Assimp)
     // =========================================================================
 
-    bool AssetManager::LoadStaticModelData( const char * filePath, f32 scale, Serializer & serializer ) {
+    bool AssetManager::LoadStaticModelDataRaw( const char * filePath, f32 scale, Serializer & serializer ) {
         Assimp::Importer importer;
 
         const aiScene * scene = importer.ReadFile( filePath,
@@ -313,7 +313,7 @@ namespace atto {
     // AnimatedModel raw loading (Assimp)
     // =========================================================================
 
-    bool AssetManager::LoadAnimatedModelData( const char * filePath, f32 scale, Serializer & serializer ) {
+    bool AssetManager::LoadAnimatedModelDataRaw( const char * filePath, f32 scale, Serializer & serializer ) {
         Assimp::Importer importer;
 
         const aiScene * scene = importer.ReadFile( filePath,
@@ -459,7 +459,7 @@ namespace atto {
     // Font raw loading (stb_truetype)
     // =========================================================================
 
-    bool AssetManager::LoadFontData( const char * filePath, f32 inFontSize, Serializer & serializer ) {
+    bool AssetManager::LoadFontDataRaw( const char * filePath, f32 inFontSize, Serializer & serializer ) {
         // Read TTF file
         FILE * f = fopen( filePath, "rb" );
         if ( !f ) {
@@ -611,6 +611,7 @@ namespace atto {
         return true;
     }
 
+
     // =========================================================================
     // Sound loading (auto-detect format)
     // =========================================================================
@@ -629,7 +630,7 @@ namespace atto {
         return *a == *b;
     }
 
-    bool AssetManager::LoadSound( const char * path, bool mono, Serializer & serializer ) {
+    bool AssetManager::LoadSoundRaw( const char * path, bool mono, Serializer & serializer ) {
         const char * ext = strrchr( path, '.' );
         if ( ext ) {
             if ( StrEqualsIgnoreCase( ext, ".ogg" ) ) {

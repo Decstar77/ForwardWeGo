@@ -58,12 +58,20 @@ namespace atto {
         }
 
         std::filesystem::remove( "assets/packed/game.bin" );
+        std::filesystem::remove( "assets/packed/scraped.txt" );
 
         assetPaths = ScrapeAssets();
         if ( assetPaths.empty() ) {
             LOG_WARN( "No assets found to pack" );
             return;
         }
+
+        std::stringstream ss;
+        for ( auto path : assetPaths ) {
+            ss << path << std::endl;
+        }
+
+        Engine::Get().GetAssetManager().WriteTextFile( "assets/packed/scraped.txt", ss.str().c_str() );
 
         packedAssets.clear();
         currentIndex = 0;
@@ -134,7 +142,7 @@ namespace atto {
         switch ( assetType ) {
             case PackAssetType::Texture: {
                 BinarySerializer serializer( true );
-                if ( assetManager.LoadTextureData( path.c_str(), serializer ) ) {
+                if ( assetManager.LoadTextureDataRaw( path.c_str(), serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;
@@ -143,7 +151,7 @@ namespace atto {
 
             case PackAssetType::StaticModel: {
                 BinarySerializer serializer( true );
-                if ( assetManager.LoadStaticModelData( path.c_str(), 1.0f, serializer ) ) {
+                if ( assetManager.LoadStaticModelDataRaw( path.c_str(), 1.0f, serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;
@@ -152,7 +160,7 @@ namespace atto {
 
             case PackAssetType::AnimatedModel: {
                 BinarySerializer serializer( true );
-                if ( assetManager.LoadAnimatedModelData( path.c_str(), 1.0f, serializer ) ) {
+                if ( assetManager.LoadAnimatedModelDataRaw( path.c_str(), 1.0f, serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;
@@ -162,7 +170,7 @@ namespace atto {
             case PackAssetType::Font: {
                 BinarySerializer serializer( true );
                 f32 defaultFontSize = 24.0f;
-                if ( assetManager.LoadFontData( path.c_str(), defaultFontSize, serializer ) ) {
+                if ( assetManager.LoadFontDataRaw( path.c_str(), defaultFontSize, serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;
@@ -171,7 +179,7 @@ namespace atto {
 
             case PackAssetType::Audio: {
                 BinarySerializer serializer( true );
-                if ( assetManager.LoadSound( path.c_str(), false, serializer ) ) {
+                if ( assetManager.LoadSoundRaw( path.c_str(), false, serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;

@@ -43,8 +43,6 @@
 #define INVALID_CODE_PATH
 #endif
 
-#include "fpm/fixed.hpp"
-
 #define Stringify( x ) #x
 
 // Fixed-size types
@@ -65,8 +63,6 @@ namespace atto {
 
     using byte = uint8_t;
     using usize = size_t;
-
-    using fp = fpm::fixed_24_8;
 
     #define U32_MAX 0xFFFFFFFF
     #define U64_MAX 0xFFFFFFFFFFFFFFFF

@@ -1,42 +1,41 @@
 #include "game_entity_spitter.h"
 
+#include "game/game_map.h"
+
 namespace atto {
+
+    ATTO_REGISTER_CLASS( Entity, Entity_Spitter, EntityType::Spitter )
+
     Entity_Spitter::Entity_Spitter() {
+        type = EntityType::Spitter;
+        // TODO: tune spitter-specific config values
+        config.maxHealth = 75;
+        health           = config.maxHealth;
     }
 
     void Entity_Spitter::OnSpawn() {
-        Entity::OnSpawn();
+        // TODO: load spitter model
+        // model = Engine::Get().GetRenderer().GetOrLoadStaticModel( "assets/models/sm/SM_Spitter.obj" );
+
+        sndAttack.Initialize();
+        // TODO: load spitter attack sound
+        // sndAttack.LoadSounds( { "assets/sounds/spitter/attack.wav" } );
+
+        sndWalk.Initialize();
+        // TODO: load spitter walk sound
+        // sndWalk.LoadSounds( { "assets/sounds/spitter/walk.wav" } );
     }
 
     void Entity_Spitter::OnUpdate( f32 dt ) {
-        Entity::OnUpdate( dt );
-    }
-
-    void Entity_Spitter::OnRender( Renderer &renderer ) {
-        Entity::OnRender( renderer );
+        AgentOnUpdate( dt );
     }
 
     void Entity_Spitter::OnDespawn() {
-        Entity::OnDespawn();
     }
 
-    AlignedBox Entity_Spitter::GetBounds() const {
-        return Entity::GetBounds();
-    }
-
-    Box Entity_Spitter::GetCollider() const {
-        return Entity::GetCollider();
-    }
-
-    bool Entity_Spitter::RayTest( const Vec3 &start, const Vec3 &dir, f32 &dist ) const {
-        return Entity::RayTest( start, dir, dist );
-    }
-
-    void Entity_Spitter::Serialize( Serializer &serializer ) {
-        Entity::Serialize( serializer );
-    }
-
-    TakeDamageResult Entity_Spitter::TakeDamage( i32 damage ) {
-        return Entity::TakeDamage( damage );
+    void Entity_Spitter::OnAgentAttack() {
+        // TODO: spawn projectile instead of dealing direct melee damage
+        map->DamagePlayer( 8 );
+        sndAttack.PlayAt( position, 15.0f );
     }
 }

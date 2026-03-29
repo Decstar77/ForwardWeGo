@@ -1,23 +1,21 @@
 #pragma once
 
-#include "game_entity.h"
+#include "game_entity_agent.h"
 
 namespace atto {
-    class Entity_Spitter : public Entity {
+
+    class Entity_Spitter : public Entity_Agent {
     public:
         Entity_Spitter();
 
         void OnSpawn() override;
         void OnUpdate( f32 dt ) override;
-        void OnRender( Renderer &renderer ) override;
         void OnDespawn() override;
 
-        AlignedBox GetBounds() const override;
-        Box GetCollider() const override;
-        bool RayTest( const Vec3 &start, const Vec3 &dir, f32 &dist ) const override;
+    protected:
+        void OnAgentAttack() override;
 
-        void Serialize( Serializer &serializer ) override;
-
-        TakeDamageResult TakeDamage( i32 damage ) override;
+    private:
+        SoundCollection sndAttack;
     };
 } // atto

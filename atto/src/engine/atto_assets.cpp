@@ -1003,7 +1003,12 @@ namespace atto {
     AssetManager::~AssetManager() {
     }
 
-    bool AssetManager::Initialize() {
+    bool AssetManager::Initialize( bool usePackedAssets ) {
+        usingPackedAssets = usePackedAssets;
+        if ( usingPackedAssets ) {
+            packedAssetData = ReadBinaryFile( "assets/packed/game.bin" );
+        }
+
         return true;
     }
 
@@ -1037,6 +1042,10 @@ namespace atto {
         return "";
     }
 
+    std::vector<u8> AssetManager::ReadBinaryFile( const char * path ) {
+
+    }
+
     std::vector< std::string > AssetManager::GetFilesInFolderRecursive( const char * path, const char * ext ) {
         std::vector<std::string> files;
         const std::filesystem::path currentPath = std::filesystem::path( path );
@@ -1050,4 +1059,35 @@ namespace atto {
         return files;
     }
 
+    bool AssetManager::LoadTextureData( const char * filePath, Serializer &serializer ) {
+        if ( usingPackedAssets ) {
+            return LoadTextureDataPacked( filePath, serializer );
+        } else {
+            return LoadTextureDataRaw( filePath, serializer );
+        }
+    }
+
+    bool AssetManager::LoadStaticModelData( const char * filePath, f32 scale, Serializer &serializer ) {
+        if ( usingPackedAssets ) {
+            return LoadStaticModelDataPacked( filePath, scale, serializer );
+        } else {
+            return LoadStaticModelDataRaw( filePath, scale, serializer );
+        }
+    }
+
+    bool AssetManager::LoadAnimatedModelData( const char * filePath, f32 scale, Serializer &serializer ) {
+        if ( usingPackedAssets ) {
+            return LoadAnimatedModelDataPacked( filePath, scale, serializer );
+        } else {
+            return LoadAnimatedModelDataRaw( filePath, scale, serializer );
+        }
+    }
+
+    bool AssetManager::LoadFontData( const char * filePath, f32 fontSize, Serializer &serializer ) {
+        if ( usingPackedAssets ) {
+            return LoadFontDataPacked( filePath, fontSize, serializer );
+        } else {
+            return LoadFontDataRaw( filePath, fontSize, serializer );
+        }
+    }
 }
