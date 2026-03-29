@@ -13,25 +13,50 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # ---------------------------------------------------------
+# Shipping configuration
+# Inherits Release flags; defines ATTO_SHIPPING; excludes
+# raw-asset and editor libraries from compilation & linking.
+# ---------------------------------------------------------
+get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(IS_MULTI_CONFIG)
+    list(APPEND CMAKE_CONFIGURATION_TYPES Shipping)
+    list(REMOVE_DUPLICATES CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING "" FORCE)
+endif()
+
+# Shipping borrows all compiler/linker flags from Release
+set(CMAKE_CXX_FLAGS_SHIPPING          "${CMAKE_CXX_FLAGS_RELEASE}"          CACHE STRING "" FORCE)
+set(CMAKE_C_FLAGS_SHIPPING            "${CMAKE_C_FLAGS_RELEASE}"            CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_SHIPPING   "${CMAKE_EXE_LINKER_FLAGS_RELEASE}"   CACHE STRING "" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_SHIPPING "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
+mark_as_advanced(
+    CMAKE_CXX_FLAGS_SHIPPING
+    CMAKE_C_FLAGS_SHIPPING
+    CMAKE_EXE_LINKER_FLAGS_SHIPPING
+    CMAKE_SHARED_LINKER_FLAGS_SHIPPING
+)
+
+# ---------------------------------------------------------
 # Vendor paths
 # ---------------------------------------------------------
-set(GLFW_DIR   ${CMAKE_SOURCE_DIR}/vendor/glfw)
-set(GLAD_DIR   ${CMAKE_SOURCE_DIR}/vendor/glad)
+set(GLFW_DIR    ${CMAKE_SOURCE_DIR}/vendor/glfw)
+set(GLAD_DIR    ${CMAKE_SOURCE_DIR}/vendor/glad)
 set(CLIPPER_DIR ${CMAKE_SOURCE_DIR}/vendor/clipper2/CPP/Clipper2Lib)
 
 # ---------------------------------------------------------
-# assimp (built from source)
+# assimp (built from source — not linked in Shipping, but
+# always configured for multi-config generator compatibility)
 # ---------------------------------------------------------
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)
-set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_INJECT_DEBUG_POSTFIX OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS             OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS            OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS     OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_SAMPLES          OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INSTALL                OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_DOCS             OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB             ON  CACHE BOOL "" FORCE)
+set(ASSIMP_NO_EXPORT              ON  CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS     OFF CACHE BOOL "" FORCE)
+set(ASSIMP_INJECT_DEBUG_POSTFIX   OFF CACHE BOOL "" FORCE)
 add_subdirectory(vendor/assimp)
 
 # ---------------------------------------------------------
@@ -104,14 +129,34 @@ endif()
 # ---------------------------------------------------------
 # atto (executable, C++20)
 # ---------------------------------------------------------
-file(GLOB_RECURSE ATTO_SOURCES
+
+# Core sources — always compiled in every configuration.
+# Editor and raw-asset sources are handled separately below.
+file(GLOB_RECURSE ATTO_ALL_SOURCES
     atto/src/*.h
     atto/src/*.hpp
     atto/src/*.c
     atto/src/*.cpp
 )
 
-set(VENDOR_SOURCES
+file(GLOB_RECURSE ATTO_EDITOR_SOURCES
+    atto/src/editor/*.h
+    atto/src/editor/*.hpp
+    atto/src/editor/*.c
+    atto/src/editor/*.cpp
+)
+
+# Raw-asset loader (pulls in Assimp / stb_image / stb_vorbis / AudioFile)
+set(ATTO_RAW_SOURCES
+    ${CMAKE_SOURCE_DIR}/atto/src/engine/atto_assets_raw.cpp
+)
+
+# Remove editor and raw sources from the always-compiled set
+list(REMOVE_ITEM ATTO_ALL_SOURCES ${ATTO_EDITOR_SOURCES})
+list(REMOVE_ITEM ATTO_ALL_SOURCES ${ATTO_RAW_SOURCES})
+
+# Vendor sources excluded from Shipping (ImGui / ImGuizmo / stb_vorbis)
+set(VENDOR_NONSHIPPING_SOURCES
     vendor/stb/stb_vorbis/stb_vorbis.c
     vendor/imgui/imgui.cpp
     vendor/imgui/imgui_demo.cpp
@@ -123,9 +168,15 @@ set(VENDOR_SOURCES
     vendor/imgui-gizmo/ImGuizmo.cpp
 )
 
-add_executable(atto ${ATTO_SOURCES} ${VENDOR_SOURCES})
+add_executable(atto ${ATTO_ALL_SOURCES})
 
-# pocketlzma uses try/catch internally, enable exceptions and suppress vendor warnings for this file
+# Add editor, raw-asset, and editor-vendor sources only for non-Shipping configs.
+# Each file gets its own generator expression (required for CMake to handle lists correctly).
+foreach(src IN LISTS ATTO_EDITOR_SOURCES ATTO_RAW_SOURCES VENDOR_NONSHIPPING_SOURCES)
+    target_sources(atto PRIVATE "$<$<NOT:$<CONFIG:Shipping>>:${src}>")
+endforeach()
+
+# pocketlzma uses try/catch internally — enable exceptions for those two files only
 if(MSVC)
     set_source_files_properties(atto/src/engine/atto_assets_packed.cpp PROPERTIES
         COMPILE_OPTIONS "/EHsc"
@@ -138,7 +189,7 @@ else()
         COMPILE_OPTIONS "-fexceptions;-Wno-dangling-pointer;-Wno-sign-compare"
     )
     set_source_files_properties(atto/src/editor/editor_asset_packer.cpp PROPERTIES
-            COMPILE_OPTIONS "-fexceptions;-Wno-dangling-pointer;-Wno-sign-compare"
+        COMPILE_OPTIONS "-fexceptions;-Wno-dangling-pointer;-Wno-sign-compare"
     )
 endif()
 
@@ -148,14 +199,15 @@ target_include_directories(atto PRIVATE
     vendor/glm
     vendor/json
     vendor/audio
-    vendor/imgui
-    vendor/imgui-gizmo
     ${CLIPPER_DIR}/include
     vendor/fpm
     vendor/enet/include
     atto/src
-    vendor/assimp/include
-    ${CMAKE_BINARY_DIR}/vendor/assimp/include   # for generated assimp/config.h
+    # ImGui / ImGuizmo / Assimp headers — not needed in Shipping
+    $<$<NOT:$<CONFIG:Shipping>>:${CMAKE_SOURCE_DIR}/vendor/imgui>
+    $<$<NOT:$<CONFIG:Shipping>>:${CMAKE_SOURCE_DIR}/vendor/imgui-gizmo>
+    $<$<NOT:$<CONFIG:Shipping>>:${CMAKE_SOURCE_DIR}/vendor/assimp/include>
+    $<$<NOT:$<CONFIG:Shipping>>:${CMAKE_BINARY_DIR}/vendor/assimp/include>
 )
 
 # C++20, no exceptions, no RTTI
@@ -188,10 +240,17 @@ endif()
 target_compile_definitions(atto PRIVATE
     $<$<CONFIG:Debug>:_DEBUG>
     $<$<CONFIG:Release>:_RELEASE>
+    $<$<CONFIG:Shipping>:_RELEASE>
+    $<$<CONFIG:Shipping>:ATTO_SHIPPING>
 )
 
-# Link vendor static libs (assimp built from source as static lib)
-target_link_libraries(atto PRIVATE clipper glad glfw assimp)
+# Core libs always linked; assimp only for non-Shipping
+target_link_libraries(atto PRIVATE
+    clipper
+    glad
+    glfw
+    $<$<NOT:$<CONFIG:Shipping>>:assimp>
+)
 
 # ---------------------------------------------------------
 # Windows platform specifics

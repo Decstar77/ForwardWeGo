@@ -30,6 +30,12 @@
 #define ATTO_RELEASE 1
 #endif
 
+#if defined(ATTO_SHIPPING)
+#else
+#define ATTO_EDITOR 1
+#define ATTO_RAW_ASSETS 1
+#endif
+
 // Assertions
 #if ATTO_DEBUG
 #define ATTO_ASSERT(condition, message) \
