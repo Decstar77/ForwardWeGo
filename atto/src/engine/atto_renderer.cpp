@@ -388,37 +388,28 @@ namespace atto {
             skyboxTexture = 0;
         }
 
-        stbi_set_flip_vertically_on_load( true );
+        BinarySerializer serializer(true);
+        Engine::Get().GetAssetManager().LoadTextureData( filePath, serializer );
+        serializer.Reset(true);
+
+        i32 width;
+        i32 height;
+        std::vector<u8> data;
+        serializer("Width", width);
+        serializer("Height", height);
+        serializer("Data", data);
+
+        if ( data.empty() ) {
+            LOG_ERROR( "Failed to load skybox '%s'", filePath );
+            glDeleteTextures( 1, &skyboxTexture );
+            skyboxTexture = 0;
+            return;
+        }
 
         glGenTextures( 1, &skyboxTexture );
         glBindTexture( GL_TEXTURE_2D, skyboxTexture );
 
-        if ( stbi_is_hdr( filePath ) ) {
-            int w, h, channels;
-            f32 * data = stbi_loadf( filePath, &w, &h, &channels, 3 );
-            if ( !data ) {
-                LOG_ERROR( "Failed to load HDR skybox '%s'", filePath );
-                glDeleteTextures( 1, &skyboxTexture );
-                skyboxTexture = 0;
-                return;
-            }
-
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB16F, w, h, 0, GL_RGB, GL_FLOAT, data );
-            stbi_image_free( data );
-        }
-        else {
-            int w, h, channels;
-            stbi_uc * data = stbi_load( filePath, &w, &h, &channels, STBI_rgb_alpha );
-            if ( !data ) {
-                LOG_ERROR( "Failed to load skybox '%s'", filePath );
-                glDeleteTextures( 1, &skyboxTexture );
-                skyboxTexture = 0;
-                return;
-            }
-
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-            stbi_image_free( data );
-        }
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data() );
 
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );

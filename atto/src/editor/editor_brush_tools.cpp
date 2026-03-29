@@ -1,5 +1,7 @@
 #include "editor_brush_tools.h"
 
+#if ATTO_EDITOR
+
 namespace atto {
 
     void EditorBrushTools::GetOrthoAxes( EditorViewMode viewMode, i32 & hAxis, i32 & vAxis ) {
@@ -282,3 +284,5 @@ namespace atto {
     }
 
 } // namespace atto
+
+#endif

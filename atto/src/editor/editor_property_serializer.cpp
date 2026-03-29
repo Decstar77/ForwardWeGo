@@ -1,4 +1,7 @@
 #include "editor_property_serializer.h"
+
+#if ATTO_EDITOR
+
 #include "editor_asset_browser.h"
 #include "engine/atto_engine.h"
 
@@ -463,3 +466,5 @@ namespace atto {
     }
 
 }
+
+#endif

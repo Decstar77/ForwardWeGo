@@ -1,4 +1,7 @@
 #include "editor_scene.h"
+
+#if ATTO_EDITOR
+
 #include "editor_property_serializer.h"
 
 #include <algorithm>
@@ -1944,3 +1947,5 @@ namespace atto {
     }
 
 } // namespace atto
+
+#endif

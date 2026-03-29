@@ -1,11 +1,12 @@
+#include "editor_asset_packer.h"
+
+#if ATTO_EDITOR
+
+#include <imgui.h>
 #include <regex>
 #include <fstream>
 #include <set>
 #include <filesystem>
-
-#include "editor_asset_packer.h"
-
-#include <imgui.h>
 
 #include "pocketlzma.hpp"
 
@@ -376,3 +377,5 @@ namespace atto {
         }
     }
 }
+
+#endif

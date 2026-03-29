@@ -1,6 +1,9 @@
 #include "editor_asset_browser.h"
 
+#if ATTO_EDITOR
+
 #include "editor_asset_thumbnail.h"
+#include "engine/atto_engine.h"
 
 #include <imgui.h>
 #include <filesystem>
@@ -439,3 +442,5 @@ namespace atto {
     }
 
 } // namespace atto
+
+#endif

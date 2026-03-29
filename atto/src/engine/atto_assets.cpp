@@ -1089,39 +1089,54 @@ namespace atto {
         if ( usingPackedAssets ) {
             return LoadTextureDataPacked( filePath, serializer );
         } else {
+#if ATTO_RAW_ASSETS
             return LoadTextureDataRaw( filePath, serializer );
+#endif
         }
+        return false;
     }
 
     bool AssetManager::LoadStaticModelData( const char * filePath, Serializer &serializer ) {
         if ( usingPackedAssets ) {
             return LoadStaticModelDataPacked( filePath, serializer );
         } else {
+#if ATTO_RAW_ASSETS
             return LoadStaticModelDataRaw( filePath, serializer );
+#endif
         }
+        return false;
     }
 
     bool AssetManager::LoadAnimatedModelData( const char * filePath, Serializer &serializer ) {
         if ( usingPackedAssets ) {
             return LoadAnimatedModelDataPacked( filePath, serializer );
         } else {
+#if ATTO_RAW_ASSETS
             return LoadAnimatedModelDataRaw( filePath, serializer );
+#endif
         }
+        return false;
     }
 
     bool AssetManager::LoadFontData( const char * filePath, f32 fontSize, Serializer &serializer ) {
         if ( usingPackedAssets ) {
             return LoadFontDataPacked( filePath, fontSize, serializer );
         } else {
+#if ATTO_RAW_ASSETS
             return LoadFontDataRaw( filePath, fontSize, serializer );
+#endif
         }
+        return false;
     }
 
     bool AssetManager::LoadSound( const char * path, bool mono, Serializer &serializer ) {
         if ( usingPackedAssets ) {
             return LoadSoundPacked( path, mono, serializer );
         } else {
+#if ATTO_RAW_ASSETS
             return LoadSoundRaw( path, mono, serializer );
+#endif
         }
+        return false;
     }
 }

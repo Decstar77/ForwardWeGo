@@ -1,3 +1,7 @@
+#pragma once
+
+#include "../engine/atto_core.h"
+#if ATTO_EDITOR
 
 #include "engine/atto_engine.h"
 
@@ -30,3 +34,5 @@ namespace atto {
         u64                         dataOffset = 0;
     };
 }
+
+#endif

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "engine/atto_core.h"
+#if ATTO_EDITOR
+
 #include "engine/atto_camera.h"
 #include "engine/renderer/atto_render_model.h"
 #include "game/game_map.h"
@@ -53,3 +55,5 @@ namespace atto {
     };
 
 } // namespace atto
+
+#endif

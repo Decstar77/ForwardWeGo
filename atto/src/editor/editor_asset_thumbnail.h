@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../engine/atto_core.h"
+#if ATTO_EDITOR
 
 namespace atto {
 
@@ -32,3 +33,5 @@ namespace atto {
     };
 
 }
+
+#endif

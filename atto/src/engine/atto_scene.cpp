@@ -6,7 +6,9 @@
 
 namespace atto {
     void RegisterAllScenes() {
+#if ATTO_EDITOR
         SceneRegistry::Register<EditorScene>();
+#endif
         SceneRegistry::Register<GameMapScene>();
         SceneRegistry::Register<GameScenePickCard>();
         SceneRegistry::Register<GameSceneMainMenu>();

@@ -11,8 +11,6 @@
 #include <cstdio>
 #include <filesystem>
 
-#include <stb_image/std_image.h>
-
 namespace atto {
 
     void Color::Serialize( Serializer & serializer ) {
@@ -104,20 +102,6 @@ namespace atto {
         //LOG_INFO( "New working directory: %s", std::filesystem::current_path().string().c_str() );
 #endif
 
-        // Set window icon
-        {
-            int w, h, channels;
-            unsigned char* pixels = stbi_load("assets/textures/ai-gen/doggo.png", &w, &h, &channels, 4);
-            if (pixels) {
-                GLFWimage icon;
-                icon.width = w;
-                icon.height = h;
-                icon.pixels = pixels;
-                glfwSetWindowIcon(window, 1, &icon);
-                stbi_image_free(pixels);
-            }
-        }
-
         // Print OpenGL info
         LOG_INFO( "OpenGL Version: %s", glGetString( GL_VERSION ) );
         LOG_INFO( "OpenGL Renderer: %s", glGetString( GL_RENDERER ) );
@@ -125,7 +109,33 @@ namespace atto {
         // Initialize subsystems
         rng.Initialize();
         input.Initialize( window );
+
+#if ATTO_RAW_ASSETS
         assetManager.Initialize( true );
+#else
+        assetManager.Initialize( true );
+#endif
+
+        // Set window icon
+        {
+            int w, h;
+            std::vector< u8 > data;
+            BinarySerializer serializer( true );
+            assetManager.LoadTextureData( "assets/textures/ai-gen/doggo.png", serializer );
+            serializer.Reset( false );
+            serializer( "Width", w );
+            serializer( "Height", h );
+            serializer( "Data", data );
+            if ( data.empty() == false ) {
+                GLFWimage icon;
+                icon.width = w;
+                icon.height = h;
+                icon.pixels = data.data();
+                glfwSetWindowIcon( window, 1, &icon );
+            }
+        }
+
+        // Audio system
         audioSystem.Initialize();
 
         if ( !renderer.Initialize() ) {

@@ -1,5 +1,7 @@
 #include "editor_asset_thumbnail.h"
 
+#if ATTO_EDITOR
+
 #include "../engine/atto_engine.h"
 
 #include <glad/glad.h>
@@ -155,3 +157,5 @@ namespace atto {
     }
 
 }
+
+#endif

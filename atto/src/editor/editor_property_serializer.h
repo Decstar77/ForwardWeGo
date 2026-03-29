@@ -1,5 +1,8 @@
 #pragma once
 
+#include "engine/atto_core.h"
+#if ATTO_EDITOR
+
 #include "engine/atto_assets.h"
 
 namespace atto {
@@ -64,3 +67,5 @@ namespace atto {
     };
 
 }
+
+#endif

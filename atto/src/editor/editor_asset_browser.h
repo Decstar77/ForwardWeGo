@@ -1,6 +1,8 @@
 #pragma once
 
-#include "engine/atto_engine.h"
+#include "../engine/atto_core.h"
+#if ATTO_EDITOR
+
 #include "engine/renderer/atto_render_material.h"
 #include "editor_asset_thumbnail.h"
 
@@ -76,3 +78,5 @@ namespace atto {
     };
 
 } // namespace atto
+
+#endif

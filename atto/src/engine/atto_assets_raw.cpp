@@ -1,4 +1,7 @@
 #include "atto_assets.h"
+
+#if ATTO_RAW_ASSETS
+
 #include "atto_log.h"
 #include "atto_ui.h"
 #include "renderer/atto_render_model_helpers.h"
@@ -643,3 +646,5 @@ namespace atto {
         return LoadWAV( path, mono, serializer );
     }
 } // namespace atto
+
+#endif
