@@ -4,6 +4,7 @@
 
 #include <imgui.h>
 #include <filesystem>
+#include <algorithm> // Required for std::replace
 
 namespace atto {
 
@@ -53,6 +54,7 @@ namespace atto {
 
             TextureEntry & tex = textures.emplace_back();
             tex.path           = entry.path().string();
+            std::ranges::replace( tex.path, '\\', '/');
             tex.filename       = entry.path().filename().string();
             tex.texture        = renderer.GetOrLoadTexture( tex.path.c_str() );
         }

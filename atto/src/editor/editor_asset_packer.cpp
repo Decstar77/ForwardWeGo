@@ -207,7 +207,7 @@ namespace atto {
 
             case PackAssetType::StaticModel: {
                 BinarySerializer serializer( true );
-                if ( assetManager.LoadStaticModelDataRaw( path.c_str(), 1.0f, serializer ) ) {
+                if ( assetManager.LoadStaticModelDataRaw( path.c_str(), serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;
@@ -216,7 +216,7 @@ namespace atto {
 
             case PackAssetType::AnimatedModel: {
                 BinarySerializer serializer( true );
-                if ( assetManager.LoadAnimatedModelDataRaw( path.c_str(), 1.0f, serializer ) ) {
+                if ( assetManager.LoadAnimatedModelDataRaw( path.c_str(), serializer ) ) {
                     const auto & buf = serializer.GetBuffer();
                     rawData.assign( buf.begin(), buf.end() );
                     loaded = true;

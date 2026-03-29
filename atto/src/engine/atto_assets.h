@@ -376,23 +376,23 @@ namespace atto {
         std::string     SaveFilePicker( const std::string & basePath, const std::string & extensions );  // "png;jpg;fbx"
 
         bool            LoadTextureData( const char * filePath, Serializer & serializer );
-        bool            LoadStaticModelData( const char * filePath, f32 scale, Serializer & serializer );
-        bool            LoadAnimatedModelData( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadStaticModelData( const char * filePath, Serializer & serializer );
+        bool            LoadAnimatedModelData( const char * filePath, Serializer & serializer );
         bool            LoadFontData( const char * filePath, f32 fontSize, Serializer & serializer );
 
         bool            LoadSound( const char * path, bool mono, Serializer & serializer );
 
         bool            LoadTextureDataRaw( const char * filePath, Serializer & serializer );
-        bool            LoadStaticModelDataRaw( const char * filePath, f32 scale, Serializer & serializer );
-        bool            LoadAnimatedModelDataRaw( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadStaticModelDataRaw( const char * filePath, Serializer & serializer );
+        bool            LoadAnimatedModelDataRaw( const char * filePath, Serializer & serializer );
         bool            LoadFontDataRaw( const char * filePath, f32 fontSize, Serializer & serializer );
         bool            LoadSoundRaw( const char * path, bool mono, Serializer & serializer );
         bool            LoadWAV( const char * path, bool mono, Serializer & serializer );
         bool            LoadOGG( const char * path, bool mono, Serializer & serializer );
 
         bool            LoadTextureDataPacked( const char * filePath, Serializer & serializer );
-        bool            LoadStaticModelDataPacked( const char * filePath, f32 scale, Serializer & serializer );
-        bool            LoadAnimatedModelDataPacked( const char * filePath, f32 scale, Serializer & serializer );
+        bool            LoadStaticModelDataPacked( const char * filePath, Serializer & serializer );
+        bool            LoadAnimatedModelDataPacked( const char * filePath, Serializer & serializer );
         bool            LoadFontDataPacked( const char * filePath, f32 fontSize, Serializer & serializer );
         bool            LoadSoundPacked( const char * path, bool mono, Serializer & serializer );
 

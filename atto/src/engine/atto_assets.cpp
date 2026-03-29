@@ -1090,19 +1090,19 @@ namespace atto {
         }
     }
 
-    bool AssetManager::LoadStaticModelData( const char * filePath, f32 scale, Serializer &serializer ) {
+    bool AssetManager::LoadStaticModelData( const char * filePath, Serializer &serializer ) {
         if ( usingPackedAssets ) {
-            return LoadStaticModelDataPacked( filePath, scale, serializer );
+            return LoadStaticModelDataPacked( filePath, serializer );
         } else {
-            return LoadStaticModelDataRaw( filePath, scale, serializer );
+            return LoadStaticModelDataRaw( filePath, serializer );
         }
     }
 
-    bool AssetManager::LoadAnimatedModelData( const char * filePath, f32 scale, Serializer &serializer ) {
+    bool AssetManager::LoadAnimatedModelData( const char * filePath, Serializer &serializer ) {
         if ( usingPackedAssets ) {
-            return LoadAnimatedModelDataPacked( filePath, scale, serializer );
+            return LoadAnimatedModelDataPacked( filePath, serializer );
         } else {
-            return LoadAnimatedModelDataRaw( filePath, scale, serializer );
+            return LoadAnimatedModelDataRaw( filePath, serializer );
         }
     }
 

@@ -112,7 +112,7 @@ namespace atto {
 
     class StaticModel {
     public:
-        void Serialize( Serializer & serializer );
+        void Serialize( Serializer & serializer, f32 loadScale );
         void CreateFromMesh( const std::vector<Vertex> & vertices, const std::vector<u32> & indices );
         void Destroy();
         void Draw( Shader * shader ) const;
@@ -135,7 +135,7 @@ namespace atto {
 
     class AnimatedModel {
     public:
-        void Serialize( Serializer & serializer );
+        void Serialize( Serializer & serializer, f32 loadScale );
         void Destroy();
         void Draw( Shader * shader ) const;
 

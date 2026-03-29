@@ -217,7 +217,7 @@ namespace atto {
     // StaticModel raw loading (Assimp)
     // =========================================================================
 
-    bool AssetManager::LoadStaticModelDataRaw( const char * filePath, f32 scale, Serializer & serializer ) {
+    bool AssetManager::LoadStaticModelDataRaw( const char * filePath, Serializer & serializer ) {
         Assimp::Importer importer;
 
         const aiScene * scene = importer.ReadFile( filePath,
@@ -253,9 +253,9 @@ namespace atto {
                 entry.vertices.reserve( mesh->mNumVertices );
                 for ( u32 v = 0; v < mesh->mNumVertices; v++ ) {
                     Vertex vertex = {};
-                    vertex.position.x = mesh->mVertices[v].x * scale;
-                    vertex.position.y = mesh->mVertices[v].y * scale;
-                    vertex.position.z = mesh->mVertices[v].z * scale;
+                    vertex.position.x = mesh->mVertices[v].x;
+                    vertex.position.y = mesh->mVertices[v].y;
+                    vertex.position.z = mesh->mVertices[v].z;
 
                     if ( mesh->HasNormals() ) {
                         vertex.normal.x = mesh->mNormals[v].x;
@@ -313,7 +313,7 @@ namespace atto {
     // AnimatedModel raw loading (Assimp)
     // =========================================================================
 
-    bool AssetManager::LoadAnimatedModelDataRaw( const char * filePath, f32 scale, Serializer & serializer ) {
+    bool AssetManager::LoadAnimatedModelDataRaw( const char * filePath, Serializer & serializer ) {
         Assimp::Importer importer;
 
         const aiScene * scene = importer.ReadFile( filePath,
@@ -350,9 +350,9 @@ namespace atto {
                 entry.vertices.resize( mesh->mNumVertices );
                 for ( u32 v = 0; v < mesh->mNumVertices; v++ ) {
                     AnimationVertex & vertex = entry.vertices[v];
-                    vertex.position.x = mesh->mVertices[v].x * scale;
-                    vertex.position.y = mesh->mVertices[v].y * scale;
-                    vertex.position.z = mesh->mVertices[v].z * scale;
+                    vertex.position.x = mesh->mVertices[v].x;
+                    vertex.position.y = mesh->mVertices[v].y;
+                    vertex.position.z = mesh->mVertices[v].z;
 
                     if ( mesh->HasNormals() ) {
                         vertex.normal.x = mesh->mNormals[v].x;

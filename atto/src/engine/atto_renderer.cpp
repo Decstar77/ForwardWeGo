@@ -568,10 +568,10 @@ namespace atto {
         }
 
         BinarySerializer serializer( true );
-        Engine::Get().GetAssetManager().LoadStaticModelData( filePath, loadScale, serializer );
+        Engine::Get().GetAssetManager().LoadStaticModelData( filePath, serializer );
         serializer.Reset( false );
         StaticModel & model = staticModels.ConstructEmpty();
-        model.Serialize( serializer );
+        model.Serialize( serializer, loadScale );
         return &model;
     }
 
@@ -584,10 +584,10 @@ namespace atto {
         }
 
         BinarySerializer serializer( true );
-        Engine::Get().GetAssetManager().LoadAnimatedModelData( filePath, loadScale, serializer );
+        Engine::Get().GetAssetManager().LoadAnimatedModelData( filePath, serializer );
         serializer.Reset( false );
         AnimatedModel & model = animatedModels.ConstructEmpty();
-        model.Serialize( serializer );
+        model.Serialize( serializer, loadScale );
         return &model;
     }
 

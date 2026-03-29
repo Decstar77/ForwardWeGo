@@ -144,10 +144,10 @@ namespace atto {
         mat.metalic = data.metalic;
         mat.roughness = data.roughness;
         if ( !data.albedoTexturePath.empty() ) {
-            mat.albedoTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.albedoTexturePath.c_str() );
+            mat.albedoTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.albedoTexturePath.c_str(), true );
         }
         if ( !data.metalicTexturePath.empty() ) {
-            mat.metalicTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.metalicTexturePath.c_str() );
+            mat.metalicTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.metalicTexturePath.c_str(), true );
         }
         return mat;
     }
@@ -186,7 +186,7 @@ namespace atto {
         }
     }
 
-    void StaticModel::Serialize( Serializer & serializer ) {
+    void StaticModel::Serialize( Serializer & serializer, f32 loadScale ) {
         Destroy();
 
         serializer( "Path", path );
@@ -208,6 +208,12 @@ namespace atto {
 
             std::vector<Vertex> vertices( vertCount );
             std::memcpy( vertices.data(), vertexBytes.data(), vertexBytes.size() );
+
+            if ( loadScale != 1.0f ) {
+                for ( Vertex & v : vertices ) {
+                    v.position *= loadScale;
+                }
+            }
 
             std::vector<u32> indices( idxCount );
             std::memcpy( indices.data(), indexBytes.data(), indexBytes.size() );
@@ -374,7 +380,7 @@ namespace atto {
         }
     }
 
-    void AnimatedModel::Serialize( Serializer & serializer ) {
+    void AnimatedModel::Serialize( Serializer & serializer, f32 loadScale ) {
         Destroy();
 
         serializer( "Path", path );
@@ -397,6 +403,12 @@ namespace atto {
 
             std::vector<AnimationVertex> vertices( vertCount );
             std::memcpy( vertices.data(), vertexBytes.data(), vertexBytes.size() );
+
+            if ( loadScale != 1.0f ) {
+                for ( AnimationVertex & v : vertices ) {
+                    v.position *= loadScale;
+                }
+            }
 
             std::vector<u32> indices( idxCount );
             std::memcpy( indices.data(), indexBytes.data(), indexBytes.size() );

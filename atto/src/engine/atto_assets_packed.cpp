@@ -94,13 +94,11 @@ namespace atto {
         return LoadFromPack( packedAssetData, filePath, serializer );
     }
 
-    bool AssetManager::LoadStaticModelDataPacked( const char * filePath, f32 /*scale*/,
-                                                  Serializer & serializer ) {
+    bool AssetManager::LoadStaticModelDataPacked( const char * filePath, Serializer & serializer ) {
         return LoadFromPack( packedAssetData, filePath, serializer );
     }
 
-    bool AssetManager::LoadAnimatedModelDataPacked( const char * filePath, f32 /*scale*/,
-                                                    Serializer & serializer ) {
+    bool AssetManager::LoadAnimatedModelDataPacked( const char * filePath, Serializer & serializer ) {
         return LoadFromPack( packedAssetData, filePath, serializer );
     }
 

@@ -20,11 +20,21 @@ namespace atto {
         serializer("Channels", channels );
         std::vector<u8> data = {};
         if ( serializer.IsLoading() == true ) {
-            if ( info.flip ) {
-                // TODO: flip the texture
+            serializer( "Data", data );
+
+            if ( info.flip && width > 0 && height > 0 ) {
+                const i32 rowBytes = width * 4; // RGBA
+                for ( i32 y = 0; y < height / 2; y++ ) {
+                    u8 * top    = data.data() + y * rowBytes;
+                    u8 * bottom = data.data() + ( height - 1 - y ) * rowBytes;
+                    for ( i32 x = 0; x < rowBytes; x++ ) {
+                        u8 tmp  = top[x];
+                        top[x]    = bottom[x];
+                        bottom[x] = tmp;
+                    }
+                }
             }
 
-            serializer("Data", data );
             CreateGLObject( data, info );
         }
     }
