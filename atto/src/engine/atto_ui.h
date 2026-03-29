@@ -10,14 +10,50 @@
 #include "atto_math.h"
 #include "atto_containers.h"
 
-#include "stb_truetype/stb_truetype.h"
-
 namespace atto {
 
     constexpr i32 FONT_ATLAS_WIDTH  = 512;
     constexpr i32 FONT_ATLAS_HEIGHT = 512;
     constexpr i32 FONT_FIRST_CHAR   = 32;  // space
     constexpr i32 FONT_CHAR_COUNT   = 96;  // ASCII 32-127
+
+    // POD representation of one baked glyph — layout is intentionally identical to
+    // stbtt_bakedchar so packed binary data produced by the raw loader is compatible.
+    struct BakedChar {
+        u16 x0, y0, x1, y1;        // glyph bbox in the atlas (pixels)
+        f32 xoff, yoff, xadvance;   // render offsets and horizontal advance
+    };
+
+    // Screen-space quad produced by GetBakedQuad.
+    struct AlignedQuad {
+        f32 x0, y0, s0, t0;    // top-left  position + UV
+        f32 x1, y1, s1, t1;    // bottom-right position + UV
+    };
+
+    // Compute the screen-space quad for a single glyph and advance xpos.
+    // openglFillRule: true for GL (no half-pixel bias), false for D3D9.
+    inline void GetBakedQuad( const BakedChar * chardata, i32 pw, i32 ph,
+                              i32 charIndex, f32 * xpos, f32 * ypos,
+                              AlignedQuad * q, bool openglFillRule ) {
+        const f32 bias = openglFillRule ? 0.0f : -0.5f;
+        const f32 ipw  = 1.0f / (f32)pw;
+        const f32 iph  = 1.0f / (f32)ph;
+        const BakedChar & b = chardata[ charIndex ];
+        const i32 rx = (i32)floorf( *xpos + b.xoff + 0.5f );
+        const i32 ry = (i32)floorf( *ypos + b.yoff + 0.5f );
+
+        q->x0 = (f32)rx + bias;
+        q->y0 = (f32)ry + bias;
+        q->x1 = (f32)rx + (f32)( b.x1 - b.x0 ) + bias;
+        q->y1 = (f32)ry + (f32)( b.y1 - b.y0 ) + bias;
+
+        q->s0 = (f32)b.x0 * ipw;
+        q->t0 = (f32)b.y0 * iph;
+        q->s1 = (f32)b.x1 * ipw;
+        q->t1 = (f32)b.y1 * iph;
+
+        *xpos += b.xadvance;
+    }
 
     class Serializer;
 
@@ -33,13 +69,13 @@ namespace atto {
         i32                 GetAtlasWidth()  const { return FONT_ATLAS_WIDTH; }
         i32                 GetAtlasHeight() const { return FONT_ATLAS_HEIGHT; }
 
-        const stbtt_bakedchar * GetCharData() const { return charData; }
+        const BakedChar * GetCharData() const { return charData; }
 
     private:
         LargeString       path;
         f32               fontSize    = 0.0f;
         u32               atlasHandle = 0;
-        stbtt_bakedchar   charData[ FONT_CHAR_COUNT ];
+        BakedChar   charData[ FONT_CHAR_COUNT ];
     };
 
     // =========================================================================

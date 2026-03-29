@@ -682,7 +682,7 @@ namespace atto {
         static std::vector<TextVert> verts;
         verts.clear();
 
-        const stbtt_bakedchar * charData = font->GetCharData();
+        const BakedChar * charData = font->GetCharData();
         f32 xpos = x;
         f32 ypos = y;
 
@@ -697,9 +697,9 @@ namespace atto {
                 continue;
             }
 
-            stbtt_aligned_quad q;
-            stbtt_GetBakedQuad( charData, FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
-                                c - FONT_FIRST_CHAR, &xpos, &ypos, &q, 0 );
+            AlignedQuad q;
+            GetBakedQuad( charData, FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
+                          c - FONT_FIRST_CHAR, &xpos, &ypos, &q, false );
 
             verts.push_back( { q.x0, q.y0, q.s0, q.t0 } );
             verts.push_back( { q.x1, q.y0, q.s1, q.t0 } );
@@ -740,6 +740,9 @@ namespace atto {
         glEnable( GL_DEPTH_TEST );
     }
 
+#ifndef ATTO_SHIPPING
+#include "stb_truetype/stb_truetype.h"
+
     bool Font::LoadFromFile( const char * filePath, f32 inFontSize ) {
         path     = filePath;
         fontSize = inFontSize;
@@ -767,7 +770,7 @@ namespace atto {
             inFontSize,
             atlasBitmap.data(), FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
             FONT_FIRST_CHAR, FONT_CHAR_COUNT,
-            charData
+            reinterpret_cast< stbtt_bakedchar * >( charData )
         );
 
         if ( result <= 0 ) {
@@ -790,6 +793,7 @@ namespace atto {
 
         return true;
     }
+#endif // ATTO_SHIPPING
 
     void Font::Serialize( Serializer & serializer ) {
         serializer( "Path", path );

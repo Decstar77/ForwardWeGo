@@ -9,7 +9,7 @@ namespace atto {
     // Text measurement helpers
     // =========================================================================
 
-    // Runs stbtt_GetBakedQuad with baseline at y=0 to compute the bounding box.
+    // Runs GetBakedQuad with baseline at y=0 to compute the bounding box.
     // Returns the pixel size and the distance from the top of the bbox to the baseline.
     static void MeasureTextInternal( const Font * font, const char * text, Vec2 & outSize, f32 & outBaselineFromTop ) {
         outSize = Vec2( 0.0f );
@@ -19,7 +19,7 @@ namespace atto {
             return;
         }
 
-        const stbtt_bakedchar * charData = font->GetCharData();
+        const BakedChar * charData = font->GetCharData();
         f32 xpos = 0.0f;
         f32 ypos = 0.0f;
         f32 minY =  1e9f;
@@ -32,9 +32,9 @@ namespace atto {
                 continue;
             }
 
-            stbtt_aligned_quad q;
-            stbtt_GetBakedQuad( charData, FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
-                                c - FONT_FIRST_CHAR, &xpos, &ypos, &q, 0 );
+            AlignedQuad q;
+            GetBakedQuad( charData, FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
+                          c - FONT_FIRST_CHAR, &xpos, &ypos, &q, false );
 
             if ( q.y0 < minY ) minY = q.y0;
             if ( q.y1 > maxY ) maxY = q.y1;
