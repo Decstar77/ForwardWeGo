@@ -7,6 +7,9 @@
 #include <fstream>
 #include <set>
 #include <filesystem>
+#include <ctime>
+#include <windows.h>
+#include <shellapi.h>
 
 #include "pocketlzma.hpp"
 
@@ -110,7 +113,7 @@ namespace atto {
     }
 
     void EditorAssetPacker::BeginPacking() {
-        if ( packing ) {
+        if ( buildPhase != BuildPhase::Idle ) {
             return;
         }
 
@@ -133,7 +136,7 @@ namespace atto {
         packedAssets.clear();
         currentIndex = 0;
         dataOffset = sizeof( PackHeader );
-        packing = true;
+        buildPhase = BuildPhase::Packing;
 
         LOG_INFO( "Packing %d assets...", (i32)assetPaths.size() );
     }
@@ -179,14 +182,44 @@ namespace atto {
     }
 
     bool EditorAssetPacker::UpdatePacking() {
-        if ( !packing ) {
+        if ( buildPhase == BuildPhase::Idle ) {
             return false;
         }
 
+        if ( buildPhase == BuildPhase::Building ) {
+            if ( buildFinished.load() ) {
+                if ( buildExitCode.load() != 0 ) {
+                    errorMessage = "cmake --build build --config Shipping failed.\n\n";
+                    // Show the last 40 lines of output to keep the popup readable
+                    const std::string & out = buildOutput;
+                    usize start = 0;
+                    i32 newlines = 0;
+                    for ( usize i = out.size(); i > 0; i-- ) {
+                        if ( out[i - 1] == '\n' ) {
+                            newlines++;
+                            if ( newlines == 40 ) { start = i; break; }
+                        }
+                    }
+                    errorMessage += out.substr( start );
+                    buildPhase = BuildPhase::Error;
+                } else {
+                    DoCopyPhase();
+                }
+            }
+            return true;
+        }
+
+        if ( buildPhase == BuildPhase::Done || buildPhase == BuildPhase::Error ||
+             buildPhase == BuildPhase::Copying ) {
+            return true;
+        }
+
+        // BuildPhase::Packing — process one asset per frame
         if ( currentIndex >= (i32)assetPaths.size() ) {
             FinalizePacking();
-            packing = false;
-            return false;
+            StartBuildThread();
+            buildPhase = BuildPhase::Building;
+            return true;
         }
 
         const std::string & path = assetPaths[currentIndex];
@@ -346,31 +379,152 @@ namespace atto {
         assetPaths.clear();
     }
 
-    void EditorAssetPacker::DrawProgressPopup() {
-        if ( !packing ) {
+    std::string EditorAssetPacker::MakeTimestampDir() {
+        std::time_t t = std::time( nullptr );
+        std::tm tm    = {};
+        localtime_s( &tm, &t );
+        char buf[ 32 ];
+        std::strftime( buf, sizeof( buf ), "%Y%m%d_%H%M%S", &tm );
+        return std::string( "ship/" ) + buf;
+    }
+
+    static std::string GetCMakeCommand() {
+        std::ifstream cache( "build/CMakeCache.txt" );
+        if ( !cache.is_open() ) { return "cmake"; }
+        std::string line;
+        const std::string prefix = "CMAKE_COMMAND:INTERNAL=";
+        while ( std::getline( cache, line ) ) {
+            if ( line.rfind( prefix, 0 ) == 0 ) {
+                return line.substr( prefix.size() );
+            }
+        }
+        return "cmake";
+    }
+
+    void EditorAssetPacker::StartBuildThread() {
+        buildFinished.store( false );
+        buildExitCode.store( 0 );
+        buildOutput.clear();
+        LOG_INFO( "Starting Shipping build..." );
+
+        buildThread = std::thread( [this]() {
+            const std::string cmakePath = GetCMakeCommand();
+            const std::string cmd = "\"" + cmakePath + "\" --build build --config Shipping 2>&1";
+            FILE * pipe = _popen( cmd.c_str(), "r" );
+            if ( !pipe ) {
+                buildExitCode.store( -1 );
+                buildFinished.store( true );
+                return;
+            }
+            std::string output;
+            char buffer[ 256 ];
+            while ( fgets( buffer, sizeof( buffer ), pipe ) ) {
+                output += buffer;
+            }
+            int code = _pclose( pipe );
+            buildOutput   = std::move( output );
+            buildExitCode.store( code );
+            buildFinished.store( true );
+        } );
+        buildThread.detach();
+    }
+
+    void EditorAssetPacker::DoCopyPhase() {
+        buildPhase = BuildPhase::Copying;
+
+        shipDir = MakeTimestampDir();
+        std::error_code ec;
+        std::filesystem::create_directories( shipDir, ec );
+        if ( ec ) {
+            errorMessage = "Failed to create output directory '" + shipDir + "': " + ec.message();
+            buildPhase = BuildPhase::Error;
             return;
         }
 
-        ImGui::OpenPopup( "Packing Assets" );
+        auto tryCopy = [&]( const std::string & src, const std::string & dst ) -> bool {
+            std::filesystem::copy_file( src, dst,
+                std::filesystem::copy_options::overwrite_existing, ec );
+            if ( ec ) {
+                errorMessage = "Failed to copy '" + src + "' -> '" + dst + "': " + ec.message();
+                buildPhase = BuildPhase::Error;
+                return false;
+            }
+            return true;
+        };
+
+        if ( !tryCopy( "assets/packed/game.bin",           shipDir + "/game.bin"       ) ) { return; }
+        if ( !tryCopy( "build/bin/Shipping/atto.exe",      shipDir + "/atto.exe"       ) ) { return; }
+        if ( !tryCopy( "build/bin/Shipping/OpenAL32.dll",  shipDir + "/OpenAL32.dll"   ) ) { return; }
+
+        LOG_INFO( "=== Ship build ready: %s ===", shipDir.c_str() );
+        buildPhase = BuildPhase::Done;
+    }
+
+    void EditorAssetPacker::DrawProgressPopup() {
+        if ( buildPhase == BuildPhase::Idle ) {
+            return;
+        }
+
+        ImGui::OpenPopup( "Build Game" );
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos( center, ImGuiCond_Always, ImVec2( 0.5f, 0.5f ) );
-        ImGui::SetNextWindowSize( ImVec2( 400, 0 ) );
+        ImGui::SetNextWindowSize( ImVec2( 520, 0 ) );
 
-        if ( ImGui::BeginPopupModal( "Packing Assets", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove ) ) {
-            i32 total = (i32)assetPaths.size();
-            f32 progress = total > 0 ? (f32)currentIndex / (f32)total : 0.0f;
+        if ( ImGui::BeginPopupModal( "Build Game", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove ) ) {
 
-            char overlay[64];
-            snprintf( overlay, sizeof( overlay ), "%d / %d", currentIndex, total );
-            ImGui::ProgressBar( progress, ImVec2( -1, 0 ), overlay );
+            if ( buildPhase == BuildPhase::Packing ) {
+                i32 total    = (i32)assetPaths.size();
+                f32 progress = total > 0 ? (f32)currentIndex / (f32)total : 0.0f;
 
-            if ( currentIndex < total ) {
-                // Show current asset name, truncated from the left if too long
-                const std::string & name = assetPaths[currentIndex];
-                ImGui::TextWrapped( "%s", name.c_str() );
+                ImGui::Text( "Packing assets..." );
+                char overlay[ 64 ];
+                snprintf( overlay, sizeof( overlay ), "%d / %d", currentIndex, total );
+                ImGui::ProgressBar( progress, ImVec2( -1, 0 ), overlay );
+
+                if ( currentIndex < total ) {
+                    ImGui::TextWrapped( "%s", assetPaths[currentIndex].c_str() );
+                } else {
+                    ImGui::Text( "Writing pack file..." );
+                }
             }
-            else {
-                ImGui::Text( "Writing pack file..." );
+            else if ( buildPhase == BuildPhase::Building ) {
+                ImGui::Text( "Building Shipping configuration..." );
+                const char * frames = "|/-\\";
+                ImGui::Text( "%c  cmake --build build --config Shipping",
+                             frames[ (i32)( ImGui::GetTime() * 8.0 ) & 3 ] );
+            }
+            else if ( buildPhase == BuildPhase::Copying ) {
+                ImGui::Text( "Copying files to %s ...", shipDir.c_str() );
+            }
+            else if ( buildPhase == BuildPhase::Done ) {
+                ImGui::TextColored( ImVec4( 0.2f, 1.0f, 0.2f, 1.0f ), "Build complete!" );
+                ImGui::Text( "Output: %s", shipDir.c_str() );
+                ImGui::Spacing();
+                if ( ImGui::Button( "Open Folder", ImVec2( 120, 0 ) ) ) {
+                    std::string absPath = std::filesystem::absolute( shipDir ).string();
+                    ShellExecuteA( nullptr, "explore", absPath.c_str(), nullptr, nullptr, SW_SHOWNORMAL );
+                }
+                ImGui::SameLine();
+                if ( ImGui::Button( "Close", ImVec2( 120, 0 ) ) ) {
+                    ImGui::CloseCurrentPopup();
+                    buildPhase = BuildPhase::Idle;
+                }
+            }
+            else if ( buildPhase == BuildPhase::Error ) {
+                ImGui::TextColored( ImVec4( 1.0f, 0.3f, 0.3f, 1.0f ), "Build failed!" );
+                ImGui::Spacing();
+                ImGui::BeginChild( "##errlog", ImVec2( -1, 280 ), true );
+                ImGui::TextWrapped( "%s", errorMessage.c_str() );
+                ImGui::EndChild();
+                ImGui::Spacing();
+                if ( ImGui::Button( "Copy Error", ImVec2( 120, 0 ) ) ) {
+                    ImGui::SetClipboardText( errorMessage.c_str() );
+                }
+                ImGui::SameLine();
+                if ( ImGui::Button( "Close", ImVec2( 120, 0 ) ) ) {
+                    ImGui::CloseCurrentPopup();
+                    buildPhase = BuildPhase::Idle;
+                }
             }
 
             ImGui::EndPopup();

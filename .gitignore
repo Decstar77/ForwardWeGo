@@ -21,6 +21,8 @@ res
 *.vcxproj.user
 *.csproj
 build
+ship
+assets/packed
 
 cmake-build-debug
 cmake-build-release
