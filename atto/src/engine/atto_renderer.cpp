@@ -388,22 +388,46 @@ namespace atto {
             skyboxTexture = 0;
         }
 
-        BinarySerializer serializer(true);
-        Engine::Get().GetAssetManager().LoadTextureData( filePath, serializer );
-        serializer.Reset(true);
+        BinarySerializer serializer( true );
+        if ( Engine::Get().GetAssetManager().LoadTextureData( filePath, serializer ) == false ) {
+            LOG_ERROR( "Failed to load skybox '%s'", filePath );
+            glDeleteTextures( 1, &skyboxTexture );
+            skyboxTexture = 0;
+            return;
+        }
+
+        serializer.Reset( false );
 
         i32 width;
         i32 height;
-        std::vector<u8> data;
-        serializer("Width", width);
-        serializer("Height", height);
-        serializer("Data", data);
+        i32 channels;
+        std::vector< u8 > data;
+        LargeString path;
+        serializer( "Path", path );
+        serializer( "Width", width );
+        serializer( "Height", height );
+        serializer( "Channels", channels );
+        serializer( "Data", data );
 
         if ( data.empty() ) {
             LOG_ERROR( "Failed to load skybox '%s'", filePath );
             glDeleteTextures( 1, &skyboxTexture );
             skyboxTexture = 0;
             return;
+        }
+
+        // Flip the texture
+        if ( width > 0 && height > 0 ) {
+            const i32 rowBytes = width * 4; // RGBA
+            for ( i32 y = 0; y < height / 2; y++ ) {
+                u8 * top    = data.data() + y * rowBytes;
+                u8 * bottom = data.data() + ( height - 1 - y ) * rowBytes;
+                for ( i32 x = 0; x < rowBytes; x++ ) {
+                    u8 tmp  = top[x];
+                    top[x]    = bottom[x];
+                    bottom[x] = tmp;
+                }
+            }
         }
 
         glGenTextures( 1, &skyboxTexture );

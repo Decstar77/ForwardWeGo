@@ -19,9 +19,9 @@ int main() {
 
     RegisterAllScenes();
 #if ATTO_SHIPPING
-    engine.Run( "GameSceneMainMenu" );
+    engine.Run( "GameSceneMainMenu", "assets/maps/game/game-level-001.map" );
 #else
-    engine.Run( "Editor" );
+    engine.Run( "Editor", nullptr );
 #endif
 
     engine.Shutdown();

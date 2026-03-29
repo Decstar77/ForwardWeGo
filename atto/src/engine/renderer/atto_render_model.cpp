@@ -144,10 +144,10 @@ namespace atto {
         mat.metalic = data.metalic;
         mat.roughness = data.roughness;
         if ( !data.albedoTexturePath.empty() ) {
-            mat.albedoTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.albedoTexturePath.c_str(), true );
+            mat.albedoTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.albedoTexturePath.c_str() );
         }
         if ( !data.metalicTexturePath.empty() ) {
-            mat.metalicTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.metalicTexturePath.c_str(), true );
+            mat.metalicTexture = Engine::Get().GetRenderer().GetOrLoadTexture( data.metalicTexturePath.c_str() );
         }
         return mat;
     }

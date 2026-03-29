@@ -111,7 +111,7 @@ namespace atto {
         input.Initialize( window );
 
 #if ATTO_RAW_ASSETS
-        assetManager.Initialize( true );
+        assetManager.Initialize( false );
 #else
         assetManager.Initialize( true );
 #endif
@@ -221,7 +221,7 @@ namespace atto {
         }
     }
 
-    void Engine::Run( const char * startingSceneName ) {
+    void Engine::Run( const char * startingSceneName, const char * args ) {
         if ( !initialized ) {
             LOG_ERROR( "Engine not initialized" );
             return;
@@ -232,7 +232,7 @@ namespace atto {
 
         // Call game start
         if ( currentScene ) {
-            currentScene->OnStart( nullptr );
+            currentScene->OnStart( args );
         }
 
         // Main loop

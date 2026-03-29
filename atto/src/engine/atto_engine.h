@@ -38,7 +38,7 @@ namespace atto {
         static Engine & Get();
 
         bool Initialize( const EngineConfig & config );
-        void Run( const char * startingSceneName );
+        void Run( const char * startingSceneName, const char * args );
         void MainLoop();
         void Shutdown();
 
