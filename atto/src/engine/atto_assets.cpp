@@ -1007,6 +1007,7 @@ namespace atto {
         usingPackedAssets = usePackedAssets;
         if ( usingPackedAssets ) {
             packedAssetData = ReadBinaryFile( "assets/packed/game.bin" );
+            return packedAssetData.empty() == false;
         }
 
         return true;
@@ -1043,7 +1044,29 @@ namespace atto {
     }
 
     std::vector<u8> AssetManager::ReadBinaryFile( const char * path ) {
+        // Open the file in binary mode and start at the end to get size
+        std::ifstream file( path, std::ios::binary | std::ios::ate );
 
+        if ( !file.is_open() ) {
+            LOG_ERROR( "Failed to read binary file: %s", path );
+            return {}; // Return empty vector
+        }
+
+        // Get file size and seek back to the beginning
+        std::streamsize size = file.tellg();
+        file.seekg( 0, std::ios::beg );
+
+        // Prepare the vector
+        std::vector<u8> buffer( size );
+
+        // Read the data; we cast to char* because read() expects it
+        if ( file.read( reinterpret_cast<char*>( buffer.data() ), size ) ) {
+            file.close();
+            return buffer;
+        }
+
+        LOG_ERROR( "Failed to read binary data from: %s", path );
+        return {};
     }
 
     std::vector< std::string > AssetManager::GetFilesInFolderRecursive( const char * path, const char * ext ) {
@@ -1088,6 +1111,14 @@ namespace atto {
             return LoadFontDataPacked( filePath, fontSize, serializer );
         } else {
             return LoadFontDataRaw( filePath, fontSize, serializer );
+        }
+    }
+
+    bool AssetManager::LoadSound( const char * path, bool mono, Serializer &serializer ) {
+        if ( usingPackedAssets ) {
+            return LoadSoundPacked( path, mono, serializer );
+        } else {
+            return LoadSoundRaw( path, mono, serializer );
         }
     }
 }

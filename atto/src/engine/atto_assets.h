@@ -380,6 +380,8 @@ namespace atto {
         bool            LoadAnimatedModelData( const char * filePath, f32 scale, Serializer & serializer );
         bool            LoadFontData( const char * filePath, f32 fontSize, Serializer & serializer );
 
+        bool            LoadSound( const char * path, bool mono, Serializer & serializer );
+
         bool            LoadTextureDataRaw( const char * filePath, Serializer & serializer );
         bool            LoadStaticModelDataRaw( const char * filePath, f32 scale, Serializer & serializer );
         bool            LoadAnimatedModelDataRaw( const char * filePath, f32 scale, Serializer & serializer );

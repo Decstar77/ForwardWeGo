@@ -7,7 +7,6 @@
 
 #include <imgui.h>
 
-#define POCKETLZMA_LZMA_C_DEFINE
 #include "pocketlzma.hpp"
 
 namespace atto {
@@ -21,28 +20,85 @@ namespace atto {
         return hash;
     }
 
+    static bool PathHasExtension( const std::string & path ) {
+        const auto lastSlash = path.rfind( '/' );
+        const auto lastDot   = path.rfind( '.' );
+        return lastDot != std::string::npos &&
+               ( lastSlash == std::string::npos || lastDot > lastSlash );
+    }
+
+    static void ScrapeMtlTextures( AssetManager & assetManager, const std::string & objPath,
+                                   std::set<std::string> & out ) {
+        // Derive MTL path: same directory, same base name, .mtl extension
+        const std::string mtlPath = objPath.substr( 0, objPath.size() - 4 ) + ".mtl";
+        const std::string mtlData = assetManager.ReadTextFile( mtlPath );
+        if ( mtlData.empty() ) { return; }
+
+        // Directory of the OBJ (to resolve relative texture paths)
+        std::string dir;
+        const auto lastSlash = objPath.rfind( '/' );
+        if ( lastSlash != std::string::npos ) {
+            dir = objPath.substr( 0, lastSlash + 1 );
+        }
+
+        // Match texture directives: map_Kd, map_Ka, map_Ks, map_Bump, bump, map_d, map_Ns, map_refl
+        std::regex mtlMapRegex( R"((?:map_Kd|map_Ka|map_Ks|map_Bump|map_d|map_Ns|map_refl|bump)\s+(\S+))",
+                                std::regex::icase );
+        auto begin = std::sregex_iterator( mtlData.begin(), mtlData.end(), mtlMapRegex );
+        auto end   = std::sregex_iterator();
+        for ( auto it = begin; it != end; ++it ) {
+            std::string texName = (*it)[1].str();
+
+            // Normalize backslashes
+            for ( char & c : texName ) { if ( c == '\\' ) c = '/'; }
+
+            // If not already a full relative path from project root, prepend obj directory
+            std::string texPath = ( texName.rfind( "assets/", 0 ) == 0 ) ? texName : dir + texName;
+
+            if ( PathHasExtension( texPath ) ) {
+                out.insert( texPath );
+            }
+        }
+    }
+
     std::vector<std::string> EditorAssetPacker::ScrapeAssets() {
         AssetManager & assetManager = Engine::Get().GetAssetManager();
-        std::vector< std::string > files = assetManager.GetFilesInFolderRecursive( "atto/src", ".h" );
-        std::vector< std::string > headerFiles = assetManager.GetFilesInFolderRecursive( "atto/src", ".cpp" );
-        std::vector< std::string > mapFiles = assetManager.GetFilesInFolderRecursive( "assets/maps", ".map" );
+        std::vector<std::string> files = assetManager.GetFilesInFolderRecursive( "atto/src", ".h" );
+        std::vector<std::string> cppFiles = assetManager.GetFilesInFolderRecursive( "atto/src", ".cpp" );
+        std::vector<std::string> mapFiles = assetManager.GetFilesInFolderRecursive( "assets/maps", ".map" );
 
-        files.insert(files.end(), headerFiles.begin(), headerFiles.end());
-        files.insert(files.end(), mapFiles.begin(), mapFiles.end());
+        files.insert( files.end(), cppFiles.begin(), cppFiles.end() );
+        files.insert( files.end(), mapFiles.begin(), mapFiles.end() );
 
-        std::set< std::string > uniquePaths;
+        // First pass: regex-scrape all assets/... paths from source and map files.
+        // Only keep paths that have a file extension (filters bare directory names).
+        std::set<std::string> uniquePaths;
         for ( const std::string & file : files ) {
             const std::string data = assetManager.ReadTextFile( file );
-
             std::regex assetRegex( R"(assets/[^\s"'<>]+)" );
             auto begin = std::sregex_iterator( data.begin(), data.end(), assetRegex );
-            auto end = std::sregex_iterator();
+            auto end   = std::sregex_iterator();
             for ( auto it = begin; it != end; ++it ) {
-                uniquePaths.insert( it->str() );
+                const std::string path = it->str();
+                if ( PathHasExtension( path ) ) {
+                    uniquePaths.insert( path );
+                }
             }
         }
 
-        std::vector< std::string > result( uniquePaths.begin(), uniquePaths.end() );
+        // Second pass: for any .obj paths found, parse their .mtl for texture references.
+        std::set<std::string> mtlTextures;
+        for ( const std::string & path : uniquePaths ) {
+            const char * ext = strrchr( path.c_str(), '.' );
+            if ( ext && strcmp( ext, ".obj" ) == 0 ) {
+                ScrapeMtlTextures( assetManager, path, mtlTextures );
+            }
+        }
+        for ( const std::string & p : mtlTextures ) {
+            uniquePaths.insert( p );
+        }
+
+        std::vector<std::string> result( uniquePaths.begin(), uniquePaths.end() );
 
         LOG_INFO( "Assets found: %d", (i32)result.size() );
         for ( const auto & assetPath : result ) {

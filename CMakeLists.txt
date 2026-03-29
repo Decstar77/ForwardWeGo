@@ -127,12 +127,18 @@ add_executable(atto ${ATTO_SOURCES} ${VENDOR_SOURCES})
 
 # pocketlzma uses try/catch internally, enable exceptions and suppress vendor warnings for this file
 if(MSVC)
+    set_source_files_properties(atto/src/engine/atto_assets_packed.cpp PROPERTIES
+        COMPILE_OPTIONS "/EHsc"
+    )
     set_source_files_properties(atto/src/editor/editor_asset_packer.cpp PROPERTIES
         COMPILE_OPTIONS "/EHsc"
     )
 else()
-    set_source_files_properties(atto/src/editor/editor_asset_packer.cpp PROPERTIES
+    set_source_files_properties(atto/src/engine/atto_assets_packed.cpp PROPERTIES
         COMPILE_OPTIONS "-fexceptions;-Wno-dangling-pointer;-Wno-sign-compare"
+    )
+    set_source_files_properties(atto/src/editor/editor_asset_packer.cpp PROPERTIES
+            COMPILE_OPTIONS "-fexceptions;-Wno-dangling-pointer;-Wno-sign-compare"
     )
 endif()
 

@@ -125,7 +125,7 @@ namespace atto {
         // Initialize subsystems
         rng.Initialize();
         input.Initialize( window );
-        assetManager.Initialize();
+        assetManager.Initialize( true );
         audioSystem.Initialize();
 
         if ( !renderer.Initialize() ) {
