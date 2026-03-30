@@ -58,7 +58,7 @@ namespace atto {
         const Mat4 modelMat = glm::translate( Mat4( 1.0f ), position )
                             * glm::scale( Mat4( 1.0f ), Vec3( RENDER_SCALE ) );
 
-        renderer.RenderStaticModel( model, modelMat, Vec3( 0.2f, 0.9f, 0.2f ) );
+        renderer.RenderStaticModel( model, modelMat, Vec3( 0.15f, 0.9f, 0.2f ) );
     }
 
     void Entity_SpitterProjectile::OnDespawn() {
