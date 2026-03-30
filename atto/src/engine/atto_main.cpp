@@ -16,7 +16,7 @@ int main() {
 #if ATTO_SHIPPING
     config.packedAssets = true;
 #else
-    config.packedAssets = true;
+    config.packedAssets = false;
 #endif
 
     if ( !engine.Initialize( config ) ) {

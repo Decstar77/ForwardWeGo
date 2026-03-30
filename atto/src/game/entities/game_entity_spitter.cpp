@@ -1,4 +1,5 @@
 #include "game_entity_spitter.h"
+#include "game_entity_spitter_projectile.h"
 
 #include "game/game_map.h"
 
@@ -8,22 +9,24 @@ namespace atto {
 
     Entity_Spitter::Entity_Spitter() {
         type = EntityType::Spitter;
-        // TODO: tune spitter-specific config values
         config.maxHealth = 75;
+        config.attackRange = 20.0f;
+        config.attackRangeHyst = 20.0f;
         health           = config.maxHealth;
     }
 
     void Entity_Spitter::OnSpawn() {
-        // TODO: load spitter model
-        // model = Engine::Get().GetRenderer().GetOrLoadStaticModel( "assets/models/sm/SM_Spitter.obj" );
+        model = Engine::Get().GetRenderer().GetOrLoadStaticModel( "assets/models/sm-declan/SM_Prop_DeadZub_Green.obj" );
 
         sndAttack.Initialize();
-        // TODO: load spitter attack sound
-        // sndAttack.LoadSounds( { "assets/sounds/spitter/attack.wav" } );
+        sndAttack.LoadSounds( {
+            "assets/sounds/roach/attack.wav"
+        } );
 
         sndWalk.Initialize();
-        // TODO: load spitter walk sound
-        // sndWalk.LoadSounds( { "assets/sounds/spitter/walk.wav" } );
+        sndWalk.LoadSounds( {
+            "assets/sounds/roach/walk.wav"
+        } );
     }
 
     void Entity_Spitter::OnUpdate( f32 dt ) {
@@ -34,8 +37,17 @@ namespace atto {
     }
 
     void Entity_Spitter::OnAgentAttack() {
-        // TODO: spawn projectile instead of dealing direct melee damage
-        map->DamagePlayer( 8 );
+        // Spawn point is at the spitter's head height
+        const Vec3 spawnPos  = position + Vec3( 0.0f, 1.2f, 0.0f );
+        const Vec3 playerPos = map->GetPlayerPosition();
+
+        Entity_SpitterProjectile * proj = static_cast<Entity_SpitterProjectile *>(
+            map->CreateEntity( EntityType::SpitterProjectile ) );
+        if ( proj ) {
+            proj->OnSpawn();
+            proj->Launch( spawnPos, playerPos );
+        }
+
         sndAttack.PlayAt( position, 15.0f );
     }
 }

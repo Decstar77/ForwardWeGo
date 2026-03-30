@@ -27,6 +27,7 @@ namespace atto {
             entity->OnDespawn();
         }
         entities.clear();
+        pendingEntities.clear();
 
         playerStart.spawnPos = Vec3( 0.0f, 0.0f, 3.0f );
         playerStart.spawnOri = Mat3( 1 );
@@ -75,6 +76,7 @@ namespace atto {
         }
 
         FlushDestroyedEntities();
+        FlushPendingEntities();
 
         // Update damage numbers
         for ( i32 i = static_cast<i32>( damageNumbers.size() ) - 1; i >= 0; i-- ) {
@@ -95,6 +97,13 @@ namespace atto {
                 entities.erase( entities.begin() + i );
             }
         }
+    }
+
+    void GameMap::FlushPendingEntities() {
+        for ( auto & e : pendingEntities ) {
+            entities.push_back( std::move( e ) );
+        }
+        pendingEntities.clear();
     }
 
     void GameMap::Render( Renderer & renderer, f32 dt, i32 selectedBrush, bool editorMode ) {
@@ -151,7 +160,7 @@ namespace atto {
         if ( !entity ) return nullptr;
         entity->SetMap( this );
         entity->SetSpawnId( Engine::Get().GetRNG().Unsigned64() );
-        return entities.emplace_back( std::move( entity ) ).get();
+        return pendingEntities.emplace_back( std::move( entity ) ).get();
     }
 
     void GameMap::DestroyEntity( Entity * entity ) {

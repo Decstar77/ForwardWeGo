@@ -11,3 +11,4 @@
 #include "entities/game_entity_portal.h"
 #include "entities/game_entity_coin.h"
 #include "entities/game_entity_health_pickup.h"
+#include "entities/game_entity_spitter_projectile.h"

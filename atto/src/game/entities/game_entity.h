@@ -24,6 +24,7 @@ namespace atto {
         Coin,
         HealthPickup,
         Spitter,
+        SpitterProjectile,
 
         EntityTypeCount
     };
@@ -45,6 +46,7 @@ namespace atto {
         EntityType::Coin,
         EntityType::HealthPickup,
         EntityType::Spitter,
+        EntityType::SpitterProjectile
     };
 
     inline static const char * EntityTypeNames[] = {
@@ -59,7 +61,8 @@ namespace atto {
         "Portal",
         "Coin",
         "HealthPickup",
-        "Spitter"
+        "Spitter",
+        "SpitterProjectile"
     };
 
     static_assert(EntityTypeCount == sizeof( EntityTypes ) / sizeof( EntityTypes[0] ), "EntityTypes array size mismatch");
