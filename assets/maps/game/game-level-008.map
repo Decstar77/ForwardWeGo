@@ -1,0 +1,126 @@
+{
+    "brushes": [
+        {
+            "item": {
+                "center": [
+                    0.0,
+                    -0.5,
+                    -0.5
+                ],
+                "halfExtents": [
+                    10.0,
+                    0.5,
+                    10.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Light/texture_07.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    9.5,
+                    1.0,
+                    0.5
+                ],
+                "halfExtents": [
+                    0.5,
+                    2.0,
+                    9.5
+                ],
+                "texturePath": "assets/textures/prototype-textures/Dark/texture_08.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        }
+    ],
+    "entities": [
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                -0.5,
+                0.0,
+                -9.0
+            ],
+            "SpawnId": 11703788435241057390,
+            "Type": "ExitDoor"
+        },
+        {
+            "HealAmount": 50,
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "SpawnId": 4088116201633024429,
+            "Type": "HealthPickup"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                0.0,
+                0.0,
+                -5.0
+            ],
+            "SpawnId": 9863261709525363459,
+            "Type": "Spitter"
+        }
+    ],
+    "navGraph": {
+        "edgeCost": [],
+        "edgeEnabled": [],
+        "edgeNodeA": [],
+        "edgeNodeB": [],
+        "positions": []
+    },
+    "playerStart": {
+        "spawnOri": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "spawnPos": [
+            -0.5,
+            0.0,
+            8.25
+        ]
+    }
+}
