@@ -10,6 +10,8 @@
 #include <imgui_impl_opengl3.h>
 #include <ImGuizmo.h>
 
+#include "game/entities/game_entity_prop.h"
+
 namespace atto {
 
     void EditorScene::OnStart( const char * args ) {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "game_entity.h"
-#include <string>
 #include <vector>
 
 namespace atto {

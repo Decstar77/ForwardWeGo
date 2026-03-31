@@ -69,6 +69,7 @@ namespace atto {
         // Feed player position to the map so entities (AI) can query it
         map.SetPlayerPosition( player.GetCamera().GetPosition() );
         map.SetPlayerCameraUp( player.GetCamera().GetUp() );
+        map.SetPlayerCameraForward( player.GetCamera().GetForward() );
 
         map.Update( deltaTime );
 

@@ -40,12 +40,14 @@ namespace atto {
         // Spawn point is at the spitter's head height
         const Vec3 spawnPos  = position + Vec3( 0.0f, 1.2f, 0.0f );
         const Vec3 playerPos = map->GetPlayerPosition();
+        const Vec3 playerForward = map->GetPlayerCameraForward();
+        const Vec3 shootPos = playerPos + playerForward;
 
         Entity_SpitterProjectile * proj = static_cast<Entity_SpitterProjectile *>(
             map->CreateEntity( EntityType::SpitterProjectile ) );
         if ( proj ) {
             proj->OnSpawn();
-            proj->Launch( spawnPos, playerPos );
+            proj->Launch( spawnPos, shootPos );
         }
 
         sndAttack.PlayAt( position, 15.0f );

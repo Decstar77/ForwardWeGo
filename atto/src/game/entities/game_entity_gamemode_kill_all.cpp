@@ -1,4 +1,8 @@
 #include "game_entity_gamemode_kill_all.h"
+
+#include "game_entity_exit_door.h"
+#include "game_entity_portal.h"
+
 #include "../game_map.h"
 
 namespace atto {

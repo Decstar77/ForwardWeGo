@@ -4,7 +4,7 @@
 #include "engine/atto_waypoint_graph.h"
 
 #include "game_player_controller.h"
-#include "game_entities.h"
+#include "entities/game_entity.h"
 
 namespace atto {
 
@@ -51,8 +51,10 @@ namespace atto {
 
         void                 SetPlayerPosition( const Vec3 & pos ) { playerPosition = pos; }
         void                 SetPlayerCameraUp( const Vec3 & up ) { playerCameraUp = up; }
+        void                 SetPlayerCameraForward( const Vec3 & forward ) { playerCameraForward = forward; }
         Vec3                 GetPlayerPosition() const { return playerPosition; }
         Vec3                 GetPlayerCameraUp() const { return playerCameraUp; }
+        Vec3                 GetPlayerCameraForward() const { return playerCameraForward; }
         void                 DamagePlayer( i32 damage ) { playerDamagePending += damage; }
         i32                  FlushPlayerDamage() { i32 d = playerDamagePending; playerDamagePending = 0; return d; }
         void                 HealPlayer( i32 amount ) { playerHealPending += amount; }
@@ -102,6 +104,7 @@ namespace atto {
 
         Vec3                                    playerPosition = Vec3( 0.0f );
         Vec3                                    playerCameraUp = Vec3( 0.0f );
+        Vec3                                    playerCameraForward = Vec3( 0.0f );
         i32                                     playerDamagePending = 0;
         i32                                     playerHealPending = 0;
 
