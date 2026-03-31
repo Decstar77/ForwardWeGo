@@ -121,8 +121,11 @@ namespace atto {
         fumes.endSize          = 0.35f;
         fumes.startColor       = Color( 0.15f, 0.5f, 0.05f, 0.5f );
         fumes.endColor         = Color( 0.1f, 0.3f, 0.0f, 0.0f );
-        fumes.texture          = txtFumes;
-        fumes.count            = 1;
+        fumes.texture               = txtFumes;
+        fumes.rotationVariance      = glm::pi<f32>();  // random starting angle
+        fumes.rotationSpeed         = 1.5f;
+        fumes.rotationSpeedVariance = 1.0f;
+        fumes.count                 = 1;
         ps.Emit( fumes );
     }
 
@@ -161,8 +164,11 @@ namespace atto {
         cloud.endSize          = 0.6f;
         cloud.startColor       = Color( 0.1f, 0.45f, 0.05f, 0.6f );
         cloud.endColor         = Color( 0.05f, 0.25f, 0.0f, 0.0f );
-        cloud.texture          = txtFumes;
-        cloud.count            = 8;
+        cloud.texture               = txtFumes;
+        cloud.rotationVariance      = glm::pi<f32>();
+        cloud.rotationSpeed         = 1.0f;
+        cloud.rotationSpeedVariance = 0.8f;
+        cloud.count                 = 8;
         ps.Emit( cloud );
     }
 

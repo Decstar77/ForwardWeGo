@@ -38,6 +38,8 @@ namespace atto {
             p.texture = parms.texture;
             p.velocityAligned = parms.velocityAligned;
             p.stretchFactor = parms.stretchFactor;
+            p.rotation = RandRange( parms.rotation, parms.rotationVariance );
+            p.rotationSpeed = RandRange( parms.rotationSpeed, parms.rotationSpeedVariance );
         }
     }
 
@@ -63,6 +65,9 @@ namespace atto {
 
             // Integrate position
             p.position += p.velocity * dt;
+
+            // Integrate rotation
+            p.rotation += p.rotationSpeed * dt;
 
             i++;
         }

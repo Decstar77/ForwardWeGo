@@ -34,6 +34,11 @@ namespace atto {
         bool    velocityAligned = false;
         f32     stretchFactor = 1.0f;
 
+        f32     rotation = 0.0f;            // initial rotation in radians
+        f32     rotationVariance = 0.0f;     // random variance on initial rotation
+        f32     rotationSpeed = 0.0f;        // radians per second
+        f32     rotationSpeedVariance = 0.0f;
+
         i32     count = 1;
     };
 
@@ -53,6 +58,8 @@ namespace atto {
             const Texture * texture;
             bool    velocityAligned;
             f32     stretchFactor;
+            f32     rotation;
+            f32     rotationSpeed;
         };
 
         void Emit( const ParticleParms & parms );

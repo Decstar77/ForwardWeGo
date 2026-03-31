@@ -1265,6 +1265,16 @@ namespace atto {
                 up = Normalize( Cross( toCamera, right ) ) * size;
             }
 
+            // Apply rotation around the billboard normal
+            if ( p.rotation != 0.0f ) {
+                f32 cosR = cosf( p.rotation );
+                f32 sinR = sinf( p.rotation );
+                Vec3 newRight = right * cosR + up * sinR;
+                Vec3 newUp    = up * cosR - right * sinR;
+                right = newRight;
+                up    = newUp;
+            }
+
             Vec3 bl = p.position - right - up;
             Vec3 br = p.position + right - up;
             Vec3 tr = p.position + right + up;

@@ -19,7 +19,7 @@ namespace atto {
     private:
         static constexpr f32 FLIGHT_DURATION = 1.0f;
         static constexpr f32 ARC_HEIGHT      = 1.0f;  // peak height above the linear path
-        static constexpr f32 HIT_RADIUS      = 0.55f; // distance to player for a hit
+        static constexpr f32 HIT_RADIUS      = 1.25f; // distance to player for a hit
         static constexpr f32 RENDER_SCALE    = 0.22f;
         static constexpr i32 DAMAGE          = 8;
         static constexpr f32 EMIT_INTERVAL   = 0.03f; // seconds between trail emissions
