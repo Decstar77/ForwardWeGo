@@ -38,6 +38,7 @@ int main() {
 
 /*
 TODO:
+- Procedural maps
 - M4:
     - Animations:
         - Walk
@@ -63,6 +64,9 @@ TODO:
         - Tracer
         - Muzzle
         - Hit
+
+- Emscripten build
+
 - Grenade:
     - Animations:
         - Throw
@@ -71,8 +75,8 @@ TODO:
         - Explode
     - VFX:
         - Explode
-- Procedural maps
-- Emscripten build
+- Shipping: Card text bug
+- Shipping: Esc crash
 
 Brain waves:
 Gameplay:

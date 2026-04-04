@@ -12,6 +12,7 @@ vendor/**/*.jpg
 vendor/**/*.gif
 vendor/**/*.ttf
 vendor/**/*.otf
+vendor/emsdk
 
 logs
 res
