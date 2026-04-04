@@ -50,6 +50,7 @@ namespace atto {
         Capsule             playerCapsule = {};
         PlayerWeaponKnife   knife;
         PlayerWeaponGlock   glock;
+        PlayerWeaponM416    m416;
         WeaponSlot          activeWeapon = WeaponSlot::Knife;
 
         i32                 health           = 100;

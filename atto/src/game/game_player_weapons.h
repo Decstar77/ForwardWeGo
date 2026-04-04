@@ -73,7 +73,7 @@ namespace atto {
         SoundCollection sndHit;
     };
 
-    class PlayerWeaponM4 {
+    class PlayerWeaponM416 {
     public:
         void OnStart();
         void OnEquip();

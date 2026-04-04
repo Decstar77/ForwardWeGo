@@ -449,6 +449,7 @@ namespace atto {
         i32 animCount = static_cast<i32>( clips.size() );
         serializer( "AnimCount", animCount );
         for ( i32 i = 0; i < animCount; i++ ) {
+            LOG_INFO("Found animation clip %s", clips[i].name.c_str() );
             SerializeAnimationClip( serializer, clips[i] );
         }
 

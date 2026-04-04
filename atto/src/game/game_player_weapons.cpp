@@ -541,16 +541,25 @@ namespace atto {
         ps.Emit( sparks );
     }
 
-    void PlayerWeaponM4::OnStart() {
+    void PlayerWeaponM416::OnStart() {
+        Renderer & renderer = Engine::Get().GetRenderer();
+        model = renderer.GetOrLoadAnimatedModel( "assets/player/arms/m4.glb" );
+        //animator.PlayAnimation( *model, "Armature|M416_Idle_Anim", true );
+        //Armature|M416_Draw_Anim
+        //Armature|M416_Fire_Anim
+        //Armature|M416_Idle_Anim
+        //Armature|M416_Reload_Anim
+        //Armature|M416_Run_Anim
+        //Armature|M416_Walk_Anim
     }
 
-    void PlayerWeaponM4::OnEquip() {
+    void PlayerWeaponM416::OnEquip() {
     }
 
-    void PlayerWeaponM4::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera &camera,
+    void PlayerWeaponM416::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera &camera,
         GameMap &map ) {
     }
 
-    void PlayerWeaponM4::OnRender( Renderer &renderer, const FPSCamera &camera ) {
+    void PlayerWeaponM416::OnRender( Renderer &renderer, const FPSCamera &camera ) {
     }
 }

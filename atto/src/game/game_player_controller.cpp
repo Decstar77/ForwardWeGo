@@ -25,6 +25,7 @@ namespace atto {
 
         knife.OnStart();
         glock.OnStart();
+        m416.OnStart();
 
         sndFootsteps.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
         sndFootsteps.LoadSounds( {
