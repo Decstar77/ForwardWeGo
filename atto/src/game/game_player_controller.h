@@ -20,7 +20,7 @@ namespace atto {
 
     class GameMap;
 
-    enum class WeaponSlot { Knife, Glock };
+    enum class WeaponSlot { Knife, Glock, M416 };
 
     class PlayerController {
     public:

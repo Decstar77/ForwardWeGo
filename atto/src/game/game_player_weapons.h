@@ -80,14 +80,33 @@ namespace atto {
         void OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map );
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
+        bool IsAttacking() const { return isAttacking; }
+        i32  GetAmmo()     const { return ammo; }
+        i32  GetMaxAmmo()  const;
+        bool ConsumeHit() { bool h = didHitEntity; didHitEntity = false; return h; }
+
+        void SpawnParticles( FPSCamera & camera, GameMap & map );
+
     private:
         const AnimatedModel   * model = nullptr;
         Animator                animator;
 
-
-        const Texture * particleTextureSmoke = nullptr;
+        const Texture * particleTextureSmoke  = nullptr;
         const Texture * particleTextureTrace1 = nullptr;
         const Texture * particleTextureTrace2 = nullptr;
+
+        static constexpr i32 MaxAmmo = 30;
+
+        bool            isAttacking      = false;
+        bool            isEquipped       = false;
+        bool            isReloading      = false;
+        bool            didHitEntity     = false;
+        bool            reloadQueued     = false;
+        bool            reloadSnd1Played = false;
+        bool            reloadSnd2Played = false;
+        bool            reloadSnd3Played = false;
+        i32             ammo             = MaxAmmo;
+
         SoundCollection sndEquip;
         SoundCollection sndShoot;
         SoundCollection sndDry;

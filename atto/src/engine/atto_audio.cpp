@@ -40,6 +40,8 @@ namespace atto {
         ATTO_ASSERT( audioSystem != nullptr, "Audio system is null" );
         ATTO_ASSERT( rng != nullptr, "RNG is null" );
 
+        if ( buffers.size() == 0 ) { return {}; }
+
         const i32 idx = rng->Signed32( 0, static_cast< i32 >( buffers.size() ) - 1 );
         return audioSystem->PlaySound( buffers[idx], volume, loop );
     }
@@ -47,6 +49,8 @@ namespace atto {
     AudioSourceHandle SoundCollection::PlayAt( Vec3 position, f32 volume, bool loop ) {
         ATTO_ASSERT( audioSystem != nullptr, "Audio system is null" );
         ATTO_ASSERT( rng != nullptr, "RNG is null" );
+
+        if ( buffers.size() == 0 ) { return {}; }
 
         const i32 idx = rng->Signed32( 0, static_cast< i32 >( buffers.size() ) - 1 );
         return audioSystem->PlaySoundAt( buffers[idx], position, volume, loop );

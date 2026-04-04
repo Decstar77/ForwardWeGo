@@ -544,22 +544,337 @@ namespace atto {
     void PlayerWeaponM416::OnStart() {
         Renderer & renderer = Engine::Get().GetRenderer();
         model = renderer.GetOrLoadAnimatedModel( "assets/player/arms/m4.glb" );
-        //animator.PlayAnimation( *model, "Armature|M416_Idle_Anim", true );
-        //Armature|M416_Draw_Anim
-        //Armature|M416_Fire_Anim
-        //Armature|M416_Idle_Anim
-        //Armature|M416_Reload_Anim
-        //Armature|M416_Run_Anim
-        //Armature|M416_Walk_Anim
+        particleTextureSmoke  = renderer.GetOrLoadTexture( "assets/textures/fx/synty/PolygonParticles_Smoke_01.png" );
+        particleTextureTrace1 = renderer.GetOrLoadTexture( "assets/textures/fx/kenny/trace_06.png" );
+        particleTextureTrace2 = renderer.GetOrLoadTexture( "assets/textures/fx/kenny/smoke_01.png" );
+        animator.PlayAnimation( *model, "Armature|M416_Idle_Anim", true );
+        isEquipped = true;
+
+        sndEquip.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndShoot.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndDry.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndCock.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndRemoveMag.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndInsertMag.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+        sndHit.Initialize( &Engine::Get().GetAudioSystem(), &Engine::Get().GetRNG() );
+
+        sndHit.LoadSounds( {
+            "assets/sounds/bullet-hits/basic_hit_01.wav",
+            "assets/sounds/bullet-hits/basic_hit_02.wav",
+            "assets/sounds/bullet-hits/basic_hit_03.wav",
+            "assets/sounds/bullet-hits/basic_hit_04.wav",
+            "assets/sounds/bullet-hits/basic_hit_05.wav",
+        } );
+
+        sndDry.LoadSounds( {
+            "assets/sounds/m4/gun_rifle_dry_fire_01.wav",
+            "assets/sounds/m4/gun_rifle_dry_fire_02.wav",
+            "assets/sounds/m4/gun_rifle_dry_fire_03.wav",
+            "assets/sounds/m4/gun_rifle_dry_fire_04.wav",
+        });
+
+        sndShoot.LoadSounds( {
+            "assets/sounds/m4/gun_rifle_shot_01.wav",
+            "assets/sounds/m4/gun_rifle_shot_02.wav",
+            "assets/sounds/m4/gun_rifle_shot_03.wav",
+            "assets/sounds/m4/gun_rifle_shot_04.wav",
+        });
+
+        sndEquip.LoadSounds( {
+            "assets/sounds/m4/gun_rifle_cock_01.wav",
+            "assets/sounds/m4/gun_rifle_cock_02.wav",
+            "assets/sounds/m4/gun_rifle_cock_03.wav",
+            "assets/sounds/m4/gun_rifle_cock_04.wav",
+        });
+
+        sndRemoveMag.LoadSounds( {
+            "assets/sounds/m4/gun_rifle_magazine_unload_01.wav",
+            "assets/sounds/m4/gun_rifle_magazine_unload_02.wav",
+            "assets/sounds/m4/gun_rifle_magazine_unload_03.wav",
+            "assets/sounds/m4/gun_rifle_magazine_unload_04.wav",
+            "assets/sounds/m4/gun_rifle_magazine_unload_05.wav",
+        });
+
+        sndInsertMag.LoadSounds( {
+            "assets/sounds/m4/gun_rifle_magazine_load_01.wav",
+            "assets/sounds/m4/gun_rifle_magazine_load_02.wav",
+            "assets/sounds/m4/gun_rifle_magazine_load_03.wav",
+            "assets/sounds/m4/gun_rifle_magazine_load_04.wav",
+        });
+
+    }
+
+    i32 PlayerWeaponM416::GetMaxAmmo() const {
+        return MaxAmmo + GameGlobalState::Get().GetBonusAmmoCapacity();
     }
 
     void PlayerWeaponM416::OnEquip() {
+        animator.PlayAnimation( *model, "Armature|M416_Draw_Anim", false );
+        isAttacking  = false;
+        isEquipped   = false;
+        isReloading  = false;
+        reloadQueued = false;
+        sndEquip.Play();
     }
 
-    void PlayerWeaponM416::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera &camera,
-        GameMap &map ) {
+    void PlayerWeaponM416::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map ) {
+        ATTO_ASSERT( animator.GetCurrentAnimation(), "m416 animator has no animation" );
+
+        Input & input = Engine::Get().GetInput();
+        const std::string & curAnim = animator.GetCurrentAnimation()->name;
+
+        // Wait for draw animation before accepting input
+        if ( !isEquipped ) {
+            if ( animator.IsFinished() ) {
+                isEquipped = true;
+                const char * idleAnim = !isMoving   ? "Armature|M416_Idle_Anim"
+                                      : isSprinting ? "Armature|M416_Run_Anim"
+                                      :               "Armature|M416_Walk_Anim";
+                animator.PlayAnimation( *model, idleAnim, true );
+            }
+            animator.Update( dt );
+            return;
+        }
+
+        bool isIdleWalkOrRun = ( curAnim == "Armature|M416_Idle_Anim"
+                               || curAnim == "Armature|M416_Walk_Anim"
+                               || curAnim == "Armature|M416_Run_Anim" );
+        bool isFiring = ( curAnim == "Armature|M416_Fire_Anim" );
+
+        // Full-auto fire — hold LMB; allow next shot after 30% through the fire anim
+        if ( input.IsMouseButtonDown( MouseButton::Left )
+            && ( ( isIdleWalkOrRun && !isSprinting ) || ( isFiring && animator.GetPercentComplete() >= 0.3f ) )
+            && !isReloading ) {
+            if ( ammo > 0 ) {
+                animator.PlayAnimation( *model, "Armature|M416_Fire_Anim", false, 0.03f );
+                isAttacking = true;
+                ammo--;
+                sndShoot.Play( 0.2f );
+
+                constexpr f32 SpreadStanding = 0.02f;
+                constexpr f32 SpreadWalking  = 0.06f;
+                f32 spreadAmount = isCrouching ? 0.005f : ( isMoving ? SpreadWalking : SpreadStanding );
+                spreadAmount *= GameGlobalState::Get().GetAccuracySpreadMultiplier();
+
+                Vec3 fireDir = camera.GetForward();
+                if ( spreadAmount > 0.0f ) {
+                    RNG & rng = Engine::Get().GetRNG();
+                    Vec3 right = camera.GetRight();
+                    Vec3 up    = camera.GetUp();
+                    f32 offsetX = rng.Float( -spreadAmount, spreadAmount );
+                    f32 offsetY = rng.Float( -spreadAmount, spreadAmount );
+                    fireDir = glm::normalize( fireDir + right * offsetX + up * offsetY );
+                }
+
+                MapRaycastResult result;
+                if ( map.Raycast( camera.GetPosition(), fireDir, result ) ) {
+                    if ( result.entity && result.distance <= 80.0f ) {
+                        LOG_INFO( "M416 hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
+                        constexpr i32 M416BaseDamage = 20;
+                        i32 M416Damage = (i32)( M416BaseDamage * GameGlobalState::Get().GetAttackDamageMultiplier() );
+                        if ( result.entity->TakeDamage( M416Damage ) == TakeDamageResult::Success_HP ) {
+                            sndHit.Play();
+                            didHitEntity = true;
+                            AlignedBox bounds = result.entity->GetBounds();
+                            Vec3 dmgPos = Vec3( result.entity->GetPosition().x, bounds.max.y + 0.2f, result.entity->GetPosition().z );
+                            map.SpawnDamageNumber( dmgPos, M416Damage );
+                        }
+                    }
+
+                    Vec3 hitPoint  = camera.GetPosition() + fireDir * result.distance;
+                    Vec3 hitNormal = result.normal;
+                    ParticleSystem & ps = map.GetParticleSystem();
+
+                    ParticleParms impactSparks;
+                    impactSparks.position         = hitPoint + hitNormal * 0.02f;
+                    impactSparks.positionVariance = Vec3( 0.01f );
+                    impactSparks.velocity         = hitNormal * 2.0f;
+                    impactSparks.velocityVariance = Vec3( 2.5f, 2.5f, 2.5f );
+                    impactSparks.gravity          = Vec3( 0.0f, -6.0f, 0.0f );
+                    impactSparks.drag             = 2.0f;
+                    impactSparks.lifetime         = 0.2f;
+                    impactSparks.lifetimeVariance = 0.1f;
+                    impactSparks.startSize        = 0.04f * 10;
+                    impactSparks.endSize          = 0.005f * 10;
+                    impactSparks.startColor       = Color( 1.0f, 0.5f, 0.1f, 1.0f );
+                    impactSparks.endColor         = Color( 0.8f, 0.15f, 0.0f, 0.0f );
+                    impactSparks.texture          = particleTextureTrace1;
+                    impactSparks.velocityAligned  = true;
+                    impactSparks.stretchFactor    = 2.5f;
+                    impactSparks.count            = 5;
+                    ps.Emit( impactSparks );
+
+                    ParticleParms impactDust;
+                    impactDust.position         = hitPoint + hitNormal * 0.01f;
+                    impactDust.positionVariance = Vec3( 0.03f );
+                    impactDust.velocity         = hitNormal * 0.8f;
+                    impactDust.velocityVariance = Vec3( 0.5f, 0.5f, 0.5f );
+                    impactDust.gravity          = Vec3( 0.0f, 0.3f, 0.0f );
+                    impactDust.drag             = 4.0f;
+                    impactDust.lifetime         = 0.5f;
+                    impactDust.lifetimeVariance = 0.2f;
+                    impactDust.startSize        = 0.03f * 10;
+                    impactDust.endSize          = 0.12f * 10;
+                    impactDust.startColor       = Color( 0.9f, 0.85f, 0.7f, 0.6f );
+                    impactDust.endColor         = Color( 0.5f, 0.5f, 0.5f, 0.0f );
+                    impactDust.texture          = particleTextureTrace2;
+                    impactDust.count            = 3;
+                    ps.Emit( impactDust );
+                }
+
+                SpawnParticles( camera, map );
+            }
+            else {
+                if ( !isFiring ) {
+                    sndDry.Play();
+                }
+            }
+        }
+
+        // R to reload manually
+        if ( input.IsKeyPressed( Key::R ) && !isReloading && ammo < GetMaxAmmo() ) {
+            if ( isIdleWalkOrRun ) {
+                animator.PlayAnimation( *model, "Armature|M416_Reload_Anim", false );
+                isReloading      = true;
+                reloadQueued     = false;
+                reloadSnd1Played = false;
+                reloadSnd2Played = false;
+                reloadSnd3Played = false;
+            }
+            else if ( isFiring ) {
+                reloadQueued = true;
+            }
+        }
+
+        // Reload sound cues
+        if ( isReloading && curAnim == "Armature|M416_Reload_Anim" ) {
+            f32 pct = animator.GetPercentComplete();
+            if ( pct > 0.175f && !reloadSnd1Played ) {
+                sndRemoveMag.Play( 0.5f );
+                reloadSnd1Played = true;
+            }
+            if ( pct > 0.5f && !reloadSnd2Played ) {
+                sndInsertMag.Play( 0.5f );
+                reloadSnd2Played = true;
+            }
+
+            if ( pct > 0.7f && !reloadSnd3Played ) {
+                sndInsertMag.Play( 0.5f );
+                reloadSnd3Played = true;
+            }
+        }
+
+        // Clear attack flag when fire animation completes
+        if ( isFiring && animator.GetPercentComplete() >= 1.0f && isAttacking ) {
+            isAttacking = false;
+        }
+
+        // Reload complete
+        if ( isReloading && animator.IsFinished() ) {
+            isReloading = false;
+            ammo        = GetMaxAmmo();
+            const char * returnAnim = !isMoving   ? "Armature|M416_Idle_Anim"
+                                    : isSprinting ? "Armature|M416_Run_Anim"
+                                    :               "Armature|M416_Walk_Anim";
+            animator.PlayAnimation( *model, returnAnim, true );
+        }
+
+        // Fire finished — start queued reload or return to locomotion
+        if ( curAnim == "Armature|M416_Fire_Anim" && animator.IsFinished() ) {
+            isAttacking = false;
+            if ( reloadQueued && ammo < GetMaxAmmo() ) {
+                animator.PlayAnimation( *model, "Armature|M416_Reload_Anim", false );
+                isReloading      = true;
+                reloadQueued     = false;
+                reloadSnd1Played = false;
+                reloadSnd2Played = false;
+                reloadSnd3Played = false;
+            }
+            else {
+                reloadQueued = false;
+                const char * returnAnim = !isMoving   ? "Armature|M416_Idle_Anim"
+                                        : isSprinting ? "Armature|M416_Run_Anim"
+                                        :               "Armature|M416_Walk_Anim";
+                animator.PlayAnimation( *model, returnAnim, true );
+            }
+        }
+
+        // Locomotion transitions
+        if ( !isAttacking && !isReloading ) {
+            if ( !isMoving && curAnim != "Armature|M416_Idle_Anim" ) {
+                animator.PlayAnimation( *model, "Armature|M416_Idle_Anim", true, 0.15f );
+            }
+            else if ( isMoving && isSprinting && curAnim != "Armature|M416_Run_Anim" ) {
+                animator.PlayAnimation( *model, "Armature|M416_Run_Anim", true, 0.15f );
+            }
+            else if ( isMoving && !isSprinting && curAnim != "Armature|M416_Walk_Anim" ) {
+                animator.PlayAnimation( *model, "Armature|M416_Walk_Anim", true, 0.15f );
+            }
+        }
+
+        constexpr f32 BaseAttackSpeed = 0.5f;
+        bool isFireAnim   = curAnim == "Armature|M416_Fire_Anim";
+        bool isReloadAnim = curAnim == "Armature|M416_Reload_Anim";
+        f32 animSpeed = isFireAnim   ? GameGlobalState::Get().GetAttackSpeedMultiplier() * BaseAttackSpeed
+                      : isReloadAnim ? GameGlobalState::Get().GetReloadSpeedMultiplier()
+                      :                1.0f;
+        animator.SetSpeedMultiplier( animSpeed );
+        animator.Update( dt );
     }
 
-    void PlayerWeaponM416::OnRender( Renderer &renderer, const FPSCamera &camera ) {
+    void PlayerWeaponM416::OnRender( Renderer & renderer, const FPSCamera & camera ) {
+        Vec3 ArmsLocalOffset = Vec3( 0.05f, -0.22f, -0.1f );
+
+        Mat4 cameraWorld     = glm::inverse( camera.GetViewMatrix() );
+        Mat4 localCorrection = glm::rotate( Mat4( 1.0f ), PI, Vec3( 0.0f, 1.0f, 0.0f ) );
+        Mat4 armsMatrix      = cameraWorld * glm::translate( Mat4( 1.0f ), ArmsLocalOffset ) * localCorrection;
+        renderer.RenderAnimatedModel( *model, animator, armsMatrix );
+    }
+
+    void PlayerWeaponM416::SpawnParticles( FPSCamera & camera, GameMap & map ) {
+        Vec3 forward = camera.GetForward();
+        Vec3 right   = camera.GetRight();
+        Vec3 up      = camera.GetUp();
+
+        Vec3 muzzlePos = camera.GetPosition()
+                       + forward * 0.6f
+                       + right   * 0.08f
+                       + up      * -0.06f;
+
+        ParticleSystem & ps = map.GetParticleSystem();
+
+        ParticleParms smoke;
+        smoke.position         = muzzlePos;
+        smoke.positionVariance = Vec3( 0.02f );
+        smoke.velocity         = forward * 2.0f + up * 0.5f;
+        smoke.velocityVariance = Vec3( 0.3f, 0.3f, 0.3f );
+        smoke.gravity          = Vec3( 0.0f, 0.2f, 0.0f );
+        smoke.drag             = 3.0f;
+        smoke.lifetime         = 0.35f;
+        smoke.lifetimeVariance = 0.1f;
+        smoke.startSize        = 0.04f;
+        smoke.endSize          = 0.12f;
+        smoke.startColor       = Color( 0.9f, 0.85f, 0.7f, 0.5f );
+        smoke.endColor         = Color( 0.5f, 0.5f, 0.5f, 0.0f );
+        smoke.texture          = particleTextureSmoke;
+        smoke.count            = 4;
+        ps.Emit( smoke );
+
+        ParticleParms sparks;
+        sparks.position         = muzzlePos + forward * 0.05f;
+        sparks.positionVariance = Vec3( 0.01f );
+        sparks.velocity         = forward * 5.0f + up * 1.2f;
+        sparks.velocityVariance = Vec3( 1.5f, 1.0f, 1.5f );
+        sparks.gravity          = Vec3( 0.0f, -4.0f, 0.0f );
+        sparks.drag             = 1.0f;
+        sparks.lifetime         = 0.12f;
+        sparks.lifetimeVariance = 0.06f;
+        sparks.startSize        = 0.025f;
+        sparks.endSize          = 0.004f;
+        sparks.startColor       = Color( 1.0f, 0.9f, 0.4f, 1.0f );
+        sparks.endColor         = Color( 1.0f, 0.3f, 0.0f, 0.0f );
+        sparks.texture          = nullptr;
+        sparks.count            = 3;
+        ps.Emit( sparks );
     }
 }

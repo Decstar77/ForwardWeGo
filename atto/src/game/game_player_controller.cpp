@@ -105,18 +105,26 @@ namespace atto {
             activeWeapon = WeaponSlot::Knife;
             knife.OnEquip();
         }
-        if ( input.IsKeyPressed( Key::Num2 )  && activeWeapon != WeaponSlot::Glock ) {
+        if ( input.IsKeyPressed( Key::Num2 ) && activeWeapon != WeaponSlot::Glock ) {
             activeWeapon = WeaponSlot::Glock;
             glock.OnEquip();
+        }
+        if ( input.IsKeyPressed( Key::Num4 ) && activeWeapon != WeaponSlot::M416 ) {
+            activeWeapon = WeaponSlot::M416;
+            m416.OnEquip();
         }
 
         if ( activeWeapon == WeaponSlot::Knife ) {
             knife.OnUpdate( deltaTime, isMoving, isSprinting, isCrouching, camera, map );
             if ( knife.ConsumeHit() ) { ShowHitMarker(); }
         }
-        else {
+        else if ( activeWeapon == WeaponSlot::Glock ) {
             glock.OnUpdate( deltaTime, isMoving, isSprinting, isCrouching, camera, map );
             if ( glock.ConsumeHit() ) { ShowHitMarker(); }
+        }
+        else if ( activeWeapon == WeaponSlot::M416 ) {
+            m416.OnUpdate( deltaTime, isMoving, isSprinting, isCrouching, camera, map );
+            if ( m416.ConsumeHit() ) { ShowHitMarker(); }
         }
 
         // Apply eye height (handles crouch smoothly)
@@ -177,8 +185,11 @@ namespace atto {
         if ( activeWeapon == WeaponSlot::Knife ) {
             knife.OnRender( renderer, camera );
         }
-        else {
+        else if ( activeWeapon == WeaponSlot::Glock ) {
             glock.OnRender( renderer, camera );
+        }
+        else if ( activeWeapon == WeaponSlot::M416 ) {
+            m416.OnRender( renderer, camera );
         }
     }
 
