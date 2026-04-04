@@ -5,8 +5,33 @@
 
 #include <glad/glad.h>
 
+#include <string>
 
 namespace atto {
+
+#ifdef __EMSCRIPTEN__
+    // Patch desktop GLSL (#version 330 core) to GLSL ES 3.0 (#version 300 es)
+    // and insert precision qualifiers required by GLES fragment shaders.
+    static std::string PatchShaderForGLES( const char * source, u32 shaderType ) {
+        std::string src( source );
+
+        // Replace the version directive
+        const char * oldVersion = "#version 330 core";
+        const char * newVersion = "#version 300 es";
+        auto pos = src.find( oldVersion );
+        if ( pos != std::string::npos ) {
+            std::string header( newVersion );
+            header += "\n";
+            // Fragment shaders require a default float precision in GLES
+            if ( shaderType == GL_FRAGMENT_SHADER ) {
+                header += "precision mediump float;\n";
+            }
+            src.replace( pos, strlen( oldVersion ), header );
+        }
+
+        return src;
+    }
+#endif
 
     // =========================================================================
     // Texture
@@ -114,6 +139,13 @@ namespace atto {
 
     bool Shader::CreateFromSource( const char * vertexSrc, const char * fragmentSrc ) {
         Destroy();
+
+#ifdef __EMSCRIPTEN__
+        std::string patchedVert = PatchShaderForGLES( vertexSrc, GL_VERTEX_SHADER );
+        std::string patchedFrag = PatchShaderForGLES( fragmentSrc, GL_FRAGMENT_SHADER );
+        vertexSrc = patchedVert.c_str();
+        fragmentSrc = patchedFrag.c_str();
+#endif
 
         u32 vertShader = CompileStage( GL_VERTEX_SHADER, vertexSrc );
         if ( vertShader == 0 ) return false;
