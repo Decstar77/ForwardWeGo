@@ -132,7 +132,7 @@ namespace atto {
             }
             if ( playHovered && mousePressed ) {
                 sndButtonClick.Play( 0.5f );
-                // TODO: Transition to map selection or first map
+                GameGlobalState::Get().ResetForNewGame();
                 Engine::Get().TransitionToScene( "GameMapScene", args.c_str() );
             }
 

@@ -205,6 +205,7 @@ namespace atto {
     }
 
     void GameMapScene::OnShutdown() {
+        GameGlobalState::Get().SetPlayerHealth( player.GetHealth() );
         map.Shutdown();
     }
 

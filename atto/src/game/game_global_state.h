@@ -19,7 +19,11 @@ namespace atto {
         f32     GetAccuracySpreadMultiplier() const;
         i32     GetBonusAmmoCapacity() const;
         i32     GetMaxHealth() const;
-        bool    ConsumePendingFullHeal();
+
+        i32     GetPlayerHealth() const { return playerHealth; }
+        void    SetPlayerHealth( i32 hp ) { playerHealth = hp; }
+
+        void    ResetForNewGame();
 
         // Settings
         f32     GetMouseSensitivity() const { return mouseSensitivity; }
@@ -42,7 +46,7 @@ namespace atto {
         f32 musicVolume      = 1.0f;
 
         std::vector<PlayerCardType> playerCards;
-        bool pendingFullHeal = false;
+        i32 playerHealth = 100;
     };
 }
 

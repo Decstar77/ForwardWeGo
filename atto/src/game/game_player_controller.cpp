@@ -21,8 +21,7 @@ namespace atto {
         camera.SetMoveSpeed( 5.0f );
         camera.SetLookSensitivity( 0.1f );
 
-        health = GameGlobalState::Get().GetMaxHealth();
-        GameGlobalState::Get().ConsumePendingFullHeal();
+        health = GameGlobalState::Get().GetPlayerHealth();
 
         knife.OnStart();
         glock.OnStart();

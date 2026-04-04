@@ -28,7 +28,7 @@ namespace atto {
     void GameGlobalState::AddPlayerCard( PlayerCardType card ) {
         playerCards.push_back( card );
         if ( card == PlayerCardType::RestoreHealth ) {
-            pendingFullHeal = true;
+            playerHealth = GetMaxHealth();
         }
     }
 
@@ -61,12 +61,10 @@ namespace atto {
         return 100 + 25 * GetCardCount( PlayerCardType::MaxHealthIncrease );
     }
 
-    bool GameGlobalState::ConsumePendingFullHeal() {
-        if ( pendingFullHeal ) {
-            pendingFullHeal = false;
-            return true;
-        }
-        return false;
+    void GameGlobalState::ResetForNewGame() {
+        playerCards.clear();
+        playerHealth = 100;
+        playerCoins  = 200;
     }
 
     GameGlobalState::GameGlobalState() {

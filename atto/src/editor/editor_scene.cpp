@@ -3,6 +3,7 @@
 #if ATTO_EDITOR
 
 #include "editor_property_serializer.h"
+#include "game/game_global_state.h"
 
 #include <algorithm>
 #include <imgui.h>
@@ -477,6 +478,7 @@ namespace atto {
                 showUnsavedChangesDialog = true;
                 pendingAction = UnsavedChangesAction::Play;
             } else {
+                GameGlobalState::Get().ResetForNewGame();
                 Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
             }
         }
@@ -974,6 +976,7 @@ namespace atto {
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Play", "F5" ) ) {
                     SaveEditorState();
+                    GameGlobalState::Get().ResetForNewGame();
                     Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
                 }
                 ImGui::Separator();
@@ -1896,6 +1899,7 @@ namespace atto {
             break;
         case UnsavedChangesAction::Play:
             unsavedChanges = false;
+            GameGlobalState::Get().ResetForNewGame();
             Engine::Get().TransitionToScene( "GameMapScene", currentMapPath.c_str() );
             break;
         default: break;
