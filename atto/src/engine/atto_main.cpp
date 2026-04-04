@@ -47,10 +47,8 @@ TODO:
     - Health increased ( must )
     - Restore health ( must )
     - Extra coins ( must )
-- Spitter
 - Enemy death sound
-- Packaged builds, packing and loading assets.
-- Enscriptmn build
+- Emscripten build
 
 Brain waves:
 Gameplay:

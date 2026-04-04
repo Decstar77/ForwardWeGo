@@ -68,7 +68,7 @@ namespace atto {
         if ( dist < threshold ) {
             if ( mapName.empty() == false ) {
                 sndPortalTavel.Play( 0.5f );
-                Engine::Get().TransitionToScene( "GameMapScene", mapName.c_str() );
+                Engine::Get().TransitionToScene( "GameScenePickCard", mapName.c_str() );
             } else {
                 LOG_WARN( "Map portal has no map set" );
             }
