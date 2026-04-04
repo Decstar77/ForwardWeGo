@@ -7395,7 +7395,7 @@ namespace plz
 			if(value != 0xFF)
 				sizeInfoMissing = false;
 
-			size |= (value << (i * 8));
+			size |= (static_cast<size_t>(value) << (i * 8));
 		}
 
 		if(sizeInfoMissing)

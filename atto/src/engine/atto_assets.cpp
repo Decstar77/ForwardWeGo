@@ -1012,9 +1012,9 @@ namespace atto {
     bool AssetManager::Initialize( bool usePackedAssets ) {
         usingPackedAssets = usePackedAssets;
         if ( usingPackedAssets ) {
-            packedAssetData = ReadBinaryFile( "assets/packed/game.bin" );
+            packedAssetData = ReadBinaryFile( "game.bin" );
             if ( packedAssetData.empty() == true ) {
-                packedAssetData = ReadBinaryFile( "game.bin" );
+                packedAssetData = ReadBinaryFile( "assets/packed/game.bin" );
             }
             return packedAssetData.empty() == false;
         }

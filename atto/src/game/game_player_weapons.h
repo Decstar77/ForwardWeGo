@@ -73,4 +73,28 @@ namespace atto {
         SoundCollection sndHit;
     };
 
+    class PlayerWeaponM4 {
+    public:
+        void OnStart();
+        void OnEquip();
+        void OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map );
+        void OnRender( Renderer & renderer, const FPSCamera & camera );
+
+    private:
+        const AnimatedModel   * model = nullptr;
+        Animator                animator;
+
+
+        const Texture * particleTextureSmoke = nullptr;
+        const Texture * particleTextureTrace1 = nullptr;
+        const Texture * particleTextureTrace2 = nullptr;
+        SoundCollection sndEquip;
+        SoundCollection sndShoot;
+        SoundCollection sndDry;
+        SoundCollection sndCock;
+        SoundCollection sndRemoveMag;
+        SoundCollection sndInsertMag;
+        SoundCollection sndHit;
+    };
+
 }

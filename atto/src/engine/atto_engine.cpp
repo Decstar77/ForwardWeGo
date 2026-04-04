@@ -119,7 +119,11 @@ namespace atto {
             LOG_ERROR( "Failed to initialize asset manager" );
             return false;
         } else {
-             LOG_INFO( "Assets loaded %d bytes", assetManager.GetPackedAssetsSize() );
+            LOG_INFO( "Assets loaded %d bytes", assetManager.GetPackedAssetsSize() );
+
+            // Try loading something else for testing
+            BinarySerializer s(true);
+            assetManager.LoadStaticModelData( "assets/models/sm-declan/SM_Prop_DeadZub_Green.obj" ,s );
         }
 
 

@@ -15,6 +15,17 @@ namespace atto {
         return hash;
     }
 
+    // Safe read helpers — avoid reinterpret_cast on potentially unaligned pack data.
+    // The pack file is written on x86 (little-endian) and WASM is also little-endian,
+    // so we only need to handle alignment, not byte-order.
+    static void ReadPackHeader( const u8 * src, PackHeader & dst ) {
+        memcpy( &dst, src, sizeof( PackHeader ) );
+    }
+
+    static void ReadAssetEntry( const u8 * src, AssetEntry & dst ) {
+        memcpy( &dst, src, sizeof( AssetEntry ) );
+    }
+
     // Finds the asset entry for `filePath` in the loaded pack blob, decompresses it,
     // and returns the raw (pre-serialized) bytes. Returns false if not found or corrupt.
     static bool ExtractPackedAsset( const std::vector<u8> & packData, const char * filePath,
@@ -24,19 +35,20 @@ namespace atto {
             return false;
         }
 
-        const PackHeader * header = reinterpret_cast<const PackHeader *>( packData.data() );
-        if ( header->magic != PACK_MAGIC ) {
+        PackHeader header;
+        ReadPackHeader( packData.data(), header );
+        if ( header.magic != PACK_MAGIC ) {
             LOG_ERROR( "ExtractPackedAsset: invalid magic" );
             return false;
         }
-        if ( header->version != PACK_VERSION ) {
-            LOG_ERROR( "ExtractPackedAsset: version mismatch (%u)", header->version );
+        if ( header.version != PACK_VERSION ) {
+            LOG_ERROR( "ExtractPackedAsset: version mismatch (%u)", header.version );
             return false;
         }
 
         const u64 hash       = FNV1a( filePath, strlen( filePath ) );
-        usize     tablePos   = (usize)header->tableOffset;
-        const u32 assetCount = header->assetCount;
+        usize     tablePos   = (usize)header.tableOffset;
+        const u32 assetCount = header.assetCount;
 
         for ( u32 i = 0; i < assetCount; i++ ) {
             if ( tablePos + sizeof( AssetEntry ) > packData.size() ) {
@@ -44,30 +56,49 @@ namespace atto {
                 return false;
             }
 
-            const AssetEntry * entry = reinterpret_cast<const AssetEntry *>( packData.data() + tablePos );
-            tablePos += sizeof( AssetEntry ) + entry->pathLength;
+            AssetEntry entry;
+            ReadAssetEntry( packData.data() + tablePos, entry );
+            tablePos += sizeof( AssetEntry ) + entry.pathLength;
 
-            if ( entry->pathHash != hash ) { continue; }
+            if ( entry.pathHash != hash ) { continue; }
 
             // Found matching entry — extract blob
-            const usize blobStart = (usize)entry->offset;
-            const usize blobSize  = (usize)entry->compressedSize;
+            const usize blobStart = (usize)entry.offset;
+            const usize blobSize  = (usize)entry.compressedSize;
             if ( blobStart + blobSize > packData.size() ) {
                 LOG_ERROR( "ExtractPackedAsset: blob for '%s' out of bounds", filePath );
                 return false;
             }
 
-            if ( entry->compressionType == 1 ) {
-                // LZMA decompress
-                std::vector<u8> compressed( packData.begin() + blobStart,
-                                            packData.begin() + blobStart + blobSize );
-                plz::PocketLzma  lzma;
-                plz::StatusCode  status = lzma.decompress( compressed, outData );
-                if ( status != plz::StatusCode::Ok ) {
-                    LOG_ERROR( "ExtractPackedAsset: LZMA decompress failed for '%s' (status %d)",
-                               filePath, (i32)status );
+            if ( entry.compressionType == 1 ) {
+                // LZMA decompress — call LzmaUncompress directly.
+                // PocketLzma's wrapper has an optimization bug on WASM + O3 where
+                // the output size gets misread as 0.
+                const u8 * blob      = packData.data() + blobStart;
+                const u8 * props     = blob;            // 5 bytes LZMA props
+                const u8 * sizeBytes = blob + 5;        // 8 bytes little-endian uncompressed size
+                const u8 * compData  = blob + 13;       // compressed stream
+
+                // Parse uncompressed size from the pocketlzma header (little-endian u64)
+                u64 uncompSize64 = 0;
+                for ( i32 si = 0; si < 8; si++ ) {
+                    uncompSize64 |= (u64)sizeBytes[si] << ( si * 8 );
+                }
+                usize uncompSize = (usize)uncompSize64;
+                usize compSize   = blobSize - 13;
+
+                outData.resize( uncompSize );
+                usize outSize = uncompSize;
+                usize inSize  = compSize;
+
+                int rc = plz::c::LzmaUncompress( outData.data(), &outSize, compData, &inSize, props, 5 );
+                if ( rc != SZ_OK ) {
+                    LOG_ERROR( "ExtractPackedAsset: LZMA decompress failed for '%s' (rc %d)",
+                               filePath, rc );
+                    outData.clear();
                     return false;
                 }
+                outData.resize( outSize );
             } else {
                 outData.assign( packData.begin() + blobStart,
                                 packData.begin() + blobStart + blobSize );
@@ -85,7 +116,11 @@ namespace atto {
     static bool LoadFromPack( const std::vector<u8> & packData, const char * filePath,
                               Serializer & serializer ) {
         std::vector<u8> data;
-        if ( !ExtractPackedAsset( packData, filePath, data ) ) { return false; }
+        if ( !ExtractPackedAsset( packData, filePath, data ) ) {
+            LOG_ERROR( "ExtractPackedAsset: failed to extract pack data" );
+            return false;
+        }
+        LOG_INFO( "Loaded %s at %d bytes", filePath, data.size() );
         static_cast<BinarySerializer &>( serializer ).SetBuffer( data );
         return true;
     }

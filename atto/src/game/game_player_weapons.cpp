@@ -540,4 +540,17 @@ namespace atto {
         sparks.count            = 4;
         ps.Emit( sparks );
     }
+
+    void PlayerWeaponM4::OnStart() {
+    }
+
+    void PlayerWeaponM4::OnEquip() {
+    }
+
+    void PlayerWeaponM4::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera &camera,
+        GameMap &map ) {
+    }
+
+    void PlayerWeaponM4::OnRender( Renderer &renderer, const FPSCamera &camera ) {
+    }
 }
