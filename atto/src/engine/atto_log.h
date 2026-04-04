@@ -15,7 +15,7 @@
     #if ATTO_DEBUG
         #define ATTO_LOG_LEVEL 0  // Show all logs in debug
     #else
-        #define ATTO_LOG_LEVEL 3  // Info and above in release
+        #define ATTO_LOG_LEVEL 2  // Info and above in release
     #endif
 #endif
 

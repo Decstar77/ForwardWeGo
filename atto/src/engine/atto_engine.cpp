@@ -113,10 +113,18 @@ namespace atto {
         // Initialize subsystems
         rng.Initialize();
         input.Initialize( window );
-        assetManager.Initialize( config.packedAssets );
+
+        //Initialize asset manager
+        if ( assetManager.Initialize( config.packedAssets ) == false ) {
+            LOG_ERROR( "Failed to initialize asset manager" );
+            return false;
+        } else {
+             LOG_INFO( "Assets loaded %d bytes", assetManager.GetPackedAssetsSize() );
+        }
+
 
         // Set window icon
-        {
+        /*{
             int w, h;
             std::vector< u8 > data;
             BinarySerializer serializer( true );
@@ -132,10 +140,13 @@ namespace atto {
                 icon.pixels = data.data();
                 glfwSetWindowIcon( window, 1, &icon );
             }
-        }
+        }*/
 
         // Audio system
-        audioSystem.Initialize();
+        if ( audioSystem.Initialize() == false ) {
+            LOG_FATAL( "Failed to initialize audio system" );
+            return false;
+        }
 
         if ( !renderer.Initialize() ) {
             LOG_FATAL( "Failed to initialize renderer" );

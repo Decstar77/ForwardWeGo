@@ -1048,7 +1048,7 @@ namespace atto {
             file.close();
             return content;
         }
-        LOG_ERROR( "Failed to read text file: %s", path.c_str() );
+        LOG_WARN( "Failed to read text file: %s", path.c_str() );
         return "";
     }
 
@@ -1057,7 +1057,7 @@ namespace atto {
         std::ifstream file( path, std::ios::binary | std::ios::ate );
 
         if ( !file.is_open() ) {
-            LOG_ERROR( "Failed to read binary file: %s", path );
+            LOG_WARN( "Failed to read binary file: %s", path );
             return {}; // Return empty vector
         }
 
@@ -1074,7 +1074,7 @@ namespace atto {
             return buffer;
         }
 
-        LOG_ERROR( "Failed to read binary data from: %s", path );
+        LOG_WARN( "Failed to read binary data from: %s", path );
         return {};
     }
 

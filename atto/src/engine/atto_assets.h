@@ -369,6 +369,7 @@ namespace atto {
         void            Shutdown();
 
         bool            IsUsingPackedAssets() const { return usingPackedAssets; }
+        u32             GetPackedAssetsSize() const { return static_cast< u32 >( packedAssetData.size() ); }
 
         void            WriteTextFile( const std::string & path, const std::string & content );
         std::string     ReadTextFile( const std::string & path );
