@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game_player_card.h"
 #include "engine/atto_engine.h"
 
 namespace atto {
@@ -11,6 +12,14 @@ namespace atto {
 
         i32     GetPlayerCoins() const;
         void    AddPlayerCoins( i32 amount );
+
+        void    AddPlayerCard( PlayerCardType card );
+        i32     GetCardCount( PlayerCardType card ) const;
+        f32     GetAttackDamageMultiplier() const;
+        f32     GetAccuracySpreadMultiplier() const;
+        i32     GetBonusAmmoCapacity() const;
+        i32     GetMaxHealth() const;
+        bool    ConsumePendingFullHeal();
 
         // Settings
         f32     GetMouseSensitivity() const { return mouseSensitivity; }
@@ -31,6 +40,9 @@ namespace atto {
         f32 mouseSensitivity = 0.1f;
         f32 gameplayVolume   = 1.0f;
         f32 musicVolume      = 1.0f;
+
+        std::vector<PlayerCardType> playerCards;
+        bool pendingFullHeal = false;
     };
 }
 

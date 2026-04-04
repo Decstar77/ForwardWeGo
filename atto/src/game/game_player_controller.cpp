@@ -21,6 +21,9 @@ namespace atto {
         camera.SetMoveSpeed( 5.0f );
         camera.SetLookSensitivity( 0.1f );
 
+        health = GameGlobalState::Get().GetMaxHealth();
+        GameGlobalState::Get().ConsumePendingFullHeal();
+
         knife.OnStart();
         glock.OnStart();
 
@@ -161,11 +164,12 @@ namespace atto {
     }
 
     void PlayerController::Heal( i32 amount ) {
+        i32 maxHP = GameGlobalState::Get().GetMaxHealth();
         health += amount;
-        if ( health > 100 ) {
-            health = 100;
+        if ( health > maxHP ) {
+            health = maxHP;
         }
-        LOG_INFO( "Player healed %d, health: %d", amount, health );
+        LOG_INFO( "Player healed %d, health: %d/%d", amount, health, maxHP );
     }
 
     void PlayerController::OnRender( Renderer & renderer ) {

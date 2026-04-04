@@ -34,19 +34,15 @@ namespace  atto {
 
     inline const char * PlayerCardTypeToDescription( PlayerCardType type ) {
         switch ( type ) {
-            case PlayerCardType::AttackSpeedIncrease:    return "+15% Attack Speed";
-            case PlayerCardType::AttackDamageIncrease:   return "+10% Damage";
-            case PlayerCardType::AttackAccuracyIncrease: return "+20% Accuracy";
-            case PlayerCardType::AmmoCapacityIncrease:   return "+4 Ammo Capacity";
-            case PlayerCardType::ReloadSpeedIncrease:    return "+20% Reload Speed";
+            case PlayerCardType::AttackSpeedIncrease:    return "+5% Attack Speed";
+            case PlayerCardType::AttackDamageIncrease:   return "+5% Damage";
+            case PlayerCardType::AttackAccuracyIncrease: return "+10% Accuracy";
+            case PlayerCardType::AmmoCapacityIncrease:   return "+2 Ammo Capacity";
+            case PlayerCardType::ReloadSpeedIncrease:    return "+5% Reload Speed";
             case PlayerCardType::MaxHealthIncrease:      return "+25 Max Health";
             case PlayerCardType::RestoreHealth:          return "Restore Health";
             case PlayerCardType::ExtraCoins_10:          return "+10 Coins";
             default:                                     return "";
         }
     }
-
-    class PlayerCard {
-    public:
-    };
 }

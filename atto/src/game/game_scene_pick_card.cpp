@@ -1,5 +1,6 @@
 
 #include "game_scene_pick_card.h"
+#include "game_global_state.h"
 
 namespace atto {
 
@@ -195,7 +196,11 @@ namespace atto {
 
             f32 lastCardFinish = ( NumCards - 1 ) * 0.1f + SlideOutDuration;
             if ( phaseTimer >= lastCardFinish + 0.15f ) {
-                // TODO: Apply card effect to global state
+                GameGlobalState & gs = GameGlobalState::Get();
+                gs.AddPlayerCard( cards[chosenCard].type );
+                if ( cards[chosenCard].type == PlayerCardType::ExtraCoins_10 ) {
+                    gs.AddPlayerCoins( 10 );
+                }
                 if ( !nextMap.empty() ) {
                     Engine::Get().TransitionToScene( "GameMapScene", nextMap.c_str() );
                 }

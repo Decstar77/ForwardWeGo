@@ -39,7 +39,6 @@ namespace atto {
 
         std::string     nextMap;
         UICanvas        ui;
-        PlayerCard      playerCard;
         const Font *    titleFont    = nullptr;
         const Font *    cardNameFont = nullptr;
         const Font *    cardDescFont = nullptr;

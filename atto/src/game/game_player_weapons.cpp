@@ -1,5 +1,6 @@
 #include "game_player_weapons.h"
 #include "game_map.h"
+#include "game_global_state.h"
 
 namespace atto {
 
@@ -110,7 +111,8 @@ namespace atto {
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    constexpr i32 KnifeAttack1Damage = 34;
+                    constexpr i32 KnifeAttack1BaseDamage = 34;
+                    i32 KnifeAttack1Damage = (i32)( KnifeAttack1BaseDamage * GameGlobalState::Get().GetAttackDamageMultiplier() );
                     if ( result.entity->TakeDamage( KnifeAttack1Damage ) == TakeDamageResult::Success_HP ) {
                         didHitEntity = true;
                         AlignedBox bounds = result.entity->GetBounds();
@@ -130,7 +132,8 @@ namespace atto {
             if ( map.Raycast( camera.GetPosition(), camera.GetForward(), result ) ) {
                 if ( result.entity && result.distance <= 1.5f ) {
                     LOG_INFO( "Hit entity: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                    constexpr i32 KnifeAttack3Damage = 55;
+                    constexpr i32 KnifeAttack3BaseDamage = 55;
+                    i32 KnifeAttack3Damage = (i32)( KnifeAttack3BaseDamage * GameGlobalState::Get().GetAttackDamageMultiplier() );
                     if ( result.entity->TakeDamage( KnifeAttack3Damage ) == TakeDamageResult::Success_HP ) {
                         didHitEntity = true;
                         AlignedBox bounds = result.entity->GetBounds();
@@ -257,6 +260,10 @@ namespace atto {
         } );
     }
 
+    i32 PlayerWeaponGlock::GetMaxAmmo() const {
+        return MaxAmmo + GameGlobalState::Get().GetBonusAmmoCapacity();
+    }
+
     void PlayerWeaponGlock::OnEquip() {
         animator.PlayAnimation( *model, "Armature|Glock_Draw_Anim", false );
         isAttacking  = false;
@@ -306,6 +313,7 @@ namespace atto {
                 constexpr f32 SpreadStanding = 0.015f; // ~0.86 degrees
                 constexpr f32 SpreadWalking  = 0.04f;  // ~2.3 degrees
                 f32 spreadAmount = isCrouching ? 0.0f : ( isMoving ? SpreadWalking : SpreadStanding );
+                spreadAmount *= GameGlobalState::Get().GetAccuracySpreadMultiplier();
 
                 Vec3 fireDir = camera.GetForward();
                 if ( spreadAmount > 0.0f ) {
@@ -321,7 +329,8 @@ namespace atto {
                 if ( map.Raycast( camera.GetPosition(), fireDir, result ) ) {
                     if ( result.entity && result.distance <= 50.0f ) {
                         LOG_INFO( "Glock hit: %s at distance: %f", EntityTypeToString( result.entity->GetType() ), result.distance );
-                        constexpr i32 GlockDamage = 25;
+                        constexpr i32 GlockBaseDamage = 25;
+                        i32 GlockDamage = (i32)( GlockBaseDamage * GameGlobalState::Get().GetAttackDamageMultiplier() );
                         if ( result.entity->TakeDamage( GlockDamage ) == TakeDamageResult::Success_HP ) {
                             sndHit.Play();
                             didHitEntity = true;
@@ -383,7 +392,7 @@ namespace atto {
         }
 
         // R to reload manually
-        if ( input.IsKeyPressed( Key::R ) && !isReloading && ammo < MaxAmmo ) {
+        if ( input.IsKeyPressed( Key::R ) && !isReloading && ammo < GetMaxAmmo() ) {
             if ( isIdleWalkOrRun ) {
                 animator.PlayAnimation( *model, "Armature|Glock_Reload_Anim", false );
                 isReloading      = true;
@@ -422,7 +431,7 @@ namespace atto {
         // Reload complete
         if ( isReloading && animator.IsFinished() ) {
             isReloading = false;
-            ammo        = MaxAmmo;
+            ammo        = GetMaxAmmo();
             const char * returnAnim = !isMoving   ? "Armature|Glock_Idle_Anim"
                                     : isSprinting ? "Armature|Glock_Run_Anim"
                                     :               "Armature|Glock_Walk_Anim";
@@ -432,7 +441,7 @@ namespace atto {
         // Fire finished — start queued reload or return to locomotion
         if ( curAnim == "Armature|Glock_Fire_Anim" && animator.IsFinished() ) {
             isAttacking = false;
-            if ( reloadQueued && ammo < MaxAmmo ) {
+            if ( reloadQueued && ammo < GetMaxAmmo() ) {
                 animator.PlayAnimation( *model, "Armature|Glock_Reload_Anim", false );
                 isReloading      = true;
                 reloadQueued     = false;

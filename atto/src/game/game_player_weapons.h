@@ -40,7 +40,7 @@ namespace atto {
 
         bool IsAttacking() const { return isAttacking; }
         i32  GetAmmo()     const { return ammo; }
-        i32  GetMaxAmmo()  const { return MaxAmmo; }
+        i32  GetMaxAmmo()  const;
         bool ConsumeHit() { bool h = didHitEntity; didHitEntity = false; return h; }
 
         void SpawnParticles( FPSCamera & camera, GameMap & map );
