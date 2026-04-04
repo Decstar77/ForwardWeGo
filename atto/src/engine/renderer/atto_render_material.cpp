@@ -15,6 +15,12 @@ namespace atto {
     static std::string PatchShaderForGLES( const char * source, u32 shaderType ) {
         std::string src( source );
 
+        // Strip leading whitespace — raw string literals start with '\n'
+        size_t firstNonWs = src.find_first_not_of( " \t\r\n" );
+        if ( firstNonWs != std::string::npos && firstNonWs > 0 ) {
+            src.erase( 0, firstNonWs );
+        }
+
         // Replace the version directive
         const char * oldVersion = "#version 330 core";
         const char * newVersion = "#version 300 es";
@@ -24,7 +30,8 @@ namespace atto {
             header += "\n";
             // Fragment shaders require a default float precision in GLES
             if ( shaderType == GL_FRAGMENT_SHADER ) {
-                header += "precision mediump float;\n";
+                header += "precision highp float;\n";
+                header += "precision highp int;\n";
             }
             src.replace( pos, strlen( oldVersion ), header );
         }

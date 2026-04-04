@@ -7386,7 +7386,7 @@ namespace plz
 			return StatusCode::InvalidLzmaData;
 
 		size_t propsSize = LZMA_PROPS_SIZE + 8; //header + decompress_size
-		size_t size = 0;
+		uint64_t size = 0;
 		bool sizeInfoMissing = true; //True until proven otherwise
 
 		for (int i = 0; i < 8; i++)
@@ -7395,7 +7395,7 @@ namespace plz
 			if(value != 0xFF)
 				sizeInfoMissing = false;
 
-			size |= (static_cast<size_t>(value) << (i * 8));
+			size |= (static_cast<uint64_t>(value) << (i * 8));
 		}
 
 		if(sizeInfoMissing)

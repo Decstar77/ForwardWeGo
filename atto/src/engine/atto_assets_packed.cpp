@@ -71,34 +71,16 @@ namespace atto {
             }
 
             if ( entry.compressionType == 1 ) {
-                // LZMA decompress — call LzmaUncompress directly.
-                // PocketLzma's wrapper has an optimization bug on WASM + O3 where
-                // the output size gets misread as 0.
-                const u8 * blob      = packData.data() + blobStart;
-                const u8 * props     = blob;            // 5 bytes LZMA props
-                const u8 * sizeBytes = blob + 5;        // 8 bytes little-endian uncompressed size
-                const u8 * compData  = blob + 13;       // compressed stream
-
-                // Parse uncompressed size from the pocketlzma header (little-endian u64)
-                u64 uncompSize64 = 0;
-                for ( i32 si = 0; si < 8; si++ ) {
-                    uncompSize64 |= (u64)sizeBytes[si] << ( si * 8 );
-                }
-                usize uncompSize = (usize)uncompSize64;
-                usize compSize   = blobSize - 13;
-
-                outData.resize( uncompSize );
-                usize outSize = uncompSize;
-                usize inSize  = compSize;
-
-                int rc = plz::c::LzmaUncompress( outData.data(), &outSize, compData, &inSize, props, 5 );
-                if ( rc != SZ_OK ) {
-                    LOG_ERROR( "ExtractPackedAsset: LZMA decompress failed for '%s' (rc %d)",
-                               filePath, rc );
+                std::vector<u8> compressed( packData.begin() + blobStart,
+                                            packData.begin() + blobStart + blobSize );
+                plz::PocketLzma lzma;
+                plz::StatusCode status = lzma.decompress( compressed, outData );
+                if ( status != plz::StatusCode::Ok ) {
+                    LOG_ERROR( "ExtractPackedAsset: LZMA decompress failed for '%s' (status %d)",
+                               filePath, (int)status );
                     outData.clear();
                     return false;
                 }
-                outData.resize( outSize );
             } else {
                 outData.assign( packData.begin() + blobStart,
                                 packData.begin() + blobStart + blobSize );

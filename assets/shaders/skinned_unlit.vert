@@ -13,6 +13,7 @@ uniform mat4 uBoneMatrices[MAX_BONES];
 
 out vec3 vNormal;
 out vec3 vFragPos;
+out vec2 vTexCoords;
 
 void main() {
     mat4 boneTransform = mat4(0.0);
@@ -32,6 +33,7 @@ void main() {
     vec4 skinnedPos = boneTransform * vec4(aPos, 1.0);
     vec4 worldPos = uModel * skinnedPos;
     vFragPos = worldPos.xyz;
+    vTexCoords = aTexCoords;
 
     vec3 skinnedNormal = mat3(boneTransform) * aNormal;
     vNormal = mat3(transpose(inverse(uModel))) * skinnedNormal;
