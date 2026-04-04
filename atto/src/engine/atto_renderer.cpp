@@ -307,7 +307,9 @@ namespace atto {
 
     void Renderer::SetWireframe( bool enabled ) {
         wireframe = enabled;
+#ifndef __EMSCRIPTEN__
         glPolygonMode( GL_FRONT_AND_BACK, enabled ? GL_LINE : GL_FILL );
+#endif
     }
 
     void Renderer::UseUnlitShader() {

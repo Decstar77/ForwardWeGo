@@ -15,7 +15,9 @@
 #include <string>
 
 // Platform detection
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(__EMSCRIPTEN__)
+#define ATTO_PLATFORM_EMSCRIPTEN 1
+#elif defined(_WIN32) || defined(_WIN64)
 #define ATTO_PLATFORM_WINDOWS 1
 #elif defined(__linux__)
 #define ATTO_PLATFORM_LINUX 1
@@ -38,10 +40,18 @@
 
 // Assertions
 #if ATTO_DEBUG
+#if defined(_MSC_VER)
+#define ATTO_DEBUG_BREAK() __debugbreak()
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#define ATTO_DEBUG_BREAK() emscripten_debugger()
+#else
+#define ATTO_DEBUG_BREAK() __builtin_trap()
+#endif
 #define ATTO_ASSERT(condition, message) \
     do { if (!(condition)) { \
         fprintf(stderr, "Assertion failed: %s\n  Message: %s\n  File: %s\n  Line: %d\n", #condition, message, __FILE__, __LINE__); \
-        __debugbreak(); \
+        ATTO_DEBUG_BREAK(); \
     } } while(0)
 #define INVALID_CODE_PATH ATTO_ASSERT(false, "Invalid code path")
 #else

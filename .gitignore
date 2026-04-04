@@ -22,6 +22,7 @@ res
 *.vcxproj.user
 *.csproj
 build
+build_web
 ship
 assets/packed
 
