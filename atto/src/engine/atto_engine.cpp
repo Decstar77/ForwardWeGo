@@ -160,6 +160,9 @@ namespace atto {
             return false;
         }
 
+        splashTexture = renderer.GetOrLoadTexture( "assets/textures/ai-gen/doggo-splash.png", true );
+        splashFont    = renderer.GetOrLoadFont( "assets/fonts/kenvector_future.ttf", 28.0f );
+
         lastFrameTime = glfwGetTime();
         initialized = true;
 
@@ -223,12 +226,13 @@ namespace atto {
         // Swap buffers
         glfwSwapBuffers( window );
 
-        // Defered input because of web stuff
+        // Deferred input because of web stuff
         input.Update();
 
         if ( transitionSceneName.empty() == false ) {
             currentScene->OnShutdown();
             currentScene = SceneRegistry::CreateNew( transitionSceneName.c_str() );
+            DrawLoadingScreen();
             currentScene->OnStart( transitionSceneArgs.c_str() );
             transitionSceneName = "";
             transitionSceneArgs = "";
@@ -246,6 +250,7 @@ namespace atto {
 
         // Call game start
         if ( currentScene ) {
+            DrawLoadingScreen();
             currentScene->OnStart( args );
         }
 
@@ -308,6 +313,27 @@ namespace atto {
 
         // Shutdown logger last
         Logger::Get().Shutdown();
+    }
+
+    void Engine::DrawLoadingScreen() {
+        Vec2i size = GetWindowSize();
+        i32 w = size.x;
+        i32 h = size.y;
+
+        renderer.BeginFrame();
+
+        if ( splashTexture ) {
+            UICanvas ui;
+            ui.Begin( w, h );
+            ui.DrawSprite( splashTexture, ui.GetCenterX(), ui.GetCenterY(), w, h );
+            ui.DrawText( splashFont, ui.GetCenterX(), ui.GetHeight() - 30.0f, "Loading...",
+                         Vec4( 1.0f, 1.0f, 1.0f, 1.0f ), UIAlignH::Center, UIAlignV::Bottom );
+            ui.End( renderer );
+        }
+
+        renderer.EndFrame();
+        glfwSwapBuffers( window );
+        glfwPollEvents();
     }
 
     void Engine::TransitionToScene( const char * sceneName, const char * args ) {

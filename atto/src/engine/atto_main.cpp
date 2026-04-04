@@ -39,18 +39,6 @@ int main() {
 /*
 TODO:
 - Procedural maps
-- M4:
-    - Animations:
-        - Walk
-        - Run
-        - Shoot
-        - Reload
-    - Sounds:
-        - Shooting
-        - Reload
-    - FVX:
-        - Muzzle
-        - Hit
 - Sniper:
     - Animations:
             - Walk

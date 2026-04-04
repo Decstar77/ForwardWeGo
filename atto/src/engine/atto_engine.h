@@ -80,6 +80,8 @@ namespace atto {
         Engine( const Engine & ) = delete;
         Engine & operator=( const Engine & ) = delete;
 
+        void DrawLoadingScreen();
+
         // GLFW callbacks
         static void OnKeyCallback( GLFWwindow * window, i32 key, i32 scancode, i32 action, i32 mods );
         static void OnMouseButtonCallback( GLFWwindow * window, i32 button, i32 action, i32 mods );
@@ -120,5 +122,9 @@ namespace atto {
         std::unique_ptr<SceneInterface> currentScene = nullptr;
         std::string                     transitionSceneName;
         std::string                     transitionSceneArgs = "";
+
+        // Loading screen
+        const Texture * splashTexture = nullptr;
+        const Font    * splashFont    = nullptr;
     };
 } // namespace atto
