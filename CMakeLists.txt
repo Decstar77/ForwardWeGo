@@ -300,6 +300,14 @@ if(EMSCRIPTEN)
         -lopenal
     )
 
+    # If game.bin exists at configure time, preload it into the virtual filesystem.
+    # The editor packs game.bin before invoking the Emscripten build.
+    if(EXISTS "${CMAKE_SOURCE_DIR}/assets/packed/game.bin")
+        target_link_options(atto PRIVATE
+            "--preload-file" "${CMAKE_SOURCE_DIR}/assets/packed/game.bin@game.bin"
+        )
+    endif()
+
     # Also pass USE_GLFW=3 at compile time so Emscripten provides the GLFW headers
     target_compile_options(atto PRIVATE -sUSE_GLFW=3)
 

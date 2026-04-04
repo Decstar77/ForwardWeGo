@@ -973,6 +973,7 @@ namespace atto {
                 if ( ImGui::MenuItem( "Save As...", "Ctrl+Shift+S" ) ) { SaveMapAs(); }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Build Game", "", false, !assetPacker.IsPacking() ) ) { assetPacker.BeginPacking(); }
+                if ( ImGui::MenuItem( "Build Web", "", false, !assetPacker.IsPacking() ) ) { assetPacker.BeginPackingWeb(); }
                 ImGui::Separator();
                 if ( ImGui::MenuItem( "Play", "F5" ) ) {
                     SaveEditorState();

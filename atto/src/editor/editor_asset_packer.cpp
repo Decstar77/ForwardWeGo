@@ -128,6 +128,8 @@ namespace atto {
             return;
         }
 
+        buildTarget = BuildTarget::Windows;
+
         std::filesystem::remove( "assets/packed/game.bin" );
         std::filesystem::remove( "assets/packed/scraped.txt" );
 
@@ -150,6 +152,37 @@ namespace atto {
         buildPhase = BuildPhase::Packing;
 
         LOG_INFO( "Packing %d assets...", (i32)assetPaths.size() );
+    }
+
+    void EditorAssetPacker::BeginPackingWeb() {
+        if ( buildPhase != BuildPhase::Idle ) {
+            return;
+        }
+
+        buildTarget = BuildTarget::Web;
+
+        std::filesystem::remove( "assets/packed/game.bin" );
+        std::filesystem::remove( "assets/packed/scraped.txt" );
+
+        assetPaths = ScrapeAssets();
+        if ( assetPaths.empty() ) {
+            LOG_WARN( "No assets found to pack" );
+            return;
+        }
+
+        std::stringstream ss;
+        for ( auto path : assetPaths ) {
+            ss << path << std::endl;
+        }
+
+        Engine::Get().GetAssetManager().WriteTextFile( "assets/packed/scraped.txt", ss.str().c_str() );
+
+        packedAssets.clear();
+        currentIndex = 0;
+        dataOffset = sizeof( PackHeader );
+        buildPhase = BuildPhase::Packing;
+
+        LOG_INFO( "Packing %d assets for web...", (i32)assetPaths.size() );
     }
 
     enum class PackAssetType {
@@ -204,7 +237,9 @@ namespace atto {
         if ( buildPhase == BuildPhase::Building ) {
             if ( buildFinished.load() ) {
                 if ( buildExitCode.load() != 0 ) {
-                    errorMessage = "cmake --build build --config Shipping failed.\n\n";
+                    errorMessage = buildTarget == BuildTarget::Web
+                        ? "Emscripten web build failed.\n\n"
+                        : "cmake --build build --config Shipping failed.\n\n";
                     // Show the last 40 lines of output to keep the popup readable
                     const std::string & out = buildOutput;
                     usize start = 0;
@@ -218,7 +253,11 @@ namespace atto {
                     errorMessage += out.substr( start );
                     buildPhase = BuildPhase::Error;
                 } else {
-                    DoCopyPhase();
+                    if ( buildTarget == BuildTarget::Web ) {
+                        DoWebCopyPhase();
+                    } else {
+                        DoCopyPhase();
+                    }
                 }
             }
             return true;
@@ -232,7 +271,11 @@ namespace atto {
         // BuildPhase::Packing — process one asset per frame
         if ( currentIndex >= (i32)assetPaths.size() ) {
             FinalizePacking();
-            StartBuildThread();
+            if ( buildTarget == BuildTarget::Web ) {
+                StartWebBuildThread();
+            } else {
+                StartBuildThread();
+            }
             buildPhase = BuildPhase::Building;
             return true;
         }
@@ -492,6 +535,71 @@ namespace atto {
         buildPhase = BuildPhase::Done;
     }
 
+    void EditorAssetPacker::StartWebBuildThread() {
+        buildFinished.store( false );
+        buildExitCode.store( 0 );
+        buildOutput.clear();
+        LOG_INFO( "Starting Emscripten web build..." );
+
+        buildThread = std::thread( [this]() {
+            // Activate emsdk, configure (must re-configure so --preload-file picks up the freshly packed game.bin), and build.
+            const std::string cmd =
+                "call vendor\\emsdk\\emsdk_env.bat >nul 2>&1 && "
+                "call emcmake cmake -B build_web -DCMAKE_BUILD_TYPE=Release >nul 2>&1 && "
+                "cmake --build build_web 2>&1";
+
+            FILE * pipe = _popen( cmd.c_str(), "r" );
+            if ( !pipe ) {
+                buildExitCode.store( -1 );
+                buildFinished.store( true );
+                return;
+            }
+            std::string output;
+            char buffer[ 256 ];
+            while ( fgets( buffer, sizeof( buffer ), pipe ) ) {
+                output += buffer;
+            }
+            int code = _pclose( pipe );
+            buildOutput   = std::move( output );
+            buildExitCode.store( code );
+            buildFinished.store( true );
+        } );
+        buildThread.detach();
+    }
+
+    void EditorAssetPacker::DoWebCopyPhase() {
+        buildPhase = BuildPhase::Copying;
+
+        shipDir = MakeTimestampDir() + "_web";
+        std::error_code ec;
+        std::filesystem::create_directories( shipDir, ec );
+        if ( ec ) {
+            errorMessage = "Failed to create output directory '" + shipDir + "': " + ec.message();
+            buildPhase = BuildPhase::Error;
+            return;
+        }
+
+        auto tryCopy = [&]( const std::string & src, const std::string & dst ) -> bool {
+            std::filesystem::copy_file( src, dst,
+                std::filesystem::copy_options::overwrite_existing, ec );
+            if ( ec ) {
+                errorMessage = "Failed to copy '" + src + "' -> '" + dst + "': " + ec.message();
+                buildPhase = BuildPhase::Error;
+                return false;
+            }
+            return true;
+        };
+
+        // Copy the Emscripten build outputs (game.bin is embedded in the .data file via --preload-file)
+        if ( !tryCopy( "build_web/bin/atto.html",  shipDir + "/index.html" ) ) { return; }
+        if ( !tryCopy( "build_web/bin/atto.js",    shipDir + "/atto.js"    ) ) { return; }
+        if ( !tryCopy( "build_web/bin/atto.wasm",  shipDir + "/atto.wasm"  ) ) { return; }
+        if ( !tryCopy( "build_web/bin/atto.data",  shipDir + "/atto.data"  ) ) { return; }
+
+        LOG_INFO( "=== Web build ready: %s ===", shipDir.c_str() );
+        buildPhase = BuildPhase::Done;
+    }
+
     void EditorAssetPacker::DrawProgressPopup() {
         if ( buildPhase == BuildPhase::Idle ) {
             return;
@@ -520,10 +628,17 @@ namespace atto {
                 }
             }
             else if ( buildPhase == BuildPhase::Building ) {
-                ImGui::Text( "Building Shipping configuration..." );
-                const char * frames = "|/-\\";
-                ImGui::Text( "%c  cmake --build build --config Shipping",
-                             frames[ (i32)( ImGui::GetTime() * 8.0 ) & 3 ] );
+                if ( buildTarget == BuildTarget::Web ) {
+                    ImGui::Text( "Building Emscripten web version..." );
+                    const char * frames = "|/-\\";
+                    ImGui::Text( "%c  emcmake cmake --build build_web",
+                                 frames[ (i32)( ImGui::GetTime() * 8.0 ) & 3 ] );
+                } else {
+                    ImGui::Text( "Building Shipping configuration..." );
+                    const char * frames = "|/-\\";
+                    ImGui::Text( "%c  cmake --build build --config Shipping",
+                                 frames[ (i32)( ImGui::GetTime() * 8.0 ) & 3 ] );
+                }
             }
             else if ( buildPhase == BuildPhase::Copying ) {
                 ImGui::Text( "Copying files to %s ...", shipDir.c_str() );
