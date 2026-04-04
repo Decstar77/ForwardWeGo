@@ -498,9 +498,11 @@ namespace atto {
             return;
         }
 
+        f32 scaledDt = dt * speedMultiplier;
+
         // Advance crossfade blend
         if ( prevClip && blendDuration > 0.0f ) {
-            blendTimer += dt;
+            blendTimer += scaledDt;
             if ( blendTimer >= blendDuration ) {
                 blendTimer = blendDuration;
                 prevClip = nullptr; // Blend complete
@@ -509,7 +511,7 @@ namespace atto {
 
         // Advance previous animation (keeps playing during blend)
         if ( prevClip ) {
-            prevTime += dt * prevClip->ticksPerSecond;
+            prevTime += scaledDt * prevClip->ticksPerSecond;
             if ( prevLooping ) {
                 prevTime = fmod( prevTime, prevClip->duration );
             }
@@ -522,7 +524,7 @@ namespace atto {
 
         // Advance current animation
         f32 ticksPerSecond = currentClip->ticksPerSecond;
-        currentTime += dt * ticksPerSecond;
+        currentTime += scaledDt * ticksPerSecond;
 
         if ( looping ) {
             currentTime = fmod( currentTime, currentClip->duration );

@@ -61,6 +61,16 @@ namespace atto {
         return 100 + 25 * GetCardCount( PlayerCardType::MaxHealthIncrease );
     }
 
+    f32 GameGlobalState::GetAttackSpeedMultiplier() const {
+        // Each AttackSpeedIncrease card gives +5% attack speed
+        return 1.0f + 0.05f * (f32)GetCardCount( PlayerCardType::AttackSpeedIncrease );
+    }
+
+    f32 GameGlobalState::GetReloadSpeedMultiplier() const {
+        // Each ReloadSpeedIncrease card gives +5% reload speed
+        return 1.0f + 0.05f * (f32)GetCardCount( PlayerCardType::ReloadSpeedIncrease );
+    }
+
     void GameGlobalState::ResetForNewGame() {
         playerCards.clear();
         playerHealth = 100;

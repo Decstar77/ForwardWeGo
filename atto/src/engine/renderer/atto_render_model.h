@@ -179,6 +179,9 @@ namespace atto {
         f32  GetPercentComplete() const { return currentClip ? currentTime / currentClip->duration : 0.0f; }
         const AnimationClip * GetCurrentAnimation() const { return currentClip; }
 
+        void SetSpeedMultiplier( f32 speed ) { speedMultiplier = speed; }
+        f32  GetSpeedMultiplier() const { return speedMultiplier; }
+
     private:
         void CalculateBoneTransform( const BoneNode & node, const Mat4 & parentTransform );
 
@@ -200,6 +203,7 @@ namespace atto {
         bool                    prevLooping = true;
         f32                     blendDuration = 0.0f;
         f32                     blendTimer = 0.0f;
+        f32                     speedMultiplier = 1.0f;
     };
 
     enum class BrushType : i32 {

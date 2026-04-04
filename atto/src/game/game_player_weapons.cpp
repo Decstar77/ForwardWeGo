@@ -167,6 +167,8 @@ namespace atto {
             }
         }
 
+        bool isAttackAnim = curAnim == "Armature|Knife_Attack_1_Anim" || curAnim == "Armature|Knife_Attack_3_Anim";
+        animator.SetSpeedMultiplier( isAttackAnim ? GameGlobalState::Get().GetAttackSpeedMultiplier() : 1.0f );
         animator.Update( dt );
     }
 
@@ -471,6 +473,12 @@ namespace atto {
             }
         }
 
+        bool isFireAnim   = curAnim == "Armature|Glock_Fire_Anim";
+        bool isReloadAnim = curAnim == "Armature|Glock_Reload_Anim";
+        f32 animSpeed = isFireAnim   ? GameGlobalState::Get().GetAttackSpeedMultiplier()
+                      : isReloadAnim ? GameGlobalState::Get().GetReloadSpeedMultiplier()
+                      :                1.0f;
+        animator.SetSpeedMultiplier( animSpeed );
         animator.Update( dt );
     }
 

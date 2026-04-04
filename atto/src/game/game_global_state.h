@@ -19,6 +19,8 @@ namespace atto {
         f32     GetAccuracySpreadMultiplier() const;
         i32     GetBonusAmmoCapacity() const;
         i32     GetMaxHealth() const;
+        f32     GetAttackSpeedMultiplier() const;
+        f32     GetReloadSpeedMultiplier() const;
 
         i32     GetPlayerHealth() const { return playerHealth; }
         void    SetPlayerHealth( i32 hp ) { playerHealth = hp; }
