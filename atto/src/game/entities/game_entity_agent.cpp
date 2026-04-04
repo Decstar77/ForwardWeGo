@@ -278,6 +278,7 @@ namespace atto {
         if ( health <= 0 ) {
             OnAgentDeath();
             map->DestroyEntity( this );
+            sndDeath.PlayAt( position, 5.0f );
         }
         return TakeDamageResult::Success_HP;
     }

@@ -37,6 +37,12 @@ namespace atto {
         sndWalk.LoadSounds( {
             "assets/sounds/roach/walk.wav"
         } );
+
+        sndDeath.Initialize();
+        sndDeath.LoadSounds( {
+            "assets/sounds/roach/death01.wav",
+            "assets/sounds/roach/death02.wav",
+        });
     }
 
     void Entity_Roach::OnUpdate( f32 dt ) {

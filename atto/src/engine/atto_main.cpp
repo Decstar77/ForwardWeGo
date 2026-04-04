@@ -38,16 +38,40 @@ int main() {
 
 /*
 TODO:
-- Player cards:
-    - Attack speed increased ( must )
-    - Attack damage increased ( must )
-    - Attack inacuracy increased ( must )
-    - Magazine capacity increased ( must )
-    - Reload speed increased ( must )
-    - Health increased ( must )
-    - Restore health ( must )
-    - Extra coins ( must )
-- Enemy death sound
+- M4:
+    - Animations:
+        - Walk
+        - Run
+        - Shoot
+        - Reload
+    - Sounds:
+        - Shooting
+        - Reload
+    - FVX:
+        - Muzzle
+        - Hit
+- Sniper:
+    - Animations:
+            - Walk
+            - Run
+            - Shoot
+            - Reload
+    - Sounds:
+        - Shooting
+        - Reload
+    - FVX:
+        - Tracer
+        - Muzzle
+        - Hit
+- Grenade:
+    - Animations:
+        - Throw
+    - Sounds:
+        - Pull
+        - Explode
+    - VFX:
+        - Explode
+- Procedural maps
 - Emscripten build
 
 Brain waves:
