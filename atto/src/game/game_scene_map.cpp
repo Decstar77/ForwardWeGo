@@ -146,13 +146,22 @@ namespace atto {
         }
 
         // Ammo / weapon display — bottom right
-        const bool hasAmmo = player.GetActiveWeapon() == WeaponSlot::Glock;
-        const char * weaponName = hasAmmo ? "Glock" : "Knife";
+        WeaponSlot activeWeapon = player.GetActiveWeapon();
+        const char * weaponName = activeWeapon == WeaponSlot::Glock ? "Glock"
+                                : activeWeapon == WeaponSlot::M416  ? "M416"
+                                :                                      "Knife";
 
-        if ( hasAmmo ) {
+        if ( activeWeapon == WeaponSlot::Glock ) {
             char ammoText[ 32 ];
             snprintf( ammoText, sizeof( ammoText ), "%d / %d",
                       player.GetGlock().GetAmmo(), player.GetGlock().GetMaxAmmo() );
+            ui.DrawText( hudFont, ui.GetWidth() - 20, ui.GetHeight() - 40, ammoText, Vec4( 1.0f ),
+                         UIAlignH::Right, UIAlignV::Bottom );
+        }
+        else if ( activeWeapon == WeaponSlot::M416 ) {
+            char ammoText[ 32 ];
+            snprintf( ammoText, sizeof( ammoText ), "%d / %d",
+                      player.GetM416().GetAmmo(), player.GetM416().GetMaxAmmo() );
             ui.DrawText( hudFont, ui.GetWidth() - 20, ui.GetHeight() - 40, ammoText, Vec4( 1.0f ),
                          UIAlignH::Right, UIAlignV::Bottom );
         }

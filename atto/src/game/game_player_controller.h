@@ -34,6 +34,7 @@ namespace atto {
 
         WeaponSlot                  GetActiveWeapon() const { return activeWeapon; }
         const PlayerWeaponGlock &   GetGlock()        const { return glock; }
+        const PlayerWeaponM416 &    GetM416()         const { return m416; }
 
         void                TakeDamage( i32 damage );
         void                Heal( i32 amount );
