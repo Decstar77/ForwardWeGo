@@ -32,7 +32,7 @@ namespace atto {
         if ( IsSaving() ) {
             std::string path;
             if ( value ) {
-                path = value->GetPath();
+                path = value->GetPath().GetCStr();
             }
             Op( key, path );
         }

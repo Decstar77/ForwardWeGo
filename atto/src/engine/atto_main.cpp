@@ -38,7 +38,6 @@ int main() {
 
 /*
 TODO:
-- Procedural maps
 - Sniper:
     - Animations:
             - Walk
@@ -52,9 +51,7 @@ TODO:
         - Tracer
         - Muzzle
         - Hit
-
 - Emscripten build
-
 - Grenade:
     - Animations:
         - Throw

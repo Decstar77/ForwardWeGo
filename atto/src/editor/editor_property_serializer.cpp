@@ -455,7 +455,7 @@ namespace atto {
     }
 
     void ImguiPropertySerializer::OpAnimatedModel( const char * key, const AnimatedModel *& value ) {
-        const char * currentPath = value ? value->GetPath() : "<none>";
+        const char * currentPath = value ? value->GetPath().GetCStr() : "<none>";
         ImGui::Text( "%s: %s", key, currentPath );
     }
 
