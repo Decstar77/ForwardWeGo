@@ -63,6 +63,7 @@ namespace atto {
         void SaveMapAs();
         void LoadMapFromFile( const std::string & path );
         void SaveMapToFile( const std::string & path );
+        void GenerateMapFromTextFile();
 
         // Unsaved changes dialog
         enum class UnsavedChangesAction { None, Exit, NewMap, OpenMap, Play };

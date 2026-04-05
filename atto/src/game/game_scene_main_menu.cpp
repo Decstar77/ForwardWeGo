@@ -133,7 +133,7 @@ namespace atto {
             if ( playHovered && mousePressed ) {
                 sndButtonClick.Play( 0.5f );
                 GameGlobalState::Get().ResetForNewGame();
-                Engine::Get().TransitionToScene( "GameMapScene", args.c_str() );
+                Engine::Get().TransitionToScene( "GameMapScene",  GameGlobalState::Get().GetNextMap() );
             }
 
             // Bottom-left buttons

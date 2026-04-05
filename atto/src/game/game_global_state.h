@@ -37,6 +37,8 @@ namespace atto {
         f32     GetMusicVolume() const { return musicVolume; }
         void    SetMusicVolume( f32 vol );
 
+        const char * GetNextMap() const;
+
     private:
         GameGlobalState();
 

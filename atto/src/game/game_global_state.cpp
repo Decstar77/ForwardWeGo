@@ -25,6 +25,20 @@ namespace atto {
         Engine::Get().GetAudioSystem().SetMusicVolume( musicVolume );
     }
 
+    const char * GameGlobalState::GetNextMap() const {
+        static const char * maps[] = {
+            "assets/maps/game/level001.map",
+            "assets/maps/game/level002.map",
+            "assets/maps/game/level003.map",
+            "assets/maps/game/level004.map",
+            "assets/maps/game/level005.map",
+        };
+
+        const i32 index = Engine::Get().GetRNG().Signed32( 0, 4 );
+
+        return maps[ index ];
+    }
+
     void GameGlobalState::AddPlayerCard( PlayerCardType card ) {
         playerCards.push_back( card );
         if ( card == PlayerCardType::RestoreHealth ) {

@@ -1,0 +1,1080 @@
+{
+    "brushes": [
+        {
+            "item": {
+                "center": [
+                    10.0,
+                    -0.25,
+                    11.0
+                ],
+                "halfExtents": [
+                    6.0,
+                    0.25,
+                    7.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    31.0,
+                    -0.25,
+                    11.0
+                ],
+                "halfExtents": [
+                    3.0,
+                    0.25,
+                    3.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    22.0,
+                    -0.25,
+                    11.0
+                ],
+                "halfExtents": [
+                    6.0,
+                    0.25,
+                    1.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    44.0,
+                    -0.25,
+                    11.0
+                ],
+                "halfExtents": [
+                    10.0,
+                    0.25,
+                    1.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    53.0,
+                    -0.25,
+                    15.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    0.25,
+                    3.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    50.0,
+                    -0.25,
+                    16.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    0.25,
+                    2.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    56.0,
+                    -0.25,
+                    16.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    0.25,
+                    2.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    15.0,
+                    -0.25,
+                    39.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    0.25,
+                    21.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    55.0,
+                    -0.25,
+                    38.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    0.25,
+                    20.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    52.0,
+                    -0.25,
+                    48.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    0.25,
+                    10.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    58.0,
+                    -0.25,
+                    48.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    0.25,
+                    10.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    12.0,
+                    -0.25,
+                    50.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    0.25,
+                    10.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    17.0,
+                    -0.25,
+                    50.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    0.25,
+                    10.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    33.0,
+                    -0.25,
+                    51.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    0.25,
+                    5.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    23.0,
+                    -0.25,
+                    51.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    0.25,
+                    1.0
+                ],
+                "texturePath": "assets/textures/Tiles1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    10.0,
+                    2.0,
+                    3.0
+                ],
+                "halfExtents": [
+                    8.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    3.0,
+                    2.0,
+                    12.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    8.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    17.0,
+                    2.0,
+                    7.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    3.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    31.0,
+                    2.0,
+                    7.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    23.0,
+                    2.0,
+                    9.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    45.0,
+                    2.0,
+                    9.0
+                ],
+                "halfExtents": [
+                    11.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    55.0,
+                    2.0,
+                    12.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    2.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    22.0,
+                    2.0,
+                    13.0
+                ],
+                "halfExtents": [
+                    6.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    43.0,
+                    2.0,
+                    13.0
+                ],
+                "halfExtents": [
+                    9.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    58.0,
+                    2.0,
+                    13.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    17.0,
+                    2.0,
+                    27.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    13.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    31.0,
+                    2.0,
+                    15.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    47.0,
+                    2.0,
+                    17.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    3.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    59.0,
+                    2.0,
+                    17.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    3.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    9.0,
+                    2.0,
+                    19.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    51.0,
+                    2.0,
+                    19.0
+                ],
+                "halfExtents": [
+                    3.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    57.0,
+                    2.0,
+                    28.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    10.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    13.0,
+                    2.0,
+                    30.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    10.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    53.0,
+                    2.0,
+                    29.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    9.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    50.0,
+                    2.0,
+                    37.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    60.0,
+                    2.0,
+                    37.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    10.0,
+                    2.0,
+                    39.0
+                ],
+                "halfExtents": [
+                    2.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    19.0,
+                    2.0,
+                    44.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    6.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    49.0,
+                    2.0,
+                    49.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    11.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    61.0,
+                    2.0,
+                    49.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    11.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    9.0,
+                    2.0,
+                    51.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    11.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    33.0,
+                    2.0,
+                    45.0
+                ],
+                "halfExtents": [
+                    7.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    27.0,
+                    2.0,
+                    48.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    2.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    39.0,
+                    2.0,
+                    52.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    6.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    23.0,
+                    2.0,
+                    49.0
+                ],
+                "halfExtents": [
+                    3.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    23.0,
+                    2.0,
+                    53.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    19.0,
+                    2.0,
+                    58.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    4.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    27.0,
+                    2.0,
+                    56.0
+                ],
+                "halfExtents": [
+                    1.0,
+                    3.0,
+                    2.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    33.0,
+                    2.0,
+                    57.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    55.0,
+                    2.0,
+                    59.0
+                ],
+                "halfExtents": [
+                    5.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        },
+        {
+            "item": {
+                "center": [
+                    14.0,
+                    2.0,
+                    61.0
+                ],
+                "halfExtents": [
+                    4.0,
+                    3.0,
+                    1.0
+                ],
+                "texturePath": "assets/textures/T_Bricks1_Color.png",
+                "textureScale": 1.0,
+                "type": 0
+            }
+        }
+    ],
+    "entities": [
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                13.0,
+                0.0,
+                11.0
+            ],
+            "SpawnId": 8281512356619511105,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                33.0,
+                0.0,
+                11.0
+            ],
+            "SpawnId": 7068259141668672254,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                55.0,
+                0.0,
+                15.0
+            ],
+            "SpawnId": 2313643180775307275,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                15.0,
+                0.0,
+                45.0
+            ],
+            "SpawnId": 17411411500835247668,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                37.0,
+                0.0,
+                47.0
+            ],
+            "SpawnId": 13668418451067004678,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                35.0,
+                0.0,
+                49.0
+            ],
+            "SpawnId": 6396300035629714189,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                11.0,
+                0.0,
+                51.0
+            ],
+            "SpawnId": 15108161144603044128,
+            "Type": "Roach"
+        },
+        {
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "Position": [
+                35.0,
+                0.0,
+                55.0
+            ],
+            "SpawnId": 7539080782199441952,
+            "Type": "Roach"
+        },
+        {
+            "MapName": "",
+            "Orientation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0,
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "PortalSize": 2.0,
+            "Position": [
+                37.0,
+                1.0,
+                51.0
+            ],
+            "SpawnId": 1570418071732064734,
+            "Type": "Portal"
+        }
+    ],
+    "navGraph": {
+        "edgeCost": [],
+        "edgeEnabled": [],
+        "edgeNodeA": [],
+        "edgeNodeB": [],
+        "positions": []
+    },
+    "playerStart": {
+        "spawnOri": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "spawnPos": [
+            53.0,
+            0.10000000149011612,
+            49.0
+        ]
+    }
+}

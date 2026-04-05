@@ -1,5 +1,6 @@
 #include "game_entity_portal.h"
 #include "../game_map.h"
+#include "game/game_global_state.h"
 
 namespace atto {
     ATTO_REGISTER_CLASS( Entity, Entity_Portal, EntityType::Portal )
@@ -20,6 +21,8 @@ namespace atto {
         sndPortalTavel.LoadSounds( {
             "assets/sounds/door/portal-travel.wav"
         } );
+
+        Activate();
     }
 
     void Entity_Portal::OnDespawn() {
@@ -66,12 +69,8 @@ namespace atto {
         const f32 dist = Distance( playerPos, closePoint );
         const f32 threshold = 0.5f;
         if ( dist < threshold ) {
-            if ( mapName.empty() == false ) {
-                sndPortalTavel.Play( 0.5f );
-                Engine::Get().TransitionToScene( "GameScenePickCard", mapName.c_str() );
-            } else {
-                LOG_WARN( "Map portal has no map set" );
-            }
+            sndPortalTavel.Play( 0.2f );
+            Engine::Get().TransitionToScene( "GameScenePickCard", GameGlobalState::Get().GetNextMap() );
         }
     }
 
@@ -110,7 +109,7 @@ namespace atto {
     void Entity_Portal::Activate() {
         if ( active == false ) {
             active = true;
-            sndInstancePortalHum = sndPortalHum.PlayAt( position, 0.5f, true );
+            sndInstancePortalHum = sndPortalHum.PlayAt( position, 0.1f, true );
         }
     }
 

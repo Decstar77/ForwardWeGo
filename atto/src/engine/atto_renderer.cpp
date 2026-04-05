@@ -808,7 +808,7 @@ namespace atto {
         // Upload bitmap to OpenGL as a red-channel texture
         glGenTextures( 1, &atlasHandle );
         glBindTexture( GL_TEXTURE_2D, atlasHandle );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RED,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_R8,
                       FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
                       0, GL_RED, GL_UNSIGNED_BYTE, atlasBitmap.data() );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -843,7 +843,7 @@ namespace atto {
             // Upload bitmap to OpenGL
             glGenTextures( 1, &atlasHandle );
             glBindTexture( GL_TEXTURE_2D, atlasHandle );
-            glTexImage2D( GL_TEXTURE_2D, 0, GL_RED,
+            glTexImage2D( GL_TEXTURE_2D, 0, GL_R8,
                           FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT,
                           0, GL_RED, GL_UNSIGNED_BYTE, atlasBitmap.data() );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );

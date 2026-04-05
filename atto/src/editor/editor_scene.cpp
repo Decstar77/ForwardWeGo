@@ -6,6 +6,9 @@
 #include "game/game_global_state.h"
 
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+#include <filesystem>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
@@ -972,6 +975,8 @@ namespace atto {
                 if ( ImGui::MenuItem( "Save", "Ctrl+S" ) ) { SaveMap(); }
                 if ( ImGui::MenuItem( "Save As...", "Ctrl+Shift+S" ) ) { SaveMapAs(); }
                 ImGui::Separator();
+                if ( ImGui::MenuItem( "Generate Map from Text File..." ) ) { GenerateMapFromTextFile(); }
+                ImGui::Separator();
                 if ( ImGui::MenuItem( "Build Game", "", false, !assetPacker.IsPacking() ) ) { assetPacker.BeginPacking(); }
                 if ( ImGui::MenuItem( "Build Web", "", false, !assetPacker.IsPacking() ) ) { assetPacker.BeginPackingWeb(); }
                 ImGui::Separator();
@@ -1287,6 +1292,8 @@ namespace atto {
                 Entity * ent = map.CreateEntity( entityTypes[newEntityTypeIndex] );
                 if ( ent ) {
                     ent->OnSpawn();
+                    map.FlushPendingEntities();
+
                     selectedEntityIndex = map.GetEntityCount() - 1;
                     selectedEntityIndices = { selectedEntityIndex };
                     unsavedChanges = true;
@@ -1942,6 +1949,207 @@ namespace atto {
 
             ImGui::EndPopup();
         }
+    }
+
+    void EditorScene::GenerateMapFromTextFile() {
+        std::string path = Engine::Get().GetAssetManager().OpenFilePicker( "assets/maps/gen" );
+        if ( path.empty() ) {
+            return;
+        }
+
+        std::string content = Engine::Get().GetAssetManager().ReadTextFile( path );
+        if ( content.empty() ) {
+            LOG_ERROR( "Failed to read text map file: %s", path.c_str() );
+            return;
+        }
+
+        // Parse the grid
+        std::vector<std::vector<i32>> grid;
+        std::istringstream stream( content );
+        std::string line;
+        while ( std::getline( stream, line ) ) {
+            if ( line.empty() ) continue;
+            std::vector<i32> row;
+            for ( char c : line ) {
+                if ( c >= '0' && c <= '9' ) {
+                    row.push_back( c - '0' );
+                }
+            }
+            if ( !row.empty() ) {
+                grid.push_back( std::move( row ) );
+            }
+        }
+
+        if ( grid.empty() ) {
+            LOG_ERROR( "Text map file is empty or invalid: %s", path.c_str() );
+            return;
+        }
+
+        i32 rows = static_cast<i32>( grid.size() );
+        i32 cols = static_cast<i32>( grid[0].size() );
+
+        constexpr f32 cellSize = 2.0f;
+        constexpr f32 floorTop = 0.0f;
+        constexpr f32 floorThickness = 0.5f;
+        constexpr f32 wallBottom = -1.0f;
+        constexpr f32 wallTop = 5.0f;
+
+        // Clear existing map
+        map.Clear();
+        map.Initialize();
+        currentMapPath.clear();
+        selectedBrushIndex = -1;
+        selectedEntityIndex = -1;
+        selectedEntityIndices.clear();
+        selectedNavNodeIndex = -1;
+        selectedNavNodeIndices.clear();
+        navConnectMode = false;
+        brushTools.drag.mode = BrushDragMode::None;
+        undoStack.clear();
+        redoStack.clear();
+
+        // Track which cells have been merged already (for greedy rectangle merging)
+        // Floor cells: 2, 3, 4 all get floor underneath
+        // Wall cells: 1
+
+        // --- Greedy rectangle merging for floors ---
+        std::vector<std::vector<bool>> floorUsed( rows, std::vector<bool>( cols, false ) );
+        for ( i32 r = 0; r < rows; r++ ) {
+            for ( i32 c = 0; c < cols; c++ ) {
+                i32 cell = grid[r][c];
+                bool isFloor = ( cell == 2 || cell == 3 || cell == 4 );
+                if ( !isFloor || floorUsed[r][c] ) continue;
+
+                // Expand right as far as possible
+                i32 maxC = c;
+                while ( maxC + 1 < cols && !floorUsed[r][maxC + 1] ) {
+                    i32 nc = grid[r][maxC + 1];
+                    if ( nc != 2 && nc != 3 && nc != 4 ) break;
+                    maxC++;
+                }
+
+                // Expand down as far as possible
+                i32 maxR = r;
+                while ( maxR + 1 < rows ) {
+                    bool canExpand = true;
+                    for ( i32 cc = c; cc <= maxC; cc++ ) {
+                        i32 nc = grid[maxR + 1][cc];
+                        if ( floorUsed[maxR + 1][cc] || ( nc != 2 && nc != 3 && nc != 4 ) ) {
+                            canExpand = false;
+                            break;
+                        }
+                    }
+                    if ( !canExpand ) break;
+                    maxR++;
+                }
+
+                // Mark used
+                for ( i32 rr = r; rr <= maxR; rr++ ) {
+                    for ( i32 cc = c; cc <= maxC; cc++ ) {
+                        floorUsed[rr][cc] = true;
+                    }
+                }
+
+                // Create floor brush
+                f32 x0 = c * cellSize;
+                f32 x1 = ( maxC + 1 ) * cellSize;
+                f32 z0 = r * cellSize;
+                f32 z1 = ( maxR + 1 ) * cellSize;
+
+                f32 centerX = ( x0 + x1 ) * 0.5f;
+                f32 centerZ = ( z0 + z1 ) * 0.5f;
+                f32 centerY = floorTop - floorThickness * 0.5f;
+
+                i32 bi = map.AddBrush();
+                Brush & brush = map.GetBrush( bi );
+                brush.center = Vec3( centerX, centerY, centerZ );
+                brush.halfExtents = Vec3( ( x1 - x0 ) * 0.5f, floorThickness * 0.5f, ( z1 - z0 ) * 0.5f );
+                brush.texturePath = "assets/textures/Tiles1_Color.png";
+                map.RebuildBrushModel( bi );
+                map.RebuildBrushCollision( bi );
+                map.RebuildBrushTexture( bi );
+            }
+        }
+
+        // --- Greedy rectangle merging for walls ---
+        std::vector<std::vector<bool>> wallUsed( rows, std::vector<bool>( cols, false ) );
+        for ( i32 r = 0; r < rows; r++ ) {
+            for ( i32 c = 0; c < cols; c++ ) {
+                if ( grid[r][c] != 1 || wallUsed[r][c] ) continue;
+
+                i32 maxC = c;
+                while ( maxC + 1 < cols && grid[r][maxC + 1] == 1 && !wallUsed[r][maxC + 1] ) {
+                    maxC++;
+                }
+
+                i32 maxR = r;
+                while ( maxR + 1 < rows ) {
+                    bool canExpand = true;
+                    for ( i32 cc = c; cc <= maxC; cc++ ) {
+                        if ( grid[maxR + 1][cc] != 1 || wallUsed[maxR + 1][cc] ) {
+                            canExpand = false;
+                            break;
+                        }
+                    }
+                    if ( !canExpand ) break;
+                    maxR++;
+                }
+
+                for ( i32 rr = r; rr <= maxR; rr++ ) {
+                    for ( i32 cc = c; cc <= maxC; cc++ ) {
+                        wallUsed[rr][cc] = true;
+                    }
+                }
+
+                f32 x0 = c * cellSize;
+                f32 x1 = ( maxC + 1 ) * cellSize;
+                f32 z0 = r * cellSize;
+                f32 z1 = ( maxR + 1 ) * cellSize;
+
+                f32 centerX = ( x0 + x1 ) * 0.5f;
+                f32 centerZ = ( z0 + z1 ) * 0.5f;
+                f32 wallHeight = wallTop - wallBottom;
+                f32 centerY = wallBottom + wallHeight * 0.5f;
+
+                i32 bi = map.AddBrush();
+                Brush & brush = map.GetBrush( bi );
+                brush.center = Vec3( centerX, centerY, centerZ );
+                brush.halfExtents = Vec3( ( x1 - x0 ) * 0.5f, wallHeight * 0.5f, ( z1 - z0 ) * 0.5f );
+                brush.texturePath = "assets/textures/T_Bricks1_Color.png";
+                map.RebuildBrushModel( bi );
+                map.RebuildBrushCollision( bi );
+                map.RebuildBrushTexture( bi );
+            }
+        }
+
+        // --- Spawn player and enemies ---
+        bool playerSet = false;
+        for ( i32 r = 0; r < rows; r++ ) {
+            for ( i32 c = 0; c < cols; c++ ) {
+                f32 worldX = c * cellSize + cellSize * 0.5f;
+                f32 worldZ = r * cellSize + cellSize * 0.5f;
+
+                if ( grid[r][c] == 3 && !playerSet ) {
+                    PlayerStart & ps = map.GetPlayerStart();
+                    ps.spawnPos = Vec3( worldX, floorTop + 0.1f, worldZ );
+                    ps.spawnOri = Mat3( 1 );
+                    playerSet = true;
+                }
+                else if ( grid[r][c] == 4 ) {
+                    Entity * ent = map.CreateEntity( EntityType::Roach );
+                    if ( ent ) {
+                        ent->SetPosition( Vec3( worldX, floorTop, worldZ ) );
+                        ent->OnSpawn();
+                    }
+                }
+            }
+        }
+
+        map.FlushPendingEntities();
+        unsavedChanges = true;
+        Snapshot();
+
+        LOG_INFO( "Generated map from text file: %s (%dx%d)", path.c_str(), cols, rows );
     }
 
     void EditorScene::OnShutdown() {
