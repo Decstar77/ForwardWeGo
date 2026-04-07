@@ -89,6 +89,7 @@ namespace atto {
         playerCards.clear();
         playerHealth = 100;
         playerCoins  = 200;
+        currentRound = 1;
     }
 
     GameGlobalState::GameGlobalState() {

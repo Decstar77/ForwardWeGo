@@ -70,7 +70,13 @@ namespace atto {
         const f32 threshold = 0.5f;
         if ( dist < threshold ) {
             sndPortalTavel.Play( 0.2f );
-            Engine::Get().TransitionToScene( "GameScenePickCard", GameGlobalState::Get().GetNextMap() );
+            GameGlobalState & gs = GameGlobalState::Get();
+            gs.IncrementRound();
+            if ( gs.IsGameComplete() ) {
+                Engine::Get().TransitionToScene( "GameSceneMainMenu", "" );
+            } else {
+                Engine::Get().TransitionToScene( "GameScenePickCard", gs.GetNextMap() );
+            }
         }
     }
 

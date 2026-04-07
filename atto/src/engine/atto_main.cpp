@@ -38,6 +38,15 @@ int main() {
 
 /*
 TODO:
+-Game:
+    nav movement
+    10 rounds
+    Fix gold
+    Purchase weapons
+    No sprint while reloading
+    Save state
+    Check portal sound
+    m4 death sounds on dry fire
 - Sniper:
     - Animations:
             - Walk
@@ -51,7 +60,6 @@ TODO:
         - Tracer
         - Muzzle
         - Hit
-- Emscripten build
 - Grenade:
     - Animations:
         - Throw

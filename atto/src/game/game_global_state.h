@@ -25,6 +25,11 @@ namespace atto {
         i32     GetPlayerHealth() const { return playerHealth; }
         void    SetPlayerHealth( i32 hp ) { playerHealth = hp; }
 
+        i32     GetCurrentRound() const { return currentRound; }
+        void    IncrementRound() { currentRound++; }
+        bool    IsGameComplete() const { return currentRound > MaxRounds; }
+        static constexpr i32 MaxRounds = 10;
+
         void    ResetForNewGame();
 
         // Settings
@@ -43,6 +48,7 @@ namespace atto {
         GameGlobalState();
 
         i32 playerCoins = 200;
+        i32 currentRound = 1;
 
         // Settings
         f32 mouseSensitivity = 0.1f;

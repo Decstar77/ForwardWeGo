@@ -123,6 +123,16 @@ namespace atto {
         snprintf( fpsText, sizeof( fpsText ), "FPS: %.0f", fps );
         ui.DrawText( hudFont, 20, 20, fpsText );
 
+        // Round counter — top center
+        {
+            char roundText[ 32 ];
+            snprintf( roundText, sizeof( roundText ), "ROUND %d / %d",
+                      GameGlobalState::Get().GetCurrentRound(),
+                      GameGlobalState::MaxRounds );
+            ui.DrawText( hudFont, ui.GetCenterX(), 20, roundText, Vec4( 1.0f ),
+                         UIAlignH::Center, UIAlignV::Top );
+        }
+
         // Coins — top right
         {
             char coinText[ 32 ];
