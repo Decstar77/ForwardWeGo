@@ -59,7 +59,7 @@ namespace atto {
 
         if ( dist < COLLECT_RADIUS ) {
             sndCollection.PlayAt( position );
-            GameGlobalState::Get().AddPlayerCoins( coinValue );
+            GameGlobalState::Get().AddRoundCoins( coinValue );
             map->DestroyEntity( this );
             return;
         }

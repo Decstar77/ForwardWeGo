@@ -73,6 +73,7 @@ namespace atto {
             GameGlobalState & gs = GameGlobalState::Get();
             gs.IncrementRound();
             if ( gs.IsGameComplete() ) {
+                gs.TransferRoundCoinsToMain();
                 Engine::Get().TransitionToScene( "GameSceneMainMenu", "" );
             } else {
                 Engine::Get().TransitionToScene( "GameScenePickCard", gs.GetNextMap() );

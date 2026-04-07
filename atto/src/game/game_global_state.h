@@ -13,6 +13,10 @@ namespace atto {
         i32     GetPlayerCoins() const;
         void    AddPlayerCoins( i32 amount );
 
+        i32     GetRoundCoins() const { return roundCoins; }
+        void    AddRoundCoins( i32 amount );
+        void    TransferRoundCoinsToMain();
+
         void    AddPlayerCard( PlayerCardType card );
         i32     GetCardCount( PlayerCardType card ) const;
         f32     GetAttackDamageMultiplier() const;
@@ -47,7 +51,8 @@ namespace atto {
     private:
         GameGlobalState();
 
-        i32 playerCoins = 200;
+        i32 playerCoins = 0;
+        i32 roundCoins = 0;
         i32 currentRound = 1;
 
         // Settings

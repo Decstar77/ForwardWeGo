@@ -199,7 +199,7 @@ namespace atto {
                 GameGlobalState & gs = GameGlobalState::Get();
                 gs.AddPlayerCard( cards[chosenCard].type );
                 if ( cards[chosenCard].type == PlayerCardType::ExtraCoins_10 ) {
-                    gs.AddPlayerCoins( 10 );
+                    gs.AddRoundCoins( 10 );
                 }
                 if ( !nextMap.empty() ) {
                     Engine::Get().TransitionToScene( "GameMapScene", nextMap.c_str() );

@@ -620,6 +620,10 @@ namespace atto {
     void PlayerWeaponM416::OnUpdate( f32 dt, bool isMoving, bool isSprinting, bool isCrouching, FPSCamera & camera, GameMap & map ) {
         ATTO_ASSERT( animator.GetCurrentAnimation(), "m416 animator has no animation" );
 
+        if ( dryFireCooldown > 0.0f ) {
+            dryFireCooldown -= dt;
+        }
+
         Input & input = Engine::Get().GetInput();
         const std::string & curAnim = animator.GetCurrentAnimation()->name;
 
@@ -725,8 +729,9 @@ namespace atto {
                 SpawnParticles( camera, map );
             }
             else {
-                if ( !isFiring ) {
+                if ( dryFireCooldown <= 0.0f ) {
                     sndDry.Play();
+                    dryFireCooldown = 0.3f;
                 }
             }
         }

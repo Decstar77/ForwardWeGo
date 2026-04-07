@@ -39,6 +39,7 @@ namespace atto {
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
         bool IsAttacking() const { return isAttacking; }
+        bool IsReloading() const { return isReloading; }
         i32  GetAmmo()     const { return ammo; }
         i32  GetMaxAmmo()  const;
         bool ConsumeHit() { bool h = didHitEntity; didHitEntity = false; return h; }
@@ -81,6 +82,7 @@ namespace atto {
         void OnRender( Renderer & renderer, const FPSCamera & camera );
 
         bool IsAttacking() const { return isAttacking; }
+        bool IsReloading() const { return isReloading; }
         i32  GetAmmo()     const { return ammo; }
         i32  GetMaxAmmo()  const;
         bool ConsumeHit() { bool h = didHitEntity; didHitEntity = false; return h; }
@@ -106,6 +108,7 @@ namespace atto {
         bool            reloadSnd2Played = false;
         bool            reloadSnd3Played = false;
         i32             ammo             = MaxAmmo;
+        f32             dryFireCooldown  = 0.0f;
 
         SoundCollection sndEquip;
         SoundCollection sndShoot;

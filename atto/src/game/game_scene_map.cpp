@@ -136,7 +136,7 @@ namespace atto {
         // Coins — top right
         {
             char coinText[ 32 ];
-            snprintf( coinText, sizeof( coinText ), "%d", GameGlobalState::Get().GetPlayerCoins() );
+            snprintf( coinText, sizeof( coinText ), "%d", GameGlobalState::Get().GetRoundCoins() );
             Vec2 textSize = UICanvas::MeasureText( hudFont, coinText );
             f32 textX = ui.GetWidth() - 20.0f;
             f32 topY  = 20.0f;

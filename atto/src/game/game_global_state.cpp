@@ -15,6 +15,15 @@ namespace atto {
         return playerCoins;
     }
 
+    void GameGlobalState::AddRoundCoins( i32 amount ) {
+        roundCoins += amount;
+    }
+
+    void GameGlobalState::TransferRoundCoinsToMain() {
+        playerCoins += roundCoins;
+        roundCoins = 0;
+    }
+
     void GameGlobalState::SetGameplayVolume( f32 vol ) {
         gameplayVolume = Clamp( vol, 0.0f, 1.0f );
         Engine::Get().GetAudioSystem().SetSFXVolume( gameplayVolume );
@@ -88,7 +97,7 @@ namespace atto {
     void GameGlobalState::ResetForNewGame() {
         playerCards.clear();
         playerHealth = 100;
-        playerCoins  = 200;
+        roundCoins   = 0;
         currentRound = 1;
     }
 

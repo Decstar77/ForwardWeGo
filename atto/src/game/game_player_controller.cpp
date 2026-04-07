@@ -64,7 +64,9 @@ namespace atto {
             );
         }
 
-        constexpr f32 SprintSpeedMultiplier  = 1.8f;
+        constexpr f32 SprintSpeedKnife       = 2.2f;
+        constexpr f32 SprintSpeedGlock       = 1.8f;
+        constexpr f32 SprintSpeedM416        = 1.5f;
         constexpr f32 FootstepIntervalWalk   = 0.6f;
         constexpr f32 FootstepIntervalSprint = 0.35f;
 
@@ -75,8 +77,12 @@ namespace atto {
             isCrouching = false;
         }
 
+        bool wantsSprint = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
 
-        bool isSprinting = input.IsKeyDown( Key::LeftShift ) || input.IsKeyDown( Key::RightShift );
+        // No sprint while reloading
+        bool isWeaponReloading = ( activeWeapon == WeaponSlot::Glock && glock.IsReloading() )
+                              || ( activeWeapon == WeaponSlot::M416  && m416.IsReloading() );
+        bool isSprinting = wantsSprint && !isWeaponReloading;
 
         // Stand up when sprinting
         if ( isSprinting && isCrouching ) {
@@ -91,7 +97,10 @@ namespace atto {
         currentEyeHeight    = currentEyeHeight + (targetEyeHeight - currentEyeHeight) * Min( CrouchSpeed * deltaTime, 1.0f );
         currentHeight       = currentHeight    + (targetHeight    - currentHeight)    * Min( CrouchSpeed * deltaTime, 1.0f );
 
-        f32 speedMult = isSprinting ? SprintSpeedMultiplier : ( isCrouching ? CrouchSpeedMult : 1.0f );
+        f32 sprintMult = activeWeapon == WeaponSlot::Knife ? SprintSpeedKnife
+                       : activeWeapon == WeaponSlot::Glock ? SprintSpeedGlock
+                       :                                     SprintSpeedM416;
+        f32 speedMult = isSprinting ? sprintMult : ( isCrouching ? CrouchSpeedMult : 1.0f );
         f32  speed    = camera.GetMoveSpeed() * speedMult * deltaTime;
 
         bool isMoving = false;
